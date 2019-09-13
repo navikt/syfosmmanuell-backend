@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
@@ -6,6 +8,7 @@ version = "1.0.0-SNASHOT"
 
 plugins {
     kotlin("jvm") version "1.3.50"
+    id("com.github.johnrengelman.shadow") version "4.0.4"
 }
 
 repositories {
