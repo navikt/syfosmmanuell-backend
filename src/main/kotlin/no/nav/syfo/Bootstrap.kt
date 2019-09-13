@@ -9,7 +9,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
-data class ApplicationState(var running: Boolean = true, var initialized: Boolean = false)
+data class ApplicationState(
+    var running: Boolean = true,
+    var ready: Boolean = false
+)
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.sminfotrygd")
 
@@ -26,13 +29,15 @@ fun main() {
     })
 
     log.info("Hello world")
+    applicationState.ready = true
+
 }
 
 fun Application.initRouting(applicationState: ApplicationState) {
     routing {
         registerNaisApi(
             readynessCheck = {
-                applicationState.initialized
+                applicationState.ready
             },
             livenessCheck = {
                 applicationState.running
