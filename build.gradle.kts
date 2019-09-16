@@ -15,6 +15,11 @@ val spekVersion = "2.0.6"
 val kluentVersion = "1.39"
 val kafkaEmbeddedVersion = "2.1.1"
 val mockkVersion = "1.9.3"
+val postgresVersion = "42.2.5"
+val h2Version = "1.4.197"
+val flywayVersion = "5.2.4"
+val hikariVersion = "3.3.0"
+val vaultJavaDriveVersion = "3.1.0"
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -51,6 +56,11 @@ dependencies {
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
+    implementation("org.postgresql:postgresql:$postgresVersion")
+    implementation("com.h2database:h2:$h2Version")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")
 
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation ("io.mockk:mockk:$mockkVersion")
