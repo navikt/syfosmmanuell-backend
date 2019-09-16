@@ -1,7 +1,6 @@
 package no.nav.syfo.model
 
 import java.time.LocalDateTime
-import no.nav.syfo.model.ValidationResult
 
 data class Apprec(
     val ediloggid: String,

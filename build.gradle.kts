@@ -11,16 +11,25 @@ val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.5.0"
 val smCommonVersion = "2019.09.03-11-07-64032e3b6381665e9f9c0914cef626331399e66d"
 val jacksonVersion = "2.9.7"
+val spekVersion = "2.0.6"
+val kluentVersion = "1.39"
+val kafkaEmbeddedVersion = "2.1.1"
+val mockkVersion = "1.9.3"
 
 plugins {
     kotlin("jvm") version "1.3.50"
     id("com.github.johnrengelman.shadow") version "4.0.4"
+    id("org.jmailen.kotlinter") version "2.1.0"
 }
 
 repositories {
     mavenCentral()
-    maven (url= "https://dl.bintray.com/kotlin/ktor")
-    maven (url = "https://oss.sonatype.org/content/groups/staging/")
+    jcenter()
+    maven(url = "https://dl.bintray.com/kotlin/ktor")
+    maven(url = "https://oss.sonatype.org/content/groups/staging/")
+    maven(url = "https://dl.bintray.com/spekframework/spek-dev")
+    maven(url = "https://kotlin.bintray.com/kotlinx")
+    maven(url = "http://packages.confluent.io/maven/")
 }
 
 dependencies {
@@ -41,6 +50,21 @@ dependencies {
 
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+
+
+    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
+    testImplementation ("io.mockk:mockk:$mockkVersion")
+    testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
+    testImplementation ("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
+    testRuntimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
+        exclude(group = "org.eclipse.jetty")
+    }
 }
 
 
@@ -61,6 +85,15 @@ tasks {
         transform(ServiceFileTransformer::class.java) {
             setPath("META-INF/cxf")
             include("bus-extensions.txt")
+        }
+    }
+
+    withType<Test> {
+        useJUnitPlatform {
+            includeEngines("spek2")
+        }
+        testLogging {
+            showStandardStreams = true
         }
     }
 
