@@ -10,8 +10,8 @@ fun Connection.opprettManuellOppgave(manuellOppgave: ManuellOppgave) {
             """
             INSERT INTO MANUELLOPPGAVE(
                 id,
-                receivedSykmelding,
-                validationResult,
+                receivedsykmelding,
+                validationresult,
                 apprec)
             VALUES  (?, ?, ?, ?)
             """
@@ -26,3 +26,17 @@ fun Connection.opprettManuellOppgave(manuellOppgave: ManuellOppgave) {
         connection.commit()
     }
 }
+
+fun Connection.erOpprettManuellOppgave(sykmeldingsid: String) =
+    use { connection ->
+        connection.prepareStatement(
+            """
+                SELECT *
+                FROM MANUELLOPPGAVE
+                WHERE id=?;
+                """
+        ).use {
+            it.setString(1, sykmeldingsid)
+            it.executeQuery().next()
+        }
+    }
