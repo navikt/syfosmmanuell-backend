@@ -8,7 +8,7 @@ data class Environment(
     val syfoSmManuellTopic: String = getEnvVar("KAFKA_SYFO_SM_MANUELL_TOPIC", "privat-syfo-sm2013-manuell"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmmanuell-backend"),
-    val syfosmmanuellbackendDBURL: String = getEnvVar("SYFOSMRMANUELL_BACKEND_DB_URL"),
+    val syfosmmanuellbackendDBURL: String = getEnvVar("SYFOSMMANUELL_BACKEND_DB_URL"),
     val mountPathVault: String = getEnvVar("MOUNT_PATH_VAULT"),
     val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmmanuell-backend")
 ) : KafkaConfig
