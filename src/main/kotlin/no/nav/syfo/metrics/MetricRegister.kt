@@ -2,7 +2,7 @@ package no.nav.syfo.metrics
 
 import io.prometheus.client.Counter
 
-const val METRICS_NS = "syfosmmanuell-backend"
+const val METRICS_NS = "syfosmmanuellbackend"
 
 val MESSAGE_STORED_IN_DB_COUNTER: Counter = Counter.build()
         .namespace(METRICS_NS)
