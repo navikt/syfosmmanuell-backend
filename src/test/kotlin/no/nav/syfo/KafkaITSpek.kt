@@ -28,7 +28,7 @@ object KafkaITSpek : Spek({
     val config = Environment(
         kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         applicationName = "syfosminfotrygd",
-        mountPathVault = "", databaseName = "", syfosmmanuellbackendDBURL = ""
+        mountPathVault = "", databaseName = "", syfosmmanuellbackendDBURL = "url"
     )
 
     fun Properties.overrideForTest(): Properties = apply {
