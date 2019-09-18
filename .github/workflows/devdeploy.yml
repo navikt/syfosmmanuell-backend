@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
+      - name: Build jar
+        run: |
+          ./gradlew shadowJar -x test
       - name: Create Docker tag
         env:
           NAME: syfosmmanuell-backend

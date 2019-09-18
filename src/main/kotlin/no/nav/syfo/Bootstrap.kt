@@ -15,6 +15,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
+import no.nav.syfo.aksessering.ManuellOppgaveService
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
@@ -47,7 +48,8 @@ fun main() {
     val database = Database(env, vaultCredentialService)
     val applicationState = ApplicationState()
 
-    val applicationEngine = createApplicationEngine(env, applicationState)
+    val manuellOppgaveService = ManuellOppgaveService(database)
+    val applicationEngine = createApplicationEngine(env, applicationState, manuellOppgaveService)
     val applicationServer = ApplicationServer(applicationEngine)
 
     applicationServer.start()
