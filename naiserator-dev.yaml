@@ -1,0 +1,48 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: syfosmmanuell-backend
+  namespace: default
+  labels:
+    team: {{team}}
+spec:
+  name: syfosmmanuell-backend
+  image: "docker.pkg.github.com/navikt/syfosmmanuell-backend:{{tag}}"
+  replicas:
+    min: 2
+    max: 4
+    cpuThresholdPercentage: 90
+  port: 8080
+  liveness:
+    path: /is_alive
+    initialDelay: 10
+    timeout: 5
+    periodSeconds: 5
+    failureThreshold: 30
+  readiness:
+    path: /is_ready
+    initialDelay: 30
+    periodSeconds: 5
+    timeout: 5
+  prometheus:
+    enabled: true
+    path: /prometheus
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  vault:
+    enabled: true
+  webproxy: true
+  ingresses:
+    - "https://syfosmmanuell-backend.nais.preprod.local"
+  env:
+    - name: SYFOSMMANUELL_BACKEND_DB_URL
+      value: jdbc:postgresql://b27dbvl009.preprod.local:5432/syfosmmanuell-backend
+    - name: KAFKA_BOOTSTRAP_SERVERS_URL
+      value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
+    - name: MOUNT_PATH_VAULT
+      value: /postgresql/preprod-fss
