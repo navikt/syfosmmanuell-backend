@@ -5,5 +5,5 @@ import no.nav.syfo.db.DatabaseInterface
 
 class ManuellOppgaveService(private val database: DatabaseInterface) {
     fun hentManuellOppgave(manueloppgaveId: String): ManuellOppgaveDTO =
-        database.hentManuellOppgave(manueloppgaveId)
+        database.hentManuellOppgave(manueloppgaveId).first()
 }

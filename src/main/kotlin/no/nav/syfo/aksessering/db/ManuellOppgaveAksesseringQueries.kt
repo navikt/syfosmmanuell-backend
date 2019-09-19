@@ -4,9 +4,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import java.sql.ResultSet
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.db.DatabaseInterface
+import no.nav.syfo.db.toList
 import no.nav.syfo.objectMapper
 
-fun DatabaseInterface.hentManuellOppgave(manuellOppgaveId: String): ManuellOppgaveDTO =
+fun DatabaseInterface.hentManuellOppgave(manuellOppgaveId: String): List<ManuellOppgaveDTO> =
     connection.use { connection ->
         connection.prepareStatement(
             """
@@ -16,7 +17,7 @@ fun DatabaseInterface.hentManuellOppgave(manuellOppgaveId: String): ManuellOppga
                 """
         ).use {
             it.setString(1, manuellOppgaveId)
-            it.executeQuery().toManuellOppgaveDTO()
+            it.executeQuery().toList { toManuellOppgaveDTO() }
         }
     }
 
