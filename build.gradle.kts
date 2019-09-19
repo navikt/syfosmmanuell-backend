@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0-SNASHOT"
 
+val coroutinesVersion = "1.2.2"
 val ktorVersion = "1.2.3"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
@@ -39,6 +40,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
+
     implementation ("io.ktor:ktor-server-netty:$ktorVersion")
     implementation ("io.ktor:ktor-client-apache:$ktorVersion")
 

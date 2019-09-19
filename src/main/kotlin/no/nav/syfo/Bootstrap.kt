@@ -9,11 +9,15 @@ import io.ktor.util.KtorExperimentalAPI
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.Properties
+import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.slf4j.MDCContext
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.aksessering.ManuellOppgaveService
 import no.nav.syfo.application.ApplicationServer
@@ -27,6 +31,7 @@ import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.persistering.erOpprettManuellOppgave
 import no.nav.syfo.persistering.opprettManuellOppgave
+import no.nav.syfo.vault.Vault
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.Logger
@@ -39,14 +44,33 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.sminfotrygd")
 
+val backgroundTasksContext = Executors.newFixedThreadPool(4).asCoroutineDispatcher() + MDCContext()
+
 @KtorExperimentalAPI
-fun main() {
+fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()) {
     val env = Environment()
     val credentials = objectMapper.readValue<VaultCredentials>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
 
     val vaultCredentialService = VaultCredentialService()
     val database = Database(env, vaultCredentialService)
+
     val applicationState = ApplicationState()
+
+    launch(backgroundTasksContext) {
+        try {
+            Vault.renewVaultTokenTask(applicationState)
+        } finally {
+            applicationState.ready = false
+        }
+    }
+
+    launch(backgroundTasksContext) {
+        try {
+            vaultCredentialService.runRenewCredentialsTask { applicationState.ready }
+        } finally {
+            applicationState.ready = false
+        }
+    }
 
     val manuellOppgaveService = ManuellOppgaveService(database)
     val applicationEngine = createApplicationEngine(env, applicationState, manuellOppgaveService)
@@ -61,7 +85,6 @@ fun main() {
         applicationState,
         env,
         consumerProperties,
-        credentials,
         database)
 }
 
@@ -82,7 +105,6 @@ fun launchListeners(
     applicationState: ApplicationState,
     env: Environment,
     consumerProperties: Properties,
-    credentials: VaultCredentials,
     database: Database
 ) {
     val kafkaconsumermanuellOppgave = KafkaConsumer<String, String>(consumerProperties)
