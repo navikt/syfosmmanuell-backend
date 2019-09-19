@@ -6,8 +6,8 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
-import no.nav.syfo.aksessering.ManuellOppgaveService
 import no.nav.syfo.log
+import no.nav.syfo.service.ManuellOppgaveService
 
 fun Routing.hentManuellOppgave(manuellOppgaveService: ManuellOppgaveService) {
     route("/api/v1") {

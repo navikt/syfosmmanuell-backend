@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.slf4j.MDCContext
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.aksessering.ManuellOppgaveService
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
@@ -27,12 +26,16 @@ import no.nav.syfo.db.Database
 import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
+import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
+import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.persistering.erOpprettManuellOppgave
 import no.nav.syfo.persistering.opprettManuellOppgave
+import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.vault.Vault
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -73,12 +76,14 @@ fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()
     }
 
     val manuellOppgaveService = ManuellOppgaveService(database)
-    val applicationEngine = createApplicationEngine(env, applicationState, manuellOppgaveService)
+    val kafkaBaseConfig = loadBaseConfig(env, credentials)
+    val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+    val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
+    val applicationEngine = createApplicationEngine(env, applicationState, manuellOppgaveService, kafkaproducerApprec, env.sm2013Apprec)
     val applicationServer = ApplicationServer(applicationEngine)
 
     applicationServer.start()
 
-    val kafkaBaseConfig = loadBaseConfig(env, credentials)
     val consumerProperties = kafkaBaseConfig.toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class)
 
     launchListeners(
@@ -151,12 +156,12 @@ suspend fun handleMessage(
     wrapExceptions(loggingMeta) {
         log.info("Mottok ein manuell oppgave, {}", fields(loggingMeta))
 
-        if (database.connection.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
+        if (database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
             log.error("Manuell oppgave med id {} allerede lagret i databasen, {}",
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
-            database.connection.opprettManuellOppgave(manuellOppgave)
+            database.opprettManuellOppgave(manuellOppgave)
             log.info("Manuell oppgave lagret i databasen, {}", fields(loggingMeta))
             MESSAGE_STORED_IN_DB_COUNTER.inc()
         }

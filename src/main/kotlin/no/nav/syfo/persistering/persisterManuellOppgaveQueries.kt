@@ -1,11 +1,12 @@
 package no.nav.syfo.persistering
 
-import java.sql.Connection
+import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toPGObject
 
-fun Connection.opprettManuellOppgave(manuellOppgave: ManuellOppgave) {
-    use { connection ->
+fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave) {
+    connection.use { connection ->
         connection.prepareStatement(
             """
             INSERT INTO MANUELLOPPGAVE(
@@ -27,8 +28,8 @@ fun Connection.opprettManuellOppgave(manuellOppgave: ManuellOppgave) {
     }
 }
 
-fun Connection.erOpprettManuellOppgave(sykmeldingsid: String) =
-    use { connection ->
+fun DatabaseInterface.erOpprettManuellOppgave(manueloppgaveId: String) =
+    connection.use { connection ->
         connection.prepareStatement(
             """
                 SELECT *
@@ -36,7 +37,23 @@ fun Connection.erOpprettManuellOppgave(sykmeldingsid: String) =
                 WHERE id=?;
                 """
         ).use {
-            it.setString(1, sykmeldingsid)
+            it.setString(1, manueloppgaveId)
             it.executeQuery().next()
         }
+    }
+
+fun DatabaseInterface.oppdaterValidationResults(manueloppgaveId: String, validationResult: ValidationResult): Int =
+    connection.use { connection ->
+        val status = connection.prepareStatement(
+            """
+            UPDATE MANUELLOPPGAVE
+            SET validationResult = ValidationResult
+            WHERE id = ?;
+            """
+        ).use {
+            it.setString(1, manueloppgaveId)
+            it.executeUpdate()
+        }
+        connection.commit()
+        return status
     }
