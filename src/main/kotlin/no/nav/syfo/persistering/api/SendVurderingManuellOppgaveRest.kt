@@ -24,9 +24,9 @@ fun Routing.sendVurderingManuellOppgave(
     sm2013ApprecTopicName: String
 ) {
     route("/api/v1") {
-        post("/manuelloppgave/{manuelloppgaveId}") {
+        post("/vurderingmanuelloppgave/{manuelloppgaveId}") {
             val manuellOppgaveId = call.parameters["manuelloppgaveId"]!!
-            log.info("Recived call to /api/v1/manuelloppgave")
+            log.info("Recived call to /api/v1/vurderingmanuelloppgave")
 
             val validationResult: ValidationResult = call.receive()
 
