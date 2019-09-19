@@ -1,0 +1,10 @@
+{
+  "status": "MANUAL_PROCESSING",
+  "ruleHits": [
+    {
+      "ruleName": "TILBAKEDATERT_MED_BEGRUNNELSE_FORSTE_SYKMELDING",
+      "messageForSender": "message for sender",
+      "messageForUser": "message for user"
+    }
+  ]
+}

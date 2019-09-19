@@ -31,7 +31,7 @@ fun Routing.sendVurderingManuellOppgave(
             val validationResult: ValidationResult = call.receive()
 
             if (manuellOppgaveService.oppdaterValidationResuts(manuellOppgaveId, validationResult) > 0) {
-                call.respond(HttpStatusCode.OK)
+                call.respond(HttpStatusCode.OK).also {
                 // TODO send event update to modia
                 val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(manuellOppgaveId)
                 if (manuellOppgave != null) {
@@ -60,6 +60,7 @@ fun Routing.sendVurderingManuellOppgave(
 
                         log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopicName, fields(loggingMeta))
                     }
+                }
                 }
             } else {
                 call.respond(HttpStatusCode.InternalServerError)
