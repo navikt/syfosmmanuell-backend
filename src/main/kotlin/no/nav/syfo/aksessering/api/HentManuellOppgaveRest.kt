@@ -15,9 +15,14 @@ fun Routing.hentManuellOppgave(manuellOppgaveService: ManuellOppgaveService) {
             log.info("Recived call to /api/v1/manuelloppgave")
             val manuellOppgaveId = call.request.queryParameters["manuelloppgaveId"]
 
-            when (manuellOppgaveId) {
-                null -> call.respond(HttpStatusCode.BadRequest)
-                else -> call.respond(manuellOppgaveService.hentManuellOppgave(manuellOppgaveId))
+            if (manuellOppgaveId.isNullOrEmpty()) {
+                log.info("Mangler query parameters: manuelloppgaveId")
+                call.respond(HttpStatusCode.BadRequest)
+            } else if (manuellOppgaveService.hentManuellOppgave(manuellOppgaveId) == null) {
+                log.info("Fant ingen manuelloppgaver med akutell manuelloppgaveId")
+                call.respond(HttpStatusCode.BadRequest)
+            } else {
+                call.respond(manuellOppgaveService.hentManuellOppgave(manuellOppgaveId)!!)
             }
         }
     }
