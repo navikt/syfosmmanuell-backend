@@ -47,7 +47,7 @@ fun DatabaseInterface.oppdaterValidationResults(manueloppgaveId: String, validat
         val status = connection.prepareStatement(
             """
             UPDATE MANUELLOPPGAVE
-            SET validationResult = ValidationResult
+            SET validationResult = ${validationResult.toPGObject()}
             WHERE id = ?;
             """
         ).use {
