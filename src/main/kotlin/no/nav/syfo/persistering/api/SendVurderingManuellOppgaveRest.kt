@@ -31,12 +31,11 @@ fun Routing.sendVurderingManuellOppgave(
             val validationResult: ValidationResult = call.receive()
 
             if (manuellOppgaveService.oppdaterValidationResuts(manuellOppgaveId, validationResult) > 0) {
-                log.info("Oppdatering av validation results, gikk ok")
                 val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(manuellOppgaveId)
-                log.info("Henting av manuell komplett manuell oppgave gikk ok")
                 // TODO send event update to modia
 
                 if (manuellOppgave != null) {
+                    log.info("Manuelloppgave objekt er ulik null")
                     if (manuellOppgave.validationResult.status == Status.INVALID) {
 
                         val apprec = Apprec(
@@ -61,9 +60,14 @@ fun Routing.sendVurderingManuellOppgave(
                         )
 
                         log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopicName, fields(loggingMeta))
+                    } else {
+                        log.info("Send melding til automatiskbehandlings topic, for videre behandling")
                     }
+                    call.respond(HttpStatusCode.OK)
+                } else {
+                    log.info("Manuelloppgave objekt er null")
+                    call.respond(HttpStatusCode.InternalServerError)
                 }
-                call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.InternalServerError)
             }
