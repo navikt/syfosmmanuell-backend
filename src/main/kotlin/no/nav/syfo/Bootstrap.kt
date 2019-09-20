@@ -90,7 +90,8 @@ fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()
         kafkaproducerApprec,
         env.sm2013Apprec,
         kafkaproducerreceivedSykmelding,
-        env.sm2013AutomaticHandlingTopic)
+        env.sm2013AutomaticHandlingTopic,
+        env.sm2013InvalidHandlingTopic)
     val applicationServer = ApplicationServer(applicationEngine)
 
     applicationServer.start()

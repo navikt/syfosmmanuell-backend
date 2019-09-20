@@ -25,7 +25,8 @@ fun Routing.sendVurderingManuellOppgave(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     sm2013ApprecTopicName: String,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    sm2013AutomaticHandlingTopic: String
+    sm2013AutomaticHandlingTopic: String,
+    sm2013InvalidHandlingTopic: String
 ) {
     route("/api/v1") {
         post("/vurderingmanuelloppgave/{manuelloppgaveId}") {
@@ -51,6 +52,8 @@ fun Routing.sendVurderingManuellOppgave(
                             manuellOppgave,
                             sm2013ApprecTopicName,
                             kafkaproducerApprec,
+                            sm2013InvalidHandlingTopic,
+                            kafkaproducerreceivedSykmelding,
                             loggingMeta)
                     } else {
                         kafkaproducerreceivedSykmelding.send(ProducerRecord(
@@ -76,6 +79,8 @@ fun handleManuellOppgaveInvalid(
     manuellOppgave: ManuellOppgave,
     sm2013ApprecTopicName: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    sm2013InvalidHandlingTopic: String,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     loggingMeta: LoggingMeta
     ) {
 
@@ -91,8 +96,14 @@ fun handleManuellOppgaveInvalid(
         mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
         validationResult = manuellOppgave.validationResult
     )
-    sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
 
+    kafkaproducerreceivedSykmelding.send(ProducerRecord(
+        sm2013InvalidHandlingTopic,
+        manuellOppgave.receivedSykmelding.sykmelding.id,
+        manuellOppgave.receivedSykmelding)
+    )
+
+    sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopicName, fields(loggingMeta))
 }
 

@@ -31,7 +31,8 @@ fun createApplicationEngine(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     sm2013ApprecTopicName: String,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    sm2013AutomaticHandlingTopic: String
+    sm2013AutomaticHandlingTopic: String,
+    sm2013InvalidHandlingTopic: String
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         routing {
@@ -42,7 +43,8 @@ fun createApplicationEngine(
                 kafkaproducerApprec,
                 sm2013ApprecTopicName,
                 kafkaproducerreceivedSykmelding,
-                sm2013AutomaticHandlingTopic
+                sm2013AutomaticHandlingTopic,
+                sm2013InvalidHandlingTopic
                 )
         }
         install(ContentNegotiation) {
