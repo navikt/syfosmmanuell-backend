@@ -175,6 +175,10 @@ suspend fun handleMessage(
             database.opprettManuellOppgave(manuellOppgave)
             log.info("Manuell oppgave lagret i databasen, {}", fields(loggingMeta))
             MESSAGE_STORED_IN_DB_COUNTER.inc()
+
+
+            // TODO poste på modia hendelse topic, med manuell oppgaveid(manuellOppgave.receivedSykmelding.sykmelding.id)
+            // TODO pasient fnr manuellOppgave.receivedSykmelding.personNrLege
         }
     }
 }
