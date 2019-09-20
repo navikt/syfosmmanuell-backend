@@ -30,6 +30,7 @@ import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.persistering.erOpprettManuellOppgave
 import no.nav.syfo.persistering.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
@@ -76,10 +77,20 @@ fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()
     }
 
     val manuellOppgaveService = ManuellOppgaveService(database)
+
     val kafkaBaseConfig = loadBaseConfig(env, credentials)
     val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
     val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
-    val applicationEngine = createApplicationEngine(env, applicationState, manuellOppgaveService, kafkaproducerApprec, env.sm2013Apprec)
+    val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
+
+    val applicationEngine = createApplicationEngine(
+        env,
+        applicationState,
+        manuellOppgaveService,
+        kafkaproducerApprec,
+        env.sm2013Apprec,
+        kafkaproducerreceivedSykmelding,
+        env.sm2013AutomaticHandlingTopic)
     val applicationServer = ApplicationServer(applicationEngine)
 
     applicationServer.start()

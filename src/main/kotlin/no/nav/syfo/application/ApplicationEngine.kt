@@ -19,6 +19,7 @@ import no.nav.syfo.aksessering.api.hentManuellOppgave
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
+import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -28,13 +29,21 @@ fun createApplicationEngine(
     applicationState: ApplicationState,
     manuellOppgaveService: ManuellOppgaveService,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    sm2013ApprecTopicName: String
+    sm2013ApprecTopicName: String,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    sm2013AutomaticHandlingTopic: String
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         routing {
             registerNaisApi(applicationState)
             hentManuellOppgave(manuellOppgaveService)
-            sendVurderingManuellOppgave(manuellOppgaveService, kafkaproducerApprec, sm2013ApprecTopicName)
+            sendVurderingManuellOppgave(
+                manuellOppgaveService,
+                kafkaproducerApprec,
+                sm2013ApprecTopicName,
+                kafkaproducerreceivedSykmelding,
+                sm2013AutomaticHandlingTopic
+                )
         }
         install(ContentNegotiation) {
             jackson {

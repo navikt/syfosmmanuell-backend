@@ -12,6 +12,8 @@ import no.nav.syfo.LoggingMeta
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
+import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.service.ManuellOppgaveService
@@ -21,7 +23,9 @@ import org.apache.kafka.clients.producer.ProducerRecord
 fun Routing.sendVurderingManuellOppgave(
     manuellOppgaveService: ManuellOppgaveService,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    sm2013ApprecTopicName: String
+    sm2013ApprecTopicName: String,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    sm2013AutomaticHandlingTopic: String
 ) {
     route("/api/v1") {
         post("/vurderingmanuelloppgave/{manuelloppgaveId}") {
@@ -35,37 +39,30 @@ fun Routing.sendVurderingManuellOppgave(
                 // TODO send event update to modia
 
                 if (manuellOppgave != null) {
-                    log.info("Manuelloppgave objekt er ulik null")
+                    val loggingMeta = LoggingMeta(
+                        mottakId = manuellOppgave.receivedSykmelding.navLogId,
+                        orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
+                        msgId = manuellOppgave.receivedSykmelding.msgId,
+                        sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
+                    )
+
                     if (manuellOppgave.validationResult.status == Status.INVALID) {
-
-                        val apprec = Apprec(
-                            ediloggid = manuellOppgave.apprec.ediloggid,
-                            msgId = manuellOppgave.apprec.msgId,
-                            msgTypeVerdi = manuellOppgave.apprec.msgTypeVerdi,
-                            msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
-                            genDate = manuellOppgave.apprec.genDate,
-                            apprecStatus = ApprecStatus.AVVIST,
-                            tekstTilSykmelder = null,
-                            senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
-                            mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
-                            validationResult = manuellOppgave.validationResult
-                        )
-                        sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
-
-                        val loggingMeta = LoggingMeta(
-                            mottakId = manuellOppgave.receivedSykmelding.navLogId,
-                            orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
-                            msgId = manuellOppgave.receivedSykmelding.msgId,
-                            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
-                        )
-
-                        log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopicName, fields(loggingMeta))
+                        handleManuellOppgaveInvalid(
+                            manuellOppgave,
+                            sm2013ApprecTopicName,
+                            kafkaproducerApprec,
+                            loggingMeta)
                     } else {
-                        log.info("Send melding til automatiskbehandlings topic, for videre behandling")
+                        kafkaproducerreceivedSykmelding.send(ProducerRecord(
+                            sm2013AutomaticHandlingTopic,
+                            manuellOppgave.receivedSykmelding.sykmelding.id,
+                            manuellOppgave.receivedSykmelding)
+                        )
+                        log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
                     }
                     call.respond(HttpStatusCode.OK)
                 } else {
-                    log.info("Manuelloppgave objekt er null")
+                    log.warn("Henting av komplettManuellOppgave returente null")
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             } else {
@@ -73,6 +70,30 @@ fun Routing.sendVurderingManuellOppgave(
             }
         }
     }
+}
+
+fun handleManuellOppgaveInvalid(
+    manuellOppgave: ManuellOppgave,
+    sm2013ApprecTopicName: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    loggingMeta: LoggingMeta
+    ) {
+
+    val apprec = Apprec(
+        ediloggid = manuellOppgave.apprec.ediloggid,
+        msgId = manuellOppgave.apprec.msgId,
+        msgTypeVerdi = manuellOppgave.apprec.msgTypeVerdi,
+        msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
+        genDate = manuellOppgave.apprec.genDate,
+        apprecStatus = ApprecStatus.AVVIST,
+        tekstTilSykmelder = null,
+        senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
+        mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
+        validationResult = manuellOppgave.validationResult
+    )
+    sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
+
+    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopicName, fields(loggingMeta))
 }
 
 fun sendReceipt(
