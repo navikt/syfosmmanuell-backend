@@ -31,8 +31,9 @@ fun Routing.sendVurderingManuellOppgave(
             val validationResult: ValidationResult = call.receive()
 
             if (manuellOppgaveService.oppdaterValidationResuts(manuellOppgaveId, validationResult) > 0) {
+                log.info("Oppdatering av validation results, gikk ok")
                 val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(manuellOppgaveId)
-
+                log.info("Henting av manuell komplett manuell oppgave gikk ok")
                 // TODO send event update to modia
 
                 if (manuellOppgave != null) {
