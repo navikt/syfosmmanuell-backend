@@ -31,23 +31,24 @@ fun Routing.sendVurderingManuellOppgave(
             val validationResult: ValidationResult = call.receive()
 
             if (manuellOppgaveService.oppdaterValidationResuts(manuellOppgaveId, validationResult) > 0) {
-                call.respond(HttpStatusCode.OK).also {
-                // TODO send event update to modia
                 val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(manuellOppgaveId)
+
+                // TODO send event update to modia
+
                 if (manuellOppgave != null) {
                     if (manuellOppgave.validationResult.status == Status.INVALID) {
 
                         val apprec = Apprec(
                             ediloggid = manuellOppgave.apprec.ediloggid,
-                                msgId = manuellOppgave.apprec.msgId,
-                                msgTypeVerdi = manuellOppgave.apprec.msgTypeVerdi,
-                                msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
-                                genDate = manuellOppgave.apprec.genDate,
-                                apprecStatus = ApprecStatus.AVVIST,
-                                tekstTilSykmelder = null,
-                                senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
-                                mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
-                                validationResult = manuellOppgave.validationResult
+                            msgId = manuellOppgave.apprec.msgId,
+                            msgTypeVerdi = manuellOppgave.apprec.msgTypeVerdi,
+                            msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
+                            genDate = manuellOppgave.apprec.genDate,
+                            apprecStatus = ApprecStatus.AVVIST,
+                            tekstTilSykmelder = null,
+                            senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
+                            mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
+                            validationResult = manuellOppgave.validationResult
                         )
                         sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
 
@@ -61,7 +62,7 @@ fun Routing.sendVurderingManuellOppgave(
                         log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopicName, fields(loggingMeta))
                     }
                 }
-                }
+                call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.InternalServerError)
             }
