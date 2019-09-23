@@ -23,6 +23,14 @@ val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
 val navArbeidsfordelingv1Version = "1.2019.07.11-06.47-b55f47790a9d"
 val navPersonv3Version = "1.2019.07.11-06.47-b55f47790a9d"
+val jaxwsApiVersion = "2.3.1"
+val jaxbBasicAntVersion = "1.11.1"
+val javaxAnnotationApiVersion = "1.3.2"
+val jaxwsToolsVersion = "2.3.1"
+val jaxbRuntimeVersion = "2.4.0-b180830.0438"
+val jaxbApiVersion = "2.4.0-b180830.0359"
+val javaxActivationVersion = "1.1.1"
+val cxfVersion = "3.2.7"
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -75,6 +83,20 @@ dependencies {
 
     implementation("no.nav.tjenestespesifikasjoner:person-v3-tjenestespesifikasjon:$navPersonv3Version")
     implementation("no.nav.tjenestespesifikasjoner:arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version")
+
+    implementation ("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
+    implementation ("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
+    implementation ("javax.xml.bind:jaxb-api:$jaxbApiVersion")
+    implementation ("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
+    implementation ("javax.activation:activation:$javaxActivationVersion")
+    implementation ("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
+        exclude(group = "com.sun.xml.ws", module = "policy")
+    }
+
+    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
+    implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
+    implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
+    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
 
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
