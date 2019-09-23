@@ -13,7 +13,11 @@ data class Environment(
     val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmmanuell-backend"),
     val sm2013Apprec: String = getEnvVar("KAFKA_SM2013_BEHANDLING_TOPIC", "privat-syfo-sm2013-apprec-v1"),
     val sm2013AutomaticHandlingTopic: String = getEnvVar("KAFKA_SM2013_AUTOMATIC_TOPIC", "privat-syfo-sm2013-automatiskBehandling"),
-    val sm2013InvalidHandlingTopic: String = getEnvVar("KAFKA_SM2013_INVALID_TOPIC", "privat-syfo-sm2013-avvistBehandling")
+    val sm2013InvalidHandlingTopic: String = getEnvVar("KAFKA_SM2013_INVALID_TOPIC", "privat-syfo-sm2013-avvistBehandling"),
+    val norg2V1EndpointURL: String = getEnvVar("NORG2_V1_ENDPOINT_URL"),
+    val arbeidsfordelingV1EndpointURL: String = getEnvVar("ARBEIDSFORDELING_V1_ENDPOINT_URL"),
+    val personV3EndpointURL: String = getEnvVar("PERSON_V3_ENDPOINT_URL"),
+    val securityTokenServiceUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL")
 ) : KafkaConfig
 
 data class VaultCredentials(

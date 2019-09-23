@@ -45,3 +45,11 @@ spec:
       value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: MOUNT_PATH_VAULT
       value: /postgresql/prod-fss
+    - name: SECURITY_TOKEN_SERVICE_URL
+      vaule: https://sts.adeo.no/SecurityTokenServiceProvider/
+    - name: ARBEIDSFORDELING_V1_ENDPOINT_URL
+      vaule: https://app.adeo.no/norg2/ws/Arbeidsfordeling/v1
+    - name: PERSON_V3_ENDPOINT_URL
+      vaule: https://wasapp.adeo.no/tpsws/ws/Person/v3
+    - name: NORG2_V1_ENDPOINT_URL
+      vaule: https://app.adeo.no/norg2/api/v1

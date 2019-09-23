@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransf
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
-version = "1.0.0-SNASHOT"
+version = "1.0.0"
 
 val coroutinesVersion = "1.2.2"
 val ktorVersion = "1.2.3"
@@ -21,6 +21,8 @@ val h2Version = "1.4.197"
 val flywayVersion = "5.2.4"
 val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
+val navArbeidsfordelingv1Version = "1.2019.07.11-06.47-b55f47790a9d"
+val navPersonv3Version = "1.2019.07.11-06.47-b55f47790a9d"
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -53,6 +55,9 @@ dependencies {
 
     implementation("no.nav.syfo.sm:syfosm-common-kafka:$smCommonVersion")
     implementation("no.nav.syfo.sm:syfosm-common-models:$smCommonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-rest-sts:$smCommonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-ws:$smCommonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-networking:$smCommonVersion")
 
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
@@ -67,6 +72,9 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")
+
+    implementation("no.nav.tjenestespesifikasjoner:person-v3-tjenestespesifikasjon:$navPersonv3Version")
+    implementation("no.nav.tjenestespesifikasjoner:arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version")
 
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
