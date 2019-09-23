@@ -13,16 +13,16 @@ fun Routing.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
     route("/api/v1") {
         get("/manuelloppgave") {
             log.info("Recived call to /api/v1/manuelloppgave")
-            val manuellOppgaveId = call.request.queryParameters["manuelloppgaveId"]
+            val pasientFnr = call.request.queryParameters["fnr"]
 
-            if (manuellOppgaveId.isNullOrEmpty()) {
-                log.info("Mangler query parameters: manuelloppgaveId")
+            if (pasientFnr.isNullOrEmpty()) {
+                log.info("Mangler query parameters: fnr")
                 call.respond(HttpStatusCode.BadRequest)
-            } else if (manuellOppgaveService.hentManuellOppgaver(manuellOppgaveId).isEmpty()) {
-                log.info("Fant ingen manuelloppgaver med akutell manuelloppgaveId")
+            } else if (manuellOppgaveService.hentManuellOppgaver(pasientFnr).isEmpty()) {
+                log.info("Fant ingen manuelloppgaver med akutell fnr")
                 call.respond(HttpStatusCode.BadRequest)
             } else {
-                call.respond(manuellOppgaveService.hentManuellOppgaver(manuellOppgaveId))
+                call.respond(manuellOppgaveService.hentManuellOppgaver(pasientFnr))
             }
         }
     }
