@@ -9,7 +9,7 @@ import io.ktor.routing.route
 import no.nav.syfo.log
 import no.nav.syfo.service.ManuellOppgaveService
 
-fun Routing.hentManuellOppgave(manuellOppgaveService: ManuellOppgaveService) {
+fun Routing.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
     route("/api/v1") {
         get("/manuelloppgave") {
             log.info("Recived call to /api/v1/manuelloppgave")
@@ -18,11 +18,11 @@ fun Routing.hentManuellOppgave(manuellOppgaveService: ManuellOppgaveService) {
             if (manuellOppgaveId.isNullOrEmpty()) {
                 log.info("Mangler query parameters: manuelloppgaveId")
                 call.respond(HttpStatusCode.BadRequest)
-            } else if (manuellOppgaveService.hentManuellOppgave(manuellOppgaveId) == null) {
+            } else if (manuellOppgaveService.hentManuellOppgaver(manuellOppgaveId).isEmpty()) {
                 log.info("Fant ingen manuelloppgaver med akutell manuelloppgaveId")
                 call.respond(HttpStatusCode.BadRequest)
             } else {
-                call.respond(manuellOppgaveService.hentManuellOppgave(manuellOppgaveId)!!)
+                call.respond(manuellOppgaveService.hentManuellOppgaver(manuellOppgaveId))
             }
         }
     }

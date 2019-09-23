@@ -15,7 +15,7 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.syfo.Environment
-import no.nav.syfo.aksessering.api.hentManuellOppgave
+import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
@@ -37,7 +37,7 @@ fun createApplicationEngine(
     embeddedServer(Netty, env.applicationPort) {
         routing {
             registerNaisApi(applicationState)
-            hentManuellOppgave(manuellOppgaveService)
+            hentManuellOppgaver(manuellOppgaveService)
             sendVurderingManuellOppgave(
                 manuellOppgaveService,
                 kafkaproducerApprec,

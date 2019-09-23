@@ -8,16 +8,16 @@ import no.nav.syfo.db.toList
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.objectMapper
 
-fun DatabaseInterface.hentManuellOppgave(manuellOppgaveId: String): List<ManuellOppgaveDTO> =
+fun DatabaseInterface.hentManuellOppgaver(pasientFnr: String): List<ManuellOppgaveDTO> =
     connection.use { connection ->
         connection.prepareStatement(
             """
                 SELECT receivedsykmelding,validationresult
                 FROM MANUELLOPPGAVE  
-                WHERE id=?;
+                WHERE pasientfnr=?;
                 """
         ).use {
-            it.setString(1, manuellOppgaveId)
+            it.setString(1, pasientFnr)
             it.executeQuery().toList { toManuellOppgaveDTO() }
         }
     }

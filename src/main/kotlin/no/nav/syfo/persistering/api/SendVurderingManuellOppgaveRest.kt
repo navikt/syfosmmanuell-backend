@@ -82,7 +82,7 @@ fun handleManuellOppgaveInvalid(
     sm2013InvalidHandlingTopic: String,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     loggingMeta: LoggingMeta
-    ) {
+) {
 
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,
