@@ -144,5 +144,4 @@ tasks {
             showStandardStreams = true
         }
     }
-
 }
