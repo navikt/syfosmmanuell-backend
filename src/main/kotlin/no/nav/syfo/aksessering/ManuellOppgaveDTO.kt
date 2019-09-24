@@ -4,7 +4,7 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 
 data class ManuellOppgaveDTO(
-    val id: String,
+    val manuellOppgaveid: String,
     val receivedSykmelding: ReceivedSykmelding,
     val validationResult: ValidationResult
 )

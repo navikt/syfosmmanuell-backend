@@ -31,6 +31,7 @@ val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val javaxActivationVersion = "1.1.1"
 val cxfVersion = "3.2.7"
+val postgresEmbeddedVersion = "0.13.1"
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -102,6 +103,7 @@ dependencies {
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
+    testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
     testRuntimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion") {
         exclude(group = "org.jetbrains.kotlin")
     }

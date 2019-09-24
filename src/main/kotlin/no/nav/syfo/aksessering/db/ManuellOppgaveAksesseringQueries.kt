@@ -24,7 +24,7 @@ fun DatabaseInterface.hentManuellOppgaver(pasientFnr: String): List<ManuellOppga
 
 fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO =
     ManuellOppgaveDTO(
-        id = getString("id").trim(),
+        manuellOppgaveid = getString("id").trim(),
         receivedSykmelding = objectMapper.readValue(getString("receivedsykmelding")),
         validationResult = objectMapper.readValue(getString("validationresult"))
     )
@@ -33,7 +33,7 @@ fun DatabaseInterface.hentKomplettManuellOppgave(manuellOppgaveId: String): List
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT receivedsykmelding,validationresult, apprec
+                SELECT receivedsykmelding,validationresult,apprec
                 FROM MANUELLOPPGAVE  
                 WHERE id=?;
                 """

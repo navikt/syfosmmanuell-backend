@@ -58,16 +58,4 @@ object SelfTestSpek : Spek({
             }
         }
     }
-
-    // TODO teste shutdownhock
-    /*describe("Stop application") {
-
-    it("should stop application") {
-        val applictionEngine = mockkClass(ApplicationEngine::class)
-        val applicationServer = ApplicationServer(applictionEngine)
-        every{applictionEngine.stop(any(),any(), any())} returns Unit
-        Runtime.getRuntime().exit(1)
-        verify(exactly = 1) {applictionEngine.stop(any(),any(), any())}
-        }
-    }*/
 })
