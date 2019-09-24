@@ -205,12 +205,13 @@ suspend fun handleMessage(
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
-            val findNAVKontorService = FindNAVKontorService(manuellOppgave.receivedSykmelding, personV3, arbeidsfordelingV1, loggingMeta)
-
+           /* val findNAVKontorService = FindNAVKontorService(manuellOppgave.receivedSykmelding, personV3, arbeidsfordelingV1, loggingMeta)
             val behandlendeEnhet = findNAVKontorService.finnBehandlendeEnhet()
 
-            database.opprettManuellOppgave(manuellOppgave, behandlendeEnhet)
-            log.info("Manuell oppgave lagret i databasen, for tildeltEnhetsnr: {}, {}", behandlendeEnhet, fields(loggingMeta))
+          */
+
+            database.opprettManuellOppgave(manuellOppgave, NAV_OPPFOLGING_UTLAND_KONTOR_NR)
+            log.info("Manuell oppgave lagret i databasen, for tildeltEnhetsnr: {}, {}", NAV_OPPFOLGING_UTLAND_KONTOR_NR, fields(loggingMeta))
             MESSAGE_STORED_IN_DB_COUNTER.inc()
 
             // TODO poste på modia hendelse topic, med manuell oppgaveid(manuellOppgave.receivedSykmelding.sykmelding.id)
