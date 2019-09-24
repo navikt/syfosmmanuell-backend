@@ -30,7 +30,7 @@ object KafkaITSpek : Spek({
         applicationName = "syfosminfotrygd",
         mountPathVault = "", databaseName = "", syfosmmanuellbackendDBURL = "url",
         personV3EndpointURL = "personV3", arbeidsfordelingV1EndpointURL = "arbeidsUrl",
-        norg2V1EndpointURL = "norg2V1", securityTokenServiceUrl = "securityTokenServiceUrl"
+        securityTokenServiceUrl = "securityTokenServiceUrl"
     )
 
     fun Properties.overrideForTest(): Properties = apply {

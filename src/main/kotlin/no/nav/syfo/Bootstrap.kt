@@ -1,15 +1,10 @@
 package no.nav.syfo
 
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.nio.file.Paths
 import java.time.Duration
@@ -27,7 +22,6 @@ import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
-import no.nav.syfo.client.Norg2Client
 import no.nav.syfo.db.Database
 import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.kafka.loadBaseConfig
@@ -110,20 +104,6 @@ fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()
 
     val consumerProperties = kafkaBaseConfig.toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class)
 
-    val norg2ClientHttpClient = HttpClient(Apache) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-        expectSuccess = false
-    }
-
-    val norg2Client = Norg2Client(norg2ClientHttpClient, env.norg2V1EndpointURL)
-
     val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
         port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
     }
@@ -137,7 +117,6 @@ fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()
         env,
         consumerProperties,
         database,
-        norg2Client,
         personV3,
         arbeidsfordelingV1)
 }
@@ -160,7 +139,6 @@ fun launchListeners(
     env: Environment,
     consumerProperties: Properties,
     database: Database,
-    norg2Client: Norg2Client,
     personV3: PersonV3,
     arbeidsfordelingV1: ArbeidsfordelingV1
 ) {
@@ -175,7 +153,6 @@ fun launchListeners(
                     applicationState,
                     kafkaconsumermanuellOppgave,
                     database,
-                    norg2Client,
                     personV3,
                     arbeidsfordelingV1)
     }
@@ -188,7 +165,6 @@ suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
     database: Database,
-    norg2Client: Norg2Client,
     personV3: PersonV3,
     arbeidsfordelingV1: ArbeidsfordelingV1
 ) {
@@ -206,7 +182,6 @@ suspend fun blockingApplicationLogic(
                 receivedManuellOppgave,
                 loggingMeta,
                 database,
-                norg2Client,
                 personV3,
                 arbeidsfordelingV1)
         }
@@ -219,7 +194,6 @@ suspend fun handleMessage(
     manuellOppgave: ManuellOppgave,
     loggingMeta: LoggingMeta,
     database: Database,
-    norg2Client: Norg2Client,
     personV3: PersonV3,
     arbeidsfordelingV1: ArbeidsfordelingV1
 ) {
@@ -231,8 +205,7 @@ suspend fun handleMessage(
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
-
-            val findNAVKontorService = FindNAVKontorService(manuellOppgave.receivedSykmelding, personV3, norg2Client, arbeidsfordelingV1, loggingMeta)
+            val findNAVKontorService = FindNAVKontorService(manuellOppgave.receivedSykmelding, personV3, arbeidsfordelingV1, loggingMeta)
 
             val behandlendeEnhet = findNAVKontorService.finnBehandlendeEnhet()
 

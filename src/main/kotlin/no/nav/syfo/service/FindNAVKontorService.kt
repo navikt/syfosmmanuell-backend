@@ -7,7 +7,6 @@ import java.lang.IllegalStateException
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.LoggingMeta
 import no.nav.syfo.NAV_OPPFOLGING_UTLAND_KONTOR_NR
-import no.nav.syfo.client.Norg2Client
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.model.ReceivedSykmelding
@@ -31,7 +30,6 @@ import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonRequest
 class FindNAVKontorService @KtorExperimentalAPI constructor(
     val receivedSykmelding: ReceivedSykmelding,
     val personV3: PersonV3,
-    val norg2Client: Norg2Client,
     val arbeidsfordelingV1: ArbeidsfordelingV1,
     val loggingMeta: LoggingMeta
 ) {
@@ -44,18 +42,6 @@ class FindNAVKontorService @KtorExperimentalAPI constructor(
             log.warn("arbeidsfordeling fant ingen nav-enheter {}", fields(loggingMeta))
         }
         return finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR
-    }
-
-    @KtorExperimentalAPI
-    suspend fun finnLokaltNavkontor(): String {
-        val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
-        val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
-        return if (geografiskTilknytning.geografiskTilknytning?.geografiskTilknytning.isNullOrEmpty()) {
-            log.warn("GeografiskTilknytning er tomt eller null, benytter nav oppfolings utland nr:$NAV_OPPFOLGING_UTLAND_KONTOR_NR,  {}", fields(loggingMeta))
-            NAV_OPPFOLGING_UTLAND_KONTOR_NR
-        } else {
-            norg2Client.getLocalNAVOffice(geografiskTilknytning.geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode).enhetNr
-        }
     }
 
     suspend fun fetchDiskresjonsKode(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): String? =

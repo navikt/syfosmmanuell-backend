@@ -32,6 +32,7 @@ val jaxbApiVersion = "2.4.0-b180830.0359"
 val javaxActivationVersion = "1.1.1"
 val cxfVersion = "3.2.7"
 val postgresEmbeddedVersion = "0.13.1"
+val jaxbTimeAdaptersVersion = "1.1.3"
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -85,6 +86,7 @@ dependencies {
     implementation("no.nav.tjenestespesifikasjoner:person-v3-tjenestespesifikasjon:$navPersonv3Version")
     implementation("no.nav.tjenestespesifikasjoner:arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version")
 
+    implementation ("com.migesok:jaxb-java-time-adapters:$jaxbTimeAdaptersVersion")
     implementation ("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
     implementation ("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
     implementation ("javax.xml.bind:jaxb-api:$jaxbApiVersion")
