@@ -6,7 +6,7 @@ import no.nav.syfo.aksessering.db.hentManuellOppgaver
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.persistering.oppdaterValidationResults
+import no.nav.syfo.persistering.db.oppdaterValidationResults
 
 class ManuellOppgaveService(private val database: DatabaseInterface) {
 

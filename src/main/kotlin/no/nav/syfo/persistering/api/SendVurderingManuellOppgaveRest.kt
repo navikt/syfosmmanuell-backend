@@ -47,32 +47,47 @@ fun Routing.sendVurderingManuellOppgave(
                         sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
                     )
 
-                    if (manuellOppgave.validationResult.status == Status.INVALID) {
-                        handleManuellOppgaveInvalid(
+                    when (manuellOppgave.validationResult.status) {
+                        Status.INVALID -> handleManuellOppgaveInvalid(
                             manuellOppgave,
                             sm2013ApprecTopicName,
                             kafkaproducerApprec,
                             sm2013InvalidHandlingTopic,
                             kafkaproducerreceivedSykmelding,
                             loggingMeta)
-                    } else {
-                        kafkaproducerreceivedSykmelding.send(ProducerRecord(
+                        Status.OK -> handleManuellOppgaveOk(
+                            manuellOppgave,
                             sm2013AutomaticHandlingTopic,
-                            manuellOppgave.receivedSykmelding.sykmelding.id,
-                            manuellOppgave.receivedSykmelding)
+                            kafkaproducerreceivedSykmelding,
+                            loggingMeta
                         )
-                        log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
+                        else -> call.respond(HttpStatusCode.BadRequest)
                     }
                     call.respond(HttpStatusCode.OK)
                 } else {
-                    log.warn("Henting av komplettManuellOppgave returente null")
+                    log.warn("Henting av komplettManuellOppgave returente null manuelloppgaveid, {}", manuellOppgaveId)
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             } else {
+                log.error("Oppdatering av oppdaterValidationResuts feilet manuelloppgaveid, {}", manuellOppgaveId)
                 call.respond(HttpStatusCode.InternalServerError)
             }
         }
     }
+}
+
+fun handleManuellOppgaveOk(
+    manuellOppgave: ManuellOppgave,
+    sm2013AutomaticHandlingTopic: String,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    loggingMeta: LoggingMeta
+) {
+    kafkaproducerreceivedSykmelding.send(ProducerRecord(
+        sm2013AutomaticHandlingTopic,
+        manuellOppgave.receivedSykmelding.sykmelding.id,
+        manuellOppgave.receivedSykmelding))
+
+        log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
 }
 
 fun handleManuellOppgaveInvalid(
@@ -83,6 +98,12 @@ fun handleManuellOppgaveInvalid(
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     loggingMeta: LoggingMeta
 ) {
+
+    kafkaproducerreceivedSykmelding.send(ProducerRecord(
+        sm2013InvalidHandlingTopic,
+        manuellOppgave.receivedSykmelding.sykmelding.id,
+        manuellOppgave.receivedSykmelding)
+    )
 
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,
@@ -95,12 +116,6 @@ fun handleManuellOppgaveInvalid(
         senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
         mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
         validationResult = manuellOppgave.validationResult
-    )
-
-    kafkaproducerreceivedSykmelding.send(ProducerRecord(
-        sm2013InvalidHandlingTopic,
-        manuellOppgave.receivedSykmelding.sykmelding.id,
-        manuellOppgave.receivedSykmelding)
     )
 
     sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)

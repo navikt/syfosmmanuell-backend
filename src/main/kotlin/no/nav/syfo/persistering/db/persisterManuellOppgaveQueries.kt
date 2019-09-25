@@ -1,4 +1,4 @@
-package no.nav.syfo.persistering
+package no.nav.syfo.persistering.db
 
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.model.ManuellOppgave
@@ -54,12 +54,13 @@ fun DatabaseInterface.oppdaterValidationResults(manueloppgaveId: String, validat
         val status = connection.prepareStatement(
             """
             UPDATE MANUELLOPPGAVE
-            SET validationResult = ?
+            SET validationResult = ?, ferdigstilt = ?
             WHERE id = ?;
             """
         ).use {
             it.setObject(1, validationResult.toPGObject())
-            it.setString(2, manueloppgaveId)
+            it.setBoolean(2, true)
+            it.setString(3, manueloppgaveId)
             it.executeUpdate()
         }
         connection.commit()

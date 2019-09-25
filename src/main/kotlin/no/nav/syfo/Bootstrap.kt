@@ -31,8 +31,8 @@ import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.persistering.erOpprettManuellOppgave
-import no.nav.syfo.persistering.opprettManuellOppgave
+import no.nav.syfo.persistering.db.erOpprettManuellOppgave
+import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.vault.Vault
 import org.apache.kafka.clients.consumer.KafkaConsumer
