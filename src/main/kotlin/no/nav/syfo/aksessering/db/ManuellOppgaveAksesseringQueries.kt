@@ -14,10 +14,12 @@ fun DatabaseInterface.hentManuellOppgaver(pasientFnr: String): List<ManuellOppga
             """
                 SELECT id,receivedsykmelding,validationresult
                 FROM MANUELLOPPGAVE  
-                WHERE pasientfnr=?;
+                WHERE pasientfnr=? 
+                AND ferdigstilt=?;
                 """
         ).use {
             it.setString(1, pasientFnr)
+            it.setBoolean(2, false)
             it.executeQuery().toList { toManuellOppgaveDTO() }
         }
     }
