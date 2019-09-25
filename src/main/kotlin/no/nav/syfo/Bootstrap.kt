@@ -33,12 +33,8 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.persistering.erOpprettManuellOppgave
 import no.nav.syfo.persistering.opprettManuellOppgave
-import no.nav.syfo.service.FindNAVKontorService
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.vault.Vault
-import no.nav.syfo.ws.createPort
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
-import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -53,8 +49,6 @@ val objectMapper: ObjectMapper = ObjectMapper()
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.sminfotrygd")
 
 val backgroundTasksContext = Executors.newFixedThreadPool(4).asCoroutineDispatcher() + MDCContext()
-
-const val NAV_OPPFOLGING_UTLAND_KONTOR_NR = "0393"
 
 @KtorExperimentalAPI
 fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()) {
@@ -104,21 +98,11 @@ fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()
 
     val consumerProperties = kafkaBaseConfig.toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class)
 
-    val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
-        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
-    }
-
-    val arbeidsfordelingV1 = createPort<ArbeidsfordelingV1>(env.arbeidsfordelingV1EndpointURL) {
-        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
-    }
-
     launchListeners(
         applicationState,
         env,
         consumerProperties,
-        database,
-        personV3,
-        arbeidsfordelingV1)
+        database)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -138,9 +122,7 @@ fun launchListeners(
     applicationState: ApplicationState,
     env: Environment,
     consumerProperties: Properties,
-    database: Database,
-    personV3: PersonV3,
-    arbeidsfordelingV1: ArbeidsfordelingV1
+    database: Database
 ) {
     val kafkaconsumermanuellOppgave = KafkaConsumer<String, String>(consumerProperties)
 
@@ -152,9 +134,7 @@ fun launchListeners(
                 blockingApplicationLogic(
                     applicationState,
                     kafkaconsumermanuellOppgave,
-                    database,
-                    personV3,
-                    arbeidsfordelingV1)
+                    database)
     }
 
     applicationState.ready = true
@@ -164,9 +144,7 @@ fun launchListeners(
 suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
-    database: Database,
-    personV3: PersonV3,
-    arbeidsfordelingV1: ArbeidsfordelingV1
+    database: Database
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
@@ -181,9 +159,7 @@ suspend fun blockingApplicationLogic(
             handleMessage(
                 receivedManuellOppgave,
                 loggingMeta,
-                database,
-                personV3,
-                arbeidsfordelingV1)
+                database)
         }
         delay(100)
     }
@@ -193,9 +169,7 @@ suspend fun blockingApplicationLogic(
 suspend fun handleMessage(
     manuellOppgave: ManuellOppgave,
     loggingMeta: LoggingMeta,
-    database: Database,
-    personV3: PersonV3,
-    arbeidsfordelingV1: ArbeidsfordelingV1
+    database: Database
 ) {
     wrapExceptions(loggingMeta) {
         log.info("Mottok ein manuell oppgave, {}", fields(loggingMeta))
@@ -205,13 +179,8 @@ suspend fun handleMessage(
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
-           /* val findNAVKontorService = FindNAVKontorService(manuellOppgave.receivedSykmelding, personV3, arbeidsfordelingV1, loggingMeta)
-            val behandlendeEnhet = findNAVKontorService.finnBehandlendeEnhet()
-
-          */
-
-            database.opprettManuellOppgave(manuellOppgave, NAV_OPPFOLGING_UTLAND_KONTOR_NR)
-            log.info("Manuell oppgave lagret i databasen, for tildeltEnhetsnr: {}, {}", NAV_OPPFOLGING_UTLAND_KONTOR_NR, fields(loggingMeta))
+            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.behandlendeEnhet)
+            log.info("Manuell oppgave lagret i databasen, for tildeltEnhetsnr: {}, {}", manuellOppgave.behandlendeEnhet, fields(loggingMeta))
             MESSAGE_STORED_IN_DB_COUNTER.inc()
 
             // TODO poste på modia hendelse topic, med manuell oppgaveid(manuellOppgave.receivedSykmelding.sykmelding.id)

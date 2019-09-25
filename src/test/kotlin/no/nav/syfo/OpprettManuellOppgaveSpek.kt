@@ -40,8 +40,8 @@ object OpprettManuellOppgaveSpek : Spek({
             val manuellOppgave = ManuellOppgave(
                 receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
                 validationResult = ValidationResult(Status.OK, emptyList()),
-                apprec = objectMapper.readValue(Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(Charsets.UTF_8))
-
+                apprec = objectMapper.readValue(Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(Charsets.UTF_8)),
+                behandlendeEnhet = "1234"
             )
             database.opprettManuellOppgave(manuellOppgave, "1354")
         }

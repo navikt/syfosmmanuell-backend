@@ -33,7 +33,7 @@ fun DatabaseInterface.hentKomplettManuellOppgave(manuellOppgaveId: String): List
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT receivedsykmelding,validationresult,apprec
+                SELECT receivedsykmelding,validationresult,apprec,tildeltenhetsnr
                 FROM MANUELLOPPGAVE  
                 WHERE id=?;
                 """
@@ -47,5 +47,6 @@ fun ResultSet.toManuellOppgave(): ManuellOppgave =
     ManuellOppgave(
         receivedSykmelding = objectMapper.readValue(getString("receivedsykmelding")),
         validationResult = objectMapper.readValue(getString("validationresult")),
-        apprec = objectMapper.readValue(getString("apprec"))
+        apprec = objectMapper.readValue(getString("apprec")),
+        behandlendeEnhet = getString("tildeltenhetsnr").trim()
     )
