@@ -41,4 +41,4 @@ jobs:
         with:
           cluster: dev-fss
           team: teamsykefravr
-          resource: naiserator-dev.yaml
+          resources: naiserator-dev.yaml
