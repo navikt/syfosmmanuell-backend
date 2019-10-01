@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
+      - name: Run tests
+        run: |
+          ./gradlew test
       - name: Build jar
         run: |
           ./gradlew shadowJar -x test
