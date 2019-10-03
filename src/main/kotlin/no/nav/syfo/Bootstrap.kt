@@ -113,7 +113,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
             log.error("En uhåndtert feil oppstod, applikasjonen restarter {}",
                 fields(e.loggingMeta), e.cause)
         } finally {
-            applicationState.ready = false
+            applicationState.alive = false
         }
     }
 
