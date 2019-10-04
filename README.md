@@ -1,4 +1,5 @@
-![https://github.com/navikt/syfosmmanuell-backend/workflows/Deploy%20to%20dev%20and%20prod/badge.svg](Build status)
+[![Build status](https://github.com/navikt/syfosmmanuell-backend/workflows/Deploy%20to%20dev%20and%20prod/badge.svg)](https://github.com/navikt/syfosmmanuell-backend/workflows/Deploy%20to%20dev%20and%20prod/badge.svg)
+
 # SYFO mottak
 This project contains the backend for handling manual sykmelding, front end kode: https://github.com/navikt/syfosmmanuell
 
