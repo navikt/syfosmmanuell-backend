@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
@@ -61,5 +62,9 @@ fun createApplicationEngine(
                 log.error("Caught exception", cause)
                 throw cause
             }
+        }
+        install(CORS)
+        {
+            allowCredentials = true
         }
     }
