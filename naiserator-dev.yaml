@@ -45,5 +45,5 @@ spec:
       value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
     - name: MOUNT_PATH_VAULT
       value: /postgresql/preprod-fss
-    - name: SECURITY_TOKEN_SERVICE_URL
-      vaule: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
+    - name: SYFOSMMANUELL_URL
+      vaule: https://syfosmmanuell.nais.preprod.local
