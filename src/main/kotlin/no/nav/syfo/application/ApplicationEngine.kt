@@ -65,6 +65,7 @@ fun createApplicationEngine(
         }
         install(CORS)
         {
-            allowCredentials = true
+            allowSameOrigin = true
+            host("https://syfosmmanuell.nais.preprod.local")
         }
     }
