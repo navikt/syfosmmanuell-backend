@@ -46,4 +46,4 @@ spec:
     - name: MOUNT_PATH_VAULT
       value: /postgresql/prod-fss
     - name: SYFOSMMANUELL_URL
-      vaule: syfosmmanuell.nais.adeo.no
+      value: syfosmmanuell.nais.adeo.no
