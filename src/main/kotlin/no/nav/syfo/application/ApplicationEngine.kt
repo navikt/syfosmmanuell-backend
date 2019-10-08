@@ -68,6 +68,7 @@ fun createApplicationEngine(
         install(CORS) {
             host(env.syfosmmanuellUrl)
             allowCredentials = true
+            allowNonSimpleContentTypes = true
             header(HttpHeaders.AccessControlAllowOrigin)
         }
     }
