@@ -122,5 +122,28 @@ object CORSSpek : Spek({
             }
         }
 
+        it("Pre flight custom host") {
+            with(TestApplicationEngine()) {
+                start()
+                application.install(CORS) {
+                    host("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
+                    allowNonSimpleContentTypes = true
+                }
+                val applicationState = ApplicationState()
+                applicationState.ready = true
+                applicationState.alive = true
+                application.routing { registerNaisApi(applicationState) }
+
+                with(handleRequest(HttpMethod.Options, "/is_ready") {
+                    addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
+                    addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.OK
+                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual "https://syfosmmanuell.nais.preprod.local"
+                    response.headers[HttpHeaders.AccessControlAllowHeaders] shouldEqual "Content-Type"
+                    response.headers[HttpHeaders.Vary] shouldEqual HttpHeaders.Origin
+                }
+            }
+        }
     }
 })

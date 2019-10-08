@@ -8,7 +8,6 @@ import io.ktor.application.install
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
@@ -66,5 +65,6 @@ fun createApplicationEngine(
         }
         install(CORS) {
             host(env.syfosmmanuellUrl, schemes = listOf("http", "https"))
+            allowNonSimpleContentTypes = true
         }
     }
