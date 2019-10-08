@@ -46,4 +46,4 @@ spec:
     - name: MOUNT_PATH_VAULT
       value: /postgresql/preprod-fss
     - name: SYFOSMMANUELL_URL
-      vaule: https://syfosmmanuell.nais.preprod.local
+      vaule: syfosmmanuell.nais.preprod.local
