@@ -67,14 +67,15 @@ fun createApplicationEngine(
             }
         }
         install(CORS) {
-            host(env.syfosmmanuellUrl, schemes = listOf("http", "https"))
-            allowCredentials = true
+            anyHost()
+            /*host(env.syfosmmanuellUrl, schemes = listOf("http", "https"))
             exposeHeader("location")
             method(HttpMethod.Post)
             method(HttpMethod.Get)
             method(HttpMethod.Options)
             method(HttpMethod.Delete)
             header("Content-Type")
+            header("fnr")*/
         }
 
         install(CallLogging) {
