@@ -6,12 +6,10 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CORS
-import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
-import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
@@ -26,7 +24,6 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.slf4j.event.Level
 
 fun createApplicationEngine(
     env: Environment,
@@ -67,11 +64,6 @@ fun createApplicationEngine(
             }
         }
         install(CORS) {
-            host(env.syfosmmanuellUrl, schemes = listOf("https"))
-            // anyHost() TODO this works....
-        }
-
-        install(CallLogging) {
-            level = Level.INFO
+            host(env.syfosmmanuellUrl, schemes = listOf("https","https"))
         }
     }
