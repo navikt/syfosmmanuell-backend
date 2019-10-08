@@ -84,7 +84,7 @@ object CORSSpek : Spek({
             with(TestApplicationEngine()) {
                 start()
                 application.install(CORS) {
-                    host("my-host")
+                    host("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
                 }
                 val applicationState = ApplicationState()
                 applicationState.ready = true
@@ -92,10 +92,10 @@ object CORSSpek : Spek({
                 application.routing { registerNaisApi(applicationState) }
 
                 with(handleRequest(HttpMethod.Get, "/is_ready") {
-                    addHeader(HttpHeaders.Origin, "http://my-host")
+                    addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
                 }) {
                     response.status() shouldEqual HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual "http://my-host"
+                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual "https://syfosmmanuell.nais.preprod.local"
                     response.content shouldEqual "I'm ready! :)"
                 }
             }
