@@ -9,9 +9,9 @@ import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
+import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
@@ -67,18 +67,12 @@ fun createApplicationEngine(
             }
         }
         install(CORS) {
-            anyHost()
-            /*host(env.syfosmmanuellUrl, schemes = listOf("http", "https"))
-            exposeHeader("location")
-            method(HttpMethod.Post)
-            method(HttpMethod.Get)
-            method(HttpMethod.Options)
-            method(HttpMethod.Delete)
-            header("Content-Type")
-            header("fnr")*/
+            host(env.syfosmmanuellUrl, schemes = listOf("https"))
+            // anyHost() TODO this works....
         }
 
         install(CallLogging) {
-            level = Level.INFO
+            level = Level.TRACE
+            filter { call -> call.request.path().startsWith("/api/v1//hentManuellOppgave") }
         }
     }
