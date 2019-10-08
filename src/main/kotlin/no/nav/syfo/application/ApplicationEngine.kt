@@ -9,6 +9,7 @@ import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
@@ -67,6 +68,13 @@ fun createApplicationEngine(
         }
         install(CORS) {
             host(env.syfosmmanuellUrl, schemes = listOf("http", "https"))
+            allowCredentials = true
+            exposeHeader("location")
+            method(HttpMethod.Post)
+            method(HttpMethod.Get)
+            method(HttpMethod.Options)
+            method(HttpMethod.Delete)
+            header("Content-Type")
         }
 
         install(CallLogging) {
