@@ -16,7 +16,6 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import java.time.Duration
 import no.nav.syfo.Environment
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
@@ -67,8 +66,5 @@ fun createApplicationEngine(
         }
         install(CORS) {
             host(env.syfosmmanuellUrl)
-            allowCredentials = true
-            allowNonSimpleContentTypes = true
-            header(HttpHeaders.AccessControlAllowOrigin)
         }
     }
