@@ -73,6 +73,5 @@ fun createApplicationEngine(
 
         install(CallLogging) {
             level = Level.DEBUG
-            filter { call -> call.request.path().startsWith("/api/v1//hentManuellOppgave") }
         }
     }
