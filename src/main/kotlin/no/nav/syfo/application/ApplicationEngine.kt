@@ -64,6 +64,6 @@ fun createApplicationEngine(
             }
         }
         install(CORS) {
-            host(env.syfosmmanuellUrl, schemes = listOf("https","https"))
+            host(env.syfosmmanuellUrl, schemes = listOf("https", "https"))
         }
     }

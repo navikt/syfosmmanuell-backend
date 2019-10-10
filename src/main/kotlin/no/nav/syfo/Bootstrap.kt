@@ -11,7 +11,6 @@ import java.time.Duration
 import java.util.Properties
 import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
@@ -46,7 +45,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
     .registerKotlinModule()
     .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
-val log: Logger = LoggerFactory.getLogger("no.nav.syfo.sminfotrygd")
+val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 
 val backgroundTasksContext = Executors.newFixedThreadPool(4).asCoroutineDispatcher() + MDCContext()
 
@@ -105,8 +104,8 @@ fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()
         database)
 }
 
-fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
-    GlobalScope.launch {
+fun CoroutineScope.createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
+    launch {
         try {
             action()
         } catch (e: TrackableException) {
@@ -118,7 +117,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
     }
 
 @KtorExperimentalAPI
-fun launchListeners(
+fun CoroutineScope.launchListeners(
     applicationState: ApplicationState,
     env: Environment,
     consumerProperties: Properties,
@@ -136,8 +135,6 @@ fun launchListeners(
                     kafkaconsumermanuellOppgave,
                     database)
     }
-
-    applicationState.ready = true
 }
 
 @KtorExperimentalAPI
