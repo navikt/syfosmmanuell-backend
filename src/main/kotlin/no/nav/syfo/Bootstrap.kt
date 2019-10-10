@@ -123,13 +123,12 @@ fun CoroutineScope.launchListeners(
     consumerProperties: Properties,
     database: Database
 ) {
-    val kafkaconsumermanuellOppgave = KafkaConsumer<String, String>(consumerProperties)
-
-    kafkaconsumermanuellOppgave.subscribe(
-        listOf(env.syfoSmManuellTopic)
-    )
     createListener(applicationState) {
+        val kafkaconsumermanuellOppgave = KafkaConsumer<String, String>(consumerProperties)
 
+        kafkaconsumermanuellOppgave.subscribe(
+            listOf(env.syfoSmManuellTopic)
+        )
                 blockingApplicationLogic(
                     applicationState,
                     kafkaconsumermanuellOppgave,
