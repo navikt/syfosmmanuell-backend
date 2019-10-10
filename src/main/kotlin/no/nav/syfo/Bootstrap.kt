@@ -135,6 +135,7 @@ fun CoroutineScope.launchListeners(
                     kafkaconsumermanuellOppgave,
                     database)
     }
+    applicationState.alive = true
 }
 
 @KtorExperimentalAPI
