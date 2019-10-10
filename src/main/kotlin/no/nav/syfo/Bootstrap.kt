@@ -89,6 +89,8 @@ fun main() {
         consumerProperties,
         database
     )
+
+    applicationState.ready = true
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
