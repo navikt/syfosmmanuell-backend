@@ -3,6 +3,7 @@ package no.nav.syfo.db
 import com.bettercloud.vault.VaultException
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.delay
+import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.vault.Vault
 import org.slf4j.LoggerFactory
 
@@ -12,9 +13,9 @@ class VaultCredentialService() {
     var leaseDuration: Long = 0
     var renewCredentialsTaskData: RenewCredentialsTaskData? = null
 
-    suspend fun runRenewCredentialsTask(condition: () -> Boolean) {
+    suspend fun runRenewCredentialsTask(applicationState: ApplicationState) {
         delay(leaseDuration)
-        while (condition()) {
+        while (applicationState.ready) {
             renewCredentialsTaskData?.run {
                 val credentials = getNewCredentials(
                     mountPath,

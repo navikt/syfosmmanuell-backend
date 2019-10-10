@@ -9,14 +9,11 @@ import io.ktor.util.KtorExperimentalAPI
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.Properties
-import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.slf4j.MDCContext
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
@@ -33,7 +30,6 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
-import no.nav.syfo.vault.Vault
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -47,38 +43,24 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 
-val backgroundTasksContext = Executors.newFixedThreadPool(4).asCoroutineDispatcher() + MDCContext()
-
 @KtorExperimentalAPI
-fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()) {
+fun main() {
     val env = Environment()
-    val credentials = objectMapper.readValue<VaultCredentials>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
+    val credentials =
+        objectMapper.readValue<VaultCredentials>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
 
     val vaultCredentialService = VaultCredentialService()
     val database = Database(env, vaultCredentialService)
 
     val applicationState = ApplicationState()
 
-    launch(backgroundTasksContext) {
-        try {
-            Vault.renewVaultTokenTask(applicationState)
-        } finally {
-            applicationState.ready = false
-        }
-    }
-
-    launch(backgroundTasksContext) {
-        try {
-            vaultCredentialService.runRenewCredentialsTask { applicationState.ready }
-        } finally {
-            applicationState.ready = false
-        }
-    }
+    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
 
     val manuellOppgaveService = ManuellOppgaveService(database)
 
     val kafkaBaseConfig = loadBaseConfig(env, credentials)
-    val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+    val producerProperties =
+        kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
     val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
     val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
 
@@ -90,34 +72,41 @@ fun main() = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()
         env.sm2013Apprec,
         kafkaproducerreceivedSykmelding,
         env.sm2013AutomaticHandlingTopic,
-        env.sm2013InvalidHandlingTopic)
+        env.sm2013InvalidHandlingTopic
+    )
     val applicationServer = ApplicationServer(applicationEngine)
 
     applicationServer.start()
 
-    val consumerProperties = kafkaBaseConfig.toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class)
+    val consumerProperties = kafkaBaseConfig.toConsumerConfig(
+        "${env.applicationName}-consumer",
+        valueDeserializer = StringDeserializer::class
+    )
 
     launchListeners(
         applicationState,
         env,
         consumerProperties,
-        database)
+        database
+    )
 }
 
-fun CoroutineScope.createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
-    launch {
+fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
+    GlobalScope.launch {
         try {
             action()
         } catch (e: TrackableException) {
-            log.error("En uhåndtert feil oppstod, applikasjonen restarter {}",
-                fields(e.loggingMeta), e.cause)
+            log.error(
+                "En uhåndtert feil oppstod, applikasjonen restarter {}",
+                fields(e.loggingMeta), e.cause
+            )
         } finally {
             applicationState.alive = false
         }
     }
 
 @KtorExperimentalAPI
-fun CoroutineScope.launchListeners(
+fun launchListeners(
     applicationState: ApplicationState,
     env: Environment,
     consumerProperties: Properties,
@@ -126,15 +115,13 @@ fun CoroutineScope.launchListeners(
     createListener(applicationState) {
         val kafkaconsumermanuellOppgave = KafkaConsumer<String, String>(consumerProperties)
 
-        kafkaconsumermanuellOppgave.subscribe(
-            listOf(env.syfoSmManuellTopic)
+        kafkaconsumermanuellOppgave.subscribe(listOf(env.syfoSmManuellTopic))
+        blockingApplicationLogic(
+            applicationState,
+            kafkaconsumermanuellOppgave,
+            database
         )
-                blockingApplicationLogic(
-                    applicationState,
-                    kafkaconsumermanuellOppgave,
-                    database)
     }
-    applicationState.alive = true
 }
 
 @KtorExperimentalAPI
@@ -156,7 +143,8 @@ suspend fun blockingApplicationLogic(
             handleMessage(
                 receivedManuellOppgave,
                 loggingMeta,
-                database)
+                database
+            )
         }
         delay(100)
     }
@@ -172,12 +160,17 @@ suspend fun handleMessage(
         log.info("Mottok ein manuell oppgave, {}", fields(loggingMeta))
 
         if (database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
-            log.error("Manuell oppgave med id {} allerede lagret i databasen, {}",
+            log.error(
+                "Manuell oppgave med id {} allerede lagret i databasen, {}",
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
             database.opprettManuellOppgave(manuellOppgave, manuellOppgave.behandlendeEnhet)
-            log.info("Manuell oppgave lagret i databasen, for tildeltEnhetsnr: {}, {}", manuellOppgave.behandlendeEnhet, fields(loggingMeta))
+            log.info(
+                "Manuell oppgave lagret i databasen, for tildeltEnhetsnr: {}, {}",
+                manuellOppgave.behandlendeEnhet,
+                fields(loggingMeta)
+            )
             MESSAGE_STORED_IN_DB_COUNTER.inc()
 
             // TODO poste på modia hendelse topic, med manuell oppgaveid(manuellOppgave.receivedSykmelding.sykmelding.id)
