@@ -67,6 +67,7 @@ fun createApplicationEngine(
         install(CORS) {
             method(HttpMethod.Get)
             method(HttpMethod.Post)
+            method(HttpMethod.Options)
             host(env.syfosmmanuellUrl, schemes = listOf("https", "https"))
         }
     }
