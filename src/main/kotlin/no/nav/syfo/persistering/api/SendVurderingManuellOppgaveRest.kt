@@ -5,7 +5,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Routing
-import io.ktor.routing.post
+import io.ktor.routing.put
 import io.ktor.routing.route
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.LoggingMeta
@@ -29,7 +29,7 @@ fun Routing.sendVurderingManuellOppgave(
     sm2013InvalidHandlingTopic: String
 ) {
     route("/api/v1") {
-        post("/vurderingmanuelloppgave/{manuelloppgaveId}") {
+        put("/vurderingmanuelloppgave/{manuelloppgaveId}") {
             val manuellOppgaveId = call.parameters["manuelloppgaveId"]!!
             log.info("Recived call to /api/v1/vurderingmanuelloppgave")
 
@@ -48,22 +48,26 @@ fun Routing.sendVurderingManuellOppgave(
                     )
 
                     when (manuellOppgave.validationResult.status) {
-                        Status.INVALID -> handleManuellOppgaveInvalid(
+                        Status.INVALID -> {handleManuellOppgaveInvalid(
                             manuellOppgave,
                             sm2013ApprecTopicName,
                             kafkaproducerApprec,
                             sm2013InvalidHandlingTopic,
                             kafkaproducerreceivedSykmelding,
                             loggingMeta)
-                        Status.OK -> handleManuellOppgaveOk(
-                            manuellOppgave,
-                            sm2013AutomaticHandlingTopic,
-                            kafkaproducerreceivedSykmelding,
-                            loggingMeta
-                        )
-                        else -> call.respond(HttpStatusCode.BadRequest)
+                            call.respond(HttpStatusCode.NoContent)}
+                        Status.OK -> {
+                            handleManuellOppgaveOk(
+                                manuellOppgave,
+                                sm2013AutomaticHandlingTopic,
+                                kafkaproducerreceivedSykmelding,
+                                loggingMeta)
+                            call.respond(HttpStatusCode.NoContent)}
+                        else -> {call.respond(HttpStatusCode.BadRequest)
+                            log.error("Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
+                                manuellOppgaveId, fields(loggingMeta))
+                            }
                     }
-                    call.respond(HttpStatusCode.OK)
                 } else {
                     log.warn("Henting av komplettManuellOppgave returente null manuelloppgaveid, {}", manuellOppgaveId)
                     call.respond(HttpStatusCode.InternalServerError)
