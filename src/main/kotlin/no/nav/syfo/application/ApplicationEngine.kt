@@ -68,6 +68,7 @@ fun createApplicationEngine(
             method(HttpMethod.Get)
             method(HttpMethod.Post)
             method(HttpMethod.Options)
+            header("Content-Type")
             host(env.syfosmmanuellUrl, schemes = listOf("https", "https"))
         }
     }
