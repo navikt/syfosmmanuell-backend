@@ -22,6 +22,7 @@ import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -34,7 +35,9 @@ fun createApplicationEngine(
     sm2013ApprecTopicName: String,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     sm2013AutomaticHandlingTopic: String,
-    sm2013InvalidHandlingTopic: String
+    sm2013InvalidHandlingTopic: String,
+    sm2013BehandlingsUtfallToipic: String,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         routing {
@@ -46,7 +49,9 @@ fun createApplicationEngine(
                 sm2013ApprecTopicName,
                 kafkaproducerreceivedSykmelding,
                 sm2013AutomaticHandlingTopic,
-                sm2013InvalidHandlingTopic
+                sm2013InvalidHandlingTopic,
+                sm2013BehandlingsUtfallToipic,
+                kafkaproducervalidationResult
                 )
         }
         install(ContentNegotiation) {

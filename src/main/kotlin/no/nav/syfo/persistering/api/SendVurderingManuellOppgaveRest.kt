@@ -26,7 +26,9 @@ fun Routing.sendVurderingManuellOppgave(
     sm2013ApprecTopicName: String,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     sm2013AutomaticHandlingTopic: String,
-    sm2013InvalidHandlingTopic: String
+    sm2013InvalidHandlingTopic: String,
+    sm2013BehandlingsUtfallToipic: String,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>
 ) {
     route("/api/v1") {
         put("/vurderingmanuelloppgave/{manuelloppgaveId}") {
@@ -48,22 +50,24 @@ fun Routing.sendVurderingManuellOppgave(
                     )
 
                     when (manuellOppgave.validationResult.status) {
-                        Status.INVALID -> {handleManuellOppgaveInvalid(
+                        Status.INVALID -> { handleManuellOppgaveInvalid(
                             manuellOppgave,
                             sm2013ApprecTopicName,
                             kafkaproducerApprec,
                             sm2013InvalidHandlingTopic,
                             kafkaproducerreceivedSykmelding,
+                            sm2013BehandlingsUtfallToipic,
+                            kafkaproducervalidationResult,
                             loggingMeta)
-                            call.respond(HttpStatusCode.NoContent)}
+                            call.respond(HttpStatusCode.NoContent) }
                         Status.OK -> {
                             handleManuellOppgaveOk(
                                 manuellOppgave,
                                 sm2013AutomaticHandlingTopic,
                                 kafkaproducerreceivedSykmelding,
                                 loggingMeta)
-                            call.respond(HttpStatusCode.NoContent)}
-                        else -> {call.respond(HttpStatusCode.BadRequest)
+                            call.respond(HttpStatusCode.NoContent) }
+                        else -> { call.respond(HttpStatusCode.BadRequest)
                             log.error("Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
                                 manuellOppgaveId, fields(loggingMeta))
                             }
@@ -100,6 +104,8 @@ fun handleManuellOppgaveInvalid(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     sm2013InvalidHandlingTopic: String,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    sm2013BehandlingsUtfallToipic: String,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     loggingMeta: LoggingMeta
 ) {
 
@@ -108,6 +114,12 @@ fun handleManuellOppgaveInvalid(
         manuellOppgave.receivedSykmelding.sykmelding.id,
         manuellOppgave.receivedSykmelding)
     )
+    sendValidationResult(
+        manuellOppgave.validationResult,
+        kafkaproducervalidationResult,
+        sm2013BehandlingsUtfallToipic,
+        manuellOppgave.receivedSykmelding,
+        loggingMeta)
 
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,
@@ -132,4 +144,18 @@ fun sendReceipt(
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
+}
+
+fun sendValidationResult(
+    validationResult: ValidationResult,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    sm2013BehandlingsUtfallToipic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    loggingMeta: LoggingMeta
+) {
+
+    kafkaproducervalidationResult.send(
+        ProducerRecord(sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult)
+    )
+    log.info("Validation results send to kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
 }

@@ -27,6 +27,7 @@ import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
@@ -63,6 +64,7 @@ fun main() {
         kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
     val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
     val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
+    val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
 
     val applicationEngine = createApplicationEngine(
         env,
@@ -72,7 +74,9 @@ fun main() {
         env.sm2013Apprec,
         kafkaproducerreceivedSykmelding,
         env.sm2013AutomaticHandlingTopic,
-        env.sm2013InvalidHandlingTopic
+        env.sm2013InvalidHandlingTopic,
+        env.sm2013BehandlingsUtfallToipic,
+        kafkaproducervalidationResult
     )
     val applicationServer = ApplicationServer(applicationEngine)
 
