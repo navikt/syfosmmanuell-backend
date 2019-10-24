@@ -47,3 +47,13 @@ spec:
       value: /postgresql/prod-fss
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.nais.adeo.no
+    - name: MQ_SYFOSERVICE_QUEUE_NAME
+      value: QA.P_EIA_SYFO_OUTBOUND
+    - name: MQ_HOST_NAME
+      value: a01apvl064.adeo.no
+    - name: MQ_PORT
+      value: '1414'
+    - name: MQ_GATEWAY_NAME
+      value: MPLSC04
+    - name: MQ_CHANNEL_NAME
+      value: P_SYFOSMMOTTAK

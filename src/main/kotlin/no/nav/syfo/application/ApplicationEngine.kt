@@ -16,6 +16,8 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import javax.jms.MessageProducer
+import javax.jms.Session
 import no.nav.syfo.Environment
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
@@ -37,7 +39,10 @@ fun createApplicationEngine(
     sm2013AutomaticHandlingTopic: String,
     sm2013InvalidHandlingTopic: String,
     sm2013BehandlingsUtfallToipic: String,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    syfoserviceQueueName: String,
+    session: Session,
+    syfoserviceProducer: MessageProducer
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         routing {
@@ -51,7 +56,10 @@ fun createApplicationEngine(
                 sm2013AutomaticHandlingTopic,
                 sm2013InvalidHandlingTopic,
                 sm2013BehandlingsUtfallToipic,
-                kafkaproducervalidationResult
+                kafkaproducervalidationResult,
+                syfoserviceQueueName,
+                session,
+                syfoserviceProducer
                 )
         }
         install(ContentNegotiation) {

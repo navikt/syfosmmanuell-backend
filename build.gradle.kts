@@ -11,6 +11,9 @@ val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.5.0"
 val smCommonVersion = "2019.09.25-05-44-08e26429f4e37cd57d99ba4d39fc74099a078b97"
+val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
+val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
+val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val jacksonVersion = "2.9.7"
 val spekVersion = "2.0.8"
 val kluentVersion = "1.39"
@@ -22,6 +25,7 @@ val flywayVersion = "5.2.4"
 val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
 val postgresEmbeddedVersion = "0.13.1"
+val javaTimeAdapterVersion = "1.1.3"
 
 plugins {
     kotlin("jvm") version "1.3.50"
@@ -57,6 +61,13 @@ dependencies {
     implementation("no.nav.syfo.sm:syfosm-common-rest-sts:$smCommonVersion")
     implementation("no.nav.syfo.sm:syfosm-common-ws:$smCommonVersion")
     implementation("no.nav.syfo.sm:syfosm-common-networking:$smCommonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-mq:$smCommonVersion")
+
+    implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
+    implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
+    implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
+
+    implementation("com.migesok:jaxb-java-time-adapters:$javaTimeAdapterVersion")
 
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")

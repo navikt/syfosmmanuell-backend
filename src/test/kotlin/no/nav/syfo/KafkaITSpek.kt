@@ -23,13 +23,14 @@ object KafkaITSpek : Spek({
             topicNames = listOf(topic)
     )
 
-    val credentials = VaultCredentials("", "")
+    val credentials = VaultCredentials("", "", "", "")
 
     val config = Environment(
         kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         applicationName = "syfosminfotrygd",
         mountPathVault = "", databaseName = "", syfosmmanuellbackendDBURL = "url",
-        syfosmmanuellUrl = "https://syfosmmanuell"
+        syfosmmanuellUrl = "https://syfosmmanuell", mqHostname = "mqhost", mqPort = 1342,
+        mqGatewayName = "mqGateway", mqChannelName = "syfomottak", syfoserviceQueueName = ""
     )
 
     fun Properties.overrideForTest(): Properties = apply {

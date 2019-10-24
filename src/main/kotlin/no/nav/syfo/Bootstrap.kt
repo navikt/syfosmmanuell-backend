@@ -9,6 +9,7 @@ import io.ktor.util.KtorExperimentalAPI
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.Properties
+import javax.jms.Session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -28,6 +29,8 @@ import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.mq.connectionFactory
+import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
@@ -66,6 +69,11 @@ fun main() {
     val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
     val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
 
+    val connection = connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword)
+    connection.start()
+    val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
+    val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
+
     val applicationEngine = createApplicationEngine(
         env,
         applicationState,
@@ -76,9 +84,13 @@ fun main() {
         env.sm2013AutomaticHandlingTopic,
         env.sm2013InvalidHandlingTopic,
         env.sm2013BehandlingsUtfallToipic,
-        kafkaproducervalidationResult
+        kafkaproducervalidationResult,
+        env.syfoserviceQueueName,
+        session,
+        syfoserviceProducer
     )
-    val applicationServer = ApplicationServer(applicationEngine)
+
+    val applicationServer = ApplicationServer(applicationEngine, connection)
 
     applicationServer.start()
 

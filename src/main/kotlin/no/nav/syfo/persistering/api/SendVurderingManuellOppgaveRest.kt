@@ -7,7 +7,11 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.put
 import io.ktor.routing.route
+import java.io.StringReader
+import javax.jms.MessageProducer
+import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments.fields
+import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.LoggingMeta
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
@@ -17,6 +21,9 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.service.ManuellOppgaveService
+import no.nav.syfo.service.notifySyfoService
+import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
+import no.nav.syfo.util.fellesformatUnmarshaller
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
@@ -28,7 +35,10 @@ fun Routing.sendVurderingManuellOppgave(
     sm2013AutomaticHandlingTopic: String,
     sm2013InvalidHandlingTopic: String,
     sm2013BehandlingsUtfallToipic: String,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    syfoserviceQueueName: String,
+    session: Session,
+    syfoserviceProducer: MessageProducer
 ) {
     route("/api/v1") {
         put("/vurderingmanuelloppgave/{manuelloppgaveId}") {
@@ -65,7 +75,10 @@ fun Routing.sendVurderingManuellOppgave(
                                 manuellOppgave,
                                 sm2013AutomaticHandlingTopic,
                                 kafkaproducerreceivedSykmelding,
-                                loggingMeta)
+                                loggingMeta,
+                                syfoserviceQueueName,
+                                session,
+                                syfoserviceProducer)
                             call.respond(HttpStatusCode.NoContent) }
                         else -> { call.respond(HttpStatusCode.BadRequest)
                             log.error("Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
@@ -88,8 +101,22 @@ fun handleManuellOppgaveOk(
     manuellOppgave: ManuellOppgave,
     sm2013AutomaticHandlingTopic: String,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    loggingMeta: LoggingMeta
+    loggingMeta: LoggingMeta,
+    syfoserviceQueueName: String,
+    session: Session,
+    syfoserviceProducer: MessageProducer
 ) {
+    notifySyfoService(
+        session = session,
+        receiptProducer = syfoserviceProducer,
+        ediLoggId = manuellOppgave.receivedSykmelding.navLogId,
+        sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
+        msgId = manuellOppgave.receivedSykmelding.msgId,
+        healthInformation = extractHelseOpplysningerArbeidsuforhet(
+            fellesformatUnmarshaller.unmarshal(StringReader(manuellOppgave.receivedSykmelding.fellesformat)) as XMLEIFellesformat)
+        )
+    log.info("Message send to syfoService {}, {}", syfoserviceQueueName, fields(loggingMeta))
+
     kafkaproducerreceivedSykmelding.send(ProducerRecord(
         sm2013AutomaticHandlingTopic,
         manuellOppgave.receivedSykmelding.sykmelding.id,
