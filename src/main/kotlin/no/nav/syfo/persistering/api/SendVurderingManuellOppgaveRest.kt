@@ -78,7 +78,9 @@ fun Routing.sendVurderingManuellOppgave(
                                 loggingMeta,
                                 syfoserviceQueueName,
                                 session,
-                                syfoserviceProducer)
+                                syfoserviceProducer,
+                                sm2013ApprecTopicName,
+                                kafkaproducerApprec)
                             call.respond(HttpStatusCode.NoContent) }
                         else -> { call.respond(HttpStatusCode.BadRequest)
                             log.error("Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
@@ -104,25 +106,41 @@ fun handleManuellOppgaveOk(
     loggingMeta: LoggingMeta,
     syfoserviceQueueName: String,
     session: Session,
-    syfoserviceProducer: MessageProducer
+    syfoserviceProducer: MessageProducer,
+    sm2013ApprecTopicName: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
+    val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(manuellOppgave.receivedSykmelding.fellesformat)) as XMLEIFellesformat
+
     notifySyfoService(
         session = session,
         receiptProducer = syfoserviceProducer,
         ediLoggId = manuellOppgave.receivedSykmelding.navLogId,
         sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
         msgId = manuellOppgave.receivedSykmelding.msgId,
-        healthInformation = extractHelseOpplysningerArbeidsuforhet(
-            fellesformatUnmarshaller.unmarshal(StringReader(manuellOppgave.receivedSykmelding.fellesformat)) as XMLEIFellesformat)
-        )
+        healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat))
     log.info("Message send to syfoService {}, {}", syfoserviceQueueName, fields(loggingMeta))
 
     kafkaproducerreceivedSykmelding.send(ProducerRecord(
         sm2013AutomaticHandlingTopic,
         manuellOppgave.receivedSykmelding.sykmelding.id,
         manuellOppgave.receivedSykmelding))
+    log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
 
-        log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
+    val apprec = Apprec(
+        ediloggid = manuellOppgave.apprec.ediloggid,
+        msgId = manuellOppgave.apprec.msgId,
+        msgTypeVerdi = manuellOppgave.apprec.msgTypeVerdi,
+        msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
+        genDate = manuellOppgave.apprec.genDate,
+        apprecStatus = ApprecStatus.OK,
+        tekstTilSykmelder = null,
+        senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
+        mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
+        validationResult = null
+    )
+
+    sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
 }
 
 fun handleManuellOppgaveInvalid(
