@@ -141,6 +141,8 @@ fun handleManuellOppgaveInvalid(
         manuellOppgave.receivedSykmelding.sykmelding.id,
         manuellOppgave.receivedSykmelding)
     )
+    log.info("Message send to kafka {}, {}", sm2013InvalidHandlingTopic, fields(loggingMeta))
+
     sendValidationResult(
         manuellOppgave.validationResult,
         kafkaproducervalidationResult,
