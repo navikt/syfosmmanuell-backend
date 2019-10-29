@@ -112,7 +112,7 @@ fun generateMedisinskVurdering(
 
 fun generateDiagnose() = ICPC2.values()[Random.nextInt(ICPC2.values().size)].toDiagnose()
 
-fun Kodeverk.toDiagnose() = Diagnose(system = oid, kode = codeValue)
+fun Kodeverk.toDiagnose() = Diagnose(system = oid, kode = codeValue, tekst = text)
 
 fun generatePeriode(
     fom: LocalDate = LocalDate.now(),

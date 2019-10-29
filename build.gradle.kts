@@ -10,7 +10,7 @@ val ktorVersion = "1.2.5"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.5.0"
-val smCommonVersion = "2019.09.25-05-44-08e26429f4e37cd57d99ba4d39fc74099a078b97"
+val smCommonVersion = "1.bba46d9"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
@@ -33,6 +33,9 @@ plugins {
     id("org.jmailen.kotlinter") version "2.1.0"
 }
 
+val githubUser: String by project
+val githubPassword: String by project
+
 repositories {
     mavenCentral()
     jcenter()
@@ -40,6 +43,13 @@ repositories {
     maven(url = "https://dl.bintray.com/spekframework/spek-dev")
     maven(url = "https://kotlin.bintray.com/kotlinx")
     maven(url = "http://packages.confluent.io/maven/")
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
+        credentials {
+            username = githubUser
+            password = githubPassword
+        }
+    }
     maven(url = "https://oss.sonatype.org/content/groups/staging/")
 }
 
@@ -56,12 +66,12 @@ dependencies {
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
-    implementation("no.nav.syfo.sm:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.syfo.sm:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.syfo.sm:syfosm-common-rest-sts:$smCommonVersion")
-    implementation("no.nav.syfo.sm:syfosm-common-ws:$smCommonVersion")
-    implementation("no.nav.syfo.sm:syfosm-common-networking:$smCommonVersion")
-    implementation("no.nav.syfo.sm:syfosm-common-mq:$smCommonVersion")
+    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
+    implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
+    implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
+    implementation("no.nav.helse:syfosm-common-ws:$smCommonVersion")
+    implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
+    implementation("no.nav.helse:syfosm-common-mq:$smCommonVersion")
 
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
