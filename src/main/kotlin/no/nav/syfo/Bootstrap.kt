@@ -230,7 +230,8 @@ suspend fun handleMessage(
                 behandlesAvApplikasjon = "FS22",
                 beskrivelse = "Trykk på denne linken får å løse den manuelle oppgaven https://syfosmmanuell.nais.preprod.local/?pnr=",
                 tema = "SYM",
-                oppgavetype = "TILBAKEDATERING_SYM",
+                behandlingstype = "ae0239",
+                oppgavetype = "BEH_EL_SYM",
                 aktivDato = LocalDate.now(),
                 fristFerdigstillelse = finnFristForFerdigstillingAvOppgave(LocalDate.now()),
                 prioritet = "HOY"
