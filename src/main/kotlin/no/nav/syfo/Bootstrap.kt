@@ -1,13 +1,19 @@
 package no.nav.syfo
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.apache.Apache
+import io.ktor.client.features.json.JacksonSerializer
+import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.nio.file.Paths
 import java.time.Duration
+import java.time.LocalDate
 import java.util.Properties
 import javax.jms.Session
 import kotlinx.coroutines.CoroutineScope
@@ -15,18 +21,24 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
+import no.nav.syfo.client.OppgaveClient
+import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.client.finnFristForFerdigstillingAvOppgave
 import no.nav.syfo.db.Database
 import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
+import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.OpprettOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.mq.connectionFactory
@@ -74,6 +86,19 @@ fun main() {
     val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
     val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
 
+    val httpClient = HttpClient(Apache) {
+        install(JsonFeature) {
+            serializer = JacksonSerializer {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            }
+        }
+    }
+    val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
+    val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
+
     val applicationEngine = createApplicationEngine(
         env,
         applicationState,
@@ -103,7 +128,8 @@ fun main() {
         applicationState,
         env,
         consumerProperties,
-        database
+        database,
+        oppgaveClient
     )
 
     applicationState.ready = true
@@ -128,7 +154,8 @@ fun launchListeners(
     applicationState: ApplicationState,
     env: Environment,
     consumerProperties: Properties,
-    database: Database
+    database: Database,
+    oppgaveClient: OppgaveClient
 ) {
     createListener(applicationState) {
         val kafkaconsumermanuellOppgave = KafkaConsumer<String, String>(consumerProperties)
@@ -137,7 +164,8 @@ fun launchListeners(
         blockingApplicationLogic(
             applicationState,
             kafkaconsumermanuellOppgave,
-            database
+            database,
+            oppgaveClient
         )
     }
 }
@@ -146,7 +174,8 @@ fun launchListeners(
 suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
-    database: Database
+    database: Database,
+    oppgaveClient: OppgaveClient
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
@@ -161,7 +190,8 @@ suspend fun blockingApplicationLogic(
             handleMessage(
                 receivedManuellOppgave,
                 loggingMeta,
-                database
+                database,
+                oppgaveClient
             )
         }
         delay(100)
@@ -172,7 +202,8 @@ suspend fun blockingApplicationLogic(
 suspend fun handleMessage(
     manuellOppgave: ManuellOppgave,
     loggingMeta: LoggingMeta,
-    database: Database
+    database: Database,
+    oppgaveClient: OppgaveClient
 ) {
     wrapExceptions(loggingMeta) {
         log.info("Mottok ein manuell oppgave, {}", fields(loggingMeta))
@@ -191,8 +222,28 @@ suspend fun handleMessage(
             )
             MESSAGE_STORED_IN_DB_COUNTER.inc()
 
-            // TODO poste på modia hendelse topic, med manuell oppgaveid(manuellOppgave.receivedSykmelding.sykmelding.id)
-            // TODO pasient fnr manuellOppgave.receivedSykmelding.personNrLege
+            log.info("Create oppgave, {}", fields(loggingMeta))
+            val opprettOppgave = OpprettOppgave(
+                tildeltEnhetsnr = manuellOppgave.behandlendeEnhet,
+                aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
+                opprettetAvEnhetsnr = "9999",
+                behandlesAvApplikasjon = "FS22",
+                beskrivelse = "Trykk på denne linken får å løse den manuelle oppgaven https://syfosmmanuell.nais.preprod.local/?pnr=",
+                tema = "SYM",
+                oppgavetype = "TILBAKEDATERING_SYM",
+                aktivDato = LocalDate.now(),
+                fristFerdigstillelse = finnFristForFerdigstillingAvOppgave(LocalDate.now()),
+                prioritet = "HOY"
+            )
+
+            val oppgaveResultat = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId, loggingMeta)
+            if (!oppgaveResultat.duplikat) {
+                OPPRETT_OPPGAVE_COUNTER.inc()
+                log.info("Opprettet oppgave med {}, {} {}",
+                    StructuredArguments.keyValue("oppgaveId", oppgaveResultat.oppgaveId),
+                    StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
+                    fields(loggingMeta))
+            }
         }
     }
 }

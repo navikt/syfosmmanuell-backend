@@ -18,6 +18,7 @@ data class Environment(
     val syfosmmanuellUrl: String = getEnvVar("SYFOSMMANUELL_URL"),
     val sm2013BehandlingsUtfallToipic: String = getEnvVar("KAFKA_SM2013_BEHANDLING_TOPIC", "privat-syfo-sm2013-behandlingsUtfall"),
     val syfoserviceQueueName: String = getEnvVar("MQ_SYFOSERVICE_QUEUE_NAME"),
+    val oppgavebehandlingUrl: String = getEnvVar("OPPGAVEBEHANDLING_URL", "http://oppgave/api/v1/oppgaver"),
     override val mqHostname: String = getEnvVar("MQ_HOST_NAME"),
     override val mqPort: Int = getEnvVar("MQ_PORT").toInt(),
     override val mqGatewayName: String = getEnvVar("MQ_GATEWAY_NAME"),
