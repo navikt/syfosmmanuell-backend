@@ -28,7 +28,7 @@ val postgresEmbeddedVersion = "0.13.1"
 val javaTimeAdapterVersion = "1.1.3"
 
 plugins {
-    kotlin("jvm") version "1.3.50"
+    kotlin("jvm") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "4.0.4"
     id("org.jmailen.kotlinter") version "2.1.0"
 }
