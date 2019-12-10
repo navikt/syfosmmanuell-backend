@@ -46,6 +46,11 @@ import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
+import no.nav.syfo.util.JacksonKafkaSerializer
+import no.nav.syfo.util.LoggingMeta
+import no.nav.syfo.util.TrackableException
+import no.nav.syfo.util.wrapExceptions
+import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -238,11 +243,13 @@ suspend fun handleMessage(
             )
 
             val oppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
-                OPPRETT_OPPGAVE_COUNTER.inc()
-                log.info("Opprettet oppgave med {}, {} {}",
-                    StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-                    StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
-                    fields(loggingMeta))
+            OPPRETT_OPPGAVE_COUNTER.inc()
+            log.info(
+                "Opprettet oppgave med {}, {} {}",
+                StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+                StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
+                fields(loggingMeta)
+            )
         }
     }
 }

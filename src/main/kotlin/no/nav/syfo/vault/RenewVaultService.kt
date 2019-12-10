@@ -1,4 +1,4 @@
-package no.nav.syfo
+package no.nav.syfo.vault
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
