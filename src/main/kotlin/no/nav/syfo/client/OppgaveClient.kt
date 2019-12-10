@@ -37,7 +37,6 @@ class OppgaveClient constructor(private val url: String, private val oidcClient:
             header("X-Correlation-ID", msgId)
             parameter("tema", opprettOppgave.tema)
             parameter("oppgavetype", opprettOppgave.oppgavetype)
-            parameter("journalpostId", opprettOppgave.journalpostId)
             parameter("aktoerId", opprettOppgave.aktoerId)
             parameter("statuskategori", "AAPEN")
             parameter("sorteringsrekkefolge", "ASC")
