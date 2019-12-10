@@ -40,6 +40,7 @@ class OppgaveClient constructor(private val url: String, private val oidcClient:
             parameter("aktoerId", opprettOppgave.aktoerId)
             parameter("statuskategori", "AAPEN")
             parameter("sorteringsrekkefolge", "ASC")
+            parameter("beskrivelse",  opprettOppgave.beskrivelse)
             parameter("sorteringsfelt", "FRIST")
             parameter("limit", "10")
         }
