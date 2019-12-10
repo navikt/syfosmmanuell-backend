@@ -11,13 +11,12 @@ import io.ktor.server.testing.handleRequest
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.api.registerNaisApi
 import org.amshove.kluent.shouldEqual
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
+import org.junit.Test
 
-object CORSSpek : Spek({
-    describe("CORS tester") {
+internal class CORSTest {
 
-            it("No origin header") {
+        @Test
+        internal fun `No origin header`() {
                 with(TestApplicationEngine()) {
                     start()
                     application.install(CORS) {
@@ -37,7 +36,8 @@ object CORSSpek : Spek({
                 }
             }
 
-            it("Wrong origin header") {
+    @Test
+    internal fun `Wrong origin header`() {
                 with(TestApplicationEngine()) {
                     start()
                     application.install(CORS) {
@@ -58,8 +58,8 @@ object CORSSpek : Spek({
                     }
                 }
             }
-
-            it("Wrong origin header is empty") {
+    @Test
+    internal fun `Wrong origin header is empty`() {
                 with(TestApplicationEngine()) {
                     start()
                     application.install(CORS) {
@@ -80,7 +80,9 @@ object CORSSpek : Spek({
                     }
                 }
             }
-        it("Simple Request") {
+
+    @Test
+    internal fun `Simple Request`() {
             with(TestApplicationEngine()) {
                 start()
                 application.install(CORS) {
@@ -101,7 +103,8 @@ object CORSSpek : Spek({
             }
         }
 
-        it("Simple Null") {
+    @Test
+    internal fun `Simple Null`() {
             with(TestApplicationEngine()) {
                 start()
                 application.install(CORS) {
@@ -122,7 +125,8 @@ object CORSSpek : Spek({
             }
         }
 
-        it("Pre flight custom host") {
+    @Test
+    internal fun `Pre flight custom host`() {
             with(TestApplicationEngine()) {
                 start()
                 application.install(CORS) {
@@ -145,5 +149,4 @@ object CORSSpek : Spek({
                 }
             }
         }
-    }
-})
+}

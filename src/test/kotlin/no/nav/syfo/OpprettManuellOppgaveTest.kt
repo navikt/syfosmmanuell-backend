@@ -14,10 +14,10 @@ import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
+import org.junit.AfterClass
+import org.junit.Test
 
-object OpprettManuellOppgaveSpek : Spek({
+internal class OpprettManuellOppgaveTest {
     val objectMapper = ObjectMapper()
         .registerKotlinModule()
         .registerModule(JavaTimeModule())
@@ -25,16 +25,14 @@ object OpprettManuellOppgaveSpek : Spek({
 
     val database = TestDB()
 
-    afterGroup {
-        database.stop()
-    }
-
-    describe("Opprett manuell oppgave") {
-
-        afterEachTest {
+        @AfterClass
+        internal fun afterClass() {
             database.connection.dropData()
+            database.stop()
         }
-        it("Skal lagre manuellOppgave i databasen") {
+
+        @Test
+        internal fun `Skal lagre manuellOppgave i databasen`() {
             val manuelloppgaveId = "1314"
 
             val manuellOppgave = ManuellOppgave(
@@ -45,5 +43,4 @@ object OpprettManuellOppgaveSpek : Spek({
             )
             database.opprettManuellOppgave(manuellOppgave, "1354")
         }
-    }
-})
+}
