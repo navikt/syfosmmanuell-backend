@@ -37,8 +37,3 @@ data class Oppgave(
     val tema: String?,
     val oppgavetype: String?
 )
-
-data class OppgaveResultat(
-    val oppgaveId: Int,
-    val duplikat: Boolean
-)

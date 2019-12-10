@@ -237,14 +237,12 @@ suspend fun handleMessage(
                 prioritet = "HOY"
             )
 
-            val oppgaveResultat = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId, loggingMeta)
-            if (!oppgaveResultat.duplikat) {
+            val oppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
                 OPPRETT_OPPGAVE_COUNTER.inc()
                 log.info("Opprettet oppgave med {}, {} {}",
-                    StructuredArguments.keyValue("oppgaveId", oppgaveResultat.oppgaveId),
+                    StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
                     StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
                     fields(loggingMeta))
-            }
         }
     }
 }
