@@ -35,6 +35,8 @@ class Database(
             username = initialCredentials.username
             password = initialCredentials.password
             maximumPoolSize = 3
+            minimumIdle = 1
+            idleTimeout = 10001
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             validate()
