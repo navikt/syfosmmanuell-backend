@@ -129,6 +129,8 @@ fun main() {
         valueDeserializer = StringDeserializer::class
     )
 
+    applicationState.ready = true
+
     launchListeners(
         applicationState,
         env,
@@ -136,8 +138,6 @@ fun main() {
         database,
         oppgaveClient
     )
-
-    applicationState.ready = true
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
