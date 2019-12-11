@@ -51,14 +51,14 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
-      - name: deploy to dev-fss
-        uses: navikt/deployment-cli/action@0.4.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          cluster: dev-fss
-          team: teamsykefravr
-          resources: naiserator-dev.yaml
+      - name: Deploy to NAIS
+        steps:
+          - uses: actions/checkout@v1
+          - uses: nais/deploy/actions/deploy@v1
+            env:
+              APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+              CLUSTER: dev-fss
+              RESOURCE: naiserator-dev.yaml
       #- name: deploy to prod-fss
       #  uses: navikt/deployment-cli/action@0.4.0
       #  env:
