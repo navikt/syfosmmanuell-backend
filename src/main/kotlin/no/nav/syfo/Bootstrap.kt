@@ -239,6 +239,7 @@ suspend fun handleMessage(
                 //behandlingstype = "ae0239",
                 oppgavetype = "JFR",
                 behandlingstype = "ae0106",
+                journalpostId = "453484378",
                 aktivDato = LocalDate.now(),
                 fristFerdigstillelse = finnFristForFerdigstillingAvOppgave(LocalDate.now()),
                 prioritet = "HOY"
