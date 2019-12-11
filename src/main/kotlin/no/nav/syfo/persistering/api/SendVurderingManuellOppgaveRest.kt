@@ -12,7 +12,6 @@ import javax.jms.MessageProducer
 import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
-import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
@@ -22,6 +21,7 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.service.notifySyfoService
+import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.fellesformatUnmarshaller
 import org.apache.kafka.clients.producer.KafkaProducer

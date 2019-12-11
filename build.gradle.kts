@@ -23,14 +23,14 @@ val h2Version = "1.4.197"
 val flywayVersion = "5.2.4"
 val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
-val postgresEmbeddedVersion = "0.13.1"
+val postgresEmbeddedVersion = "0.13.3"
 val javaTimeAdapterVersion = "1.1.3"
 val junitJupiterVersion = "5.4.0"
 
 plugins {
     kotlin("jvm") version "1.3.61"
-    id("com.github.johnrengelman.shadow") version "4.0.4"
-    id("org.jmailen.kotlinter") version "2.1.0"
+    id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("org.jmailen.kotlinter") version "2.2.0"
 }
 
 val githubUser: String by project
