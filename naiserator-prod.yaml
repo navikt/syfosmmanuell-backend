@@ -56,4 +56,4 @@ spec:
     - name: MQ_GATEWAY_NAME
       value: MPLSC04
     - name: MQ_CHANNEL_NAME
-      value: P_SYFOSMMOTTAK
+      value: P_SYFOSMMANUELL_B
