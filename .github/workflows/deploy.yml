@@ -52,13 +52,11 @@ jobs:
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
       - name: Deploy to NAIS
-        steps:
-          - uses: actions/checkout@v1
-          - uses: nais/deploy/actions/deploy@v1
-            env:
-              APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-              CLUSTER: dev-fss
-              RESOURCE: naiserator-dev.yaml
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-fss
+          RESOURCE: naiserator-dev.yaml
       #- name: deploy to prod-fss
       #  uses: navikt/deployment-cli/action@0.4.0
       #  env:
