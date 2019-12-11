@@ -51,6 +51,8 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
+      - name: Checkout code
+        uses: actions/checkout@master
       - name: Deploy to NAIS
         uses: nais/deploy/actions/deploy@v1
         env:
