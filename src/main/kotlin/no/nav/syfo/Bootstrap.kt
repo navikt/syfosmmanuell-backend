@@ -236,7 +236,8 @@ suspend fun handleMessage(
                 beskrivelse = "Trykk på denne linken får å løse den manuelle oppgaven https://syfosmmanuell.nais.preprod.local/?pnr=${manuellOppgave.receivedSykmelding.personNrPasient}",
                 tema = "SYM",
                 oppgavetype = "BEH_EL_SYM",
-                behandlingstype = "ae0239",
+                //behandlingstype = "ae0239",
+                behandlingstype = "ANY",
                 aktivDato = LocalDate.now(),
                 fristFerdigstillelse = finnFristForFerdigstillingAvOppgave(LocalDate.now()),
                 prioritet = "HOY"
