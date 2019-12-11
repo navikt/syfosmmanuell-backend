@@ -127,6 +127,8 @@ fun handleManuellOppgaveOk(
         manuellOppgave.receivedSykmelding))
     log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
 
+    // TODO restkall til oppgave, om å ferdigstille den manuelle oppgaven
+
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,
         msgId = manuellOppgave.apprec.msgId,
@@ -167,6 +169,8 @@ fun handleManuellOppgaveInvalid(
         sm2013BehandlingsUtfallToipic,
         manuellOppgave.receivedSykmelding,
         loggingMeta)
+
+    // TODO restkall til oppgave, om å ferdigstille den manuelle oppgaven
 
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,

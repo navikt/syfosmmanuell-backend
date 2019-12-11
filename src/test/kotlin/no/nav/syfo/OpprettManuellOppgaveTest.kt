@@ -41,6 +41,6 @@ internal class OpprettManuellOppgaveTest {
                 apprec = objectMapper.readValue(Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(Charsets.UTF_8)),
                 behandlendeEnhet = "1234"
             )
-            database.opprettManuellOppgave(manuellOppgave, "1354")
+            database.opprettManuellOppgave(manuellOppgave, "1354", 123144)
         }
 }

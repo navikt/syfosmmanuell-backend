@@ -219,21 +219,13 @@ suspend fun handleMessage(
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
-            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.behandlendeEnhet)
-            log.info(
-                "Manuell oppgave lagret i databasen, for tildeltEnhetsnr: {}, {}",
-                manuellOppgave.behandlendeEnhet,
-                fields(loggingMeta)
-            )
-            MESSAGE_STORED_IN_DB_COUNTER.inc()
-
             log.info("Create oppgave, {}", fields(loggingMeta))
             val opprettOppgave = OpprettOppgave(
                 tildeltEnhetsnr = manuellOppgave.behandlendeEnhet,
                 aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
                 opprettetAvEnhetsnr = "9999",
                 behandlesAvApplikasjon = "FS22",
-                beskrivelse = "Trykk på denne linken får å løse den manuelle oppgaven https://syfosmmanuell.nais.preprod.local/?pnr=${manuellOppgave.receivedSykmelding.personNrPasient}",
+                beskrivelse = "Trykk på denne linken får å løse den manuelle oppgaven https://syfosmmanuell.nais.preprod.local/?fnr=${manuellOppgave.receivedSykmelding.personNrPasient}",
                 tema = "SYM",
                 oppgavetype = "BEH_EL_SYM",
                 behandlingstype = "ae0239",
@@ -250,6 +242,14 @@ suspend fun handleMessage(
                 StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
                 fields(loggingMeta)
             )
+
+            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.behandlendeEnhet, oppgaveResponse.id)
+            log.info(
+                "Manuell oppgave lagret i databasen, for tildeltEnhetsnr: {}, {}",
+                manuellOppgave.behandlendeEnhet,
+                fields(loggingMeta)
+            )
+            MESSAGE_STORED_IN_DB_COUNTER.inc()
         }
     }
 }

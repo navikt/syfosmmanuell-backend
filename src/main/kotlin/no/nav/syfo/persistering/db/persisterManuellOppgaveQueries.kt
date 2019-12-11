@@ -5,7 +5,7 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toPGObject
 
-fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, tildeltEnhetsnr: String) {
+fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, tildeltEnhetsnr: String, oppgaveId: Int) {
     connection.use { connection ->
         connection.prepareStatement(
             """
@@ -16,9 +16,10 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, tild
                 apprec,
                 pasientfnr,
                 tildeltenhetsnr,
-                ferdigstilt
+                ferdigstilt,
+                oppgaveid
                 )
-            VALUES  (?, ?, ?, ?, ?, ?, ?)
+            VALUES  (?, ?, ?, ?, ?, ?, ?, ?)
             """
         ).use {
             it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
@@ -28,6 +29,7 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, tild
             it.setString(5, manuellOppgave.receivedSykmelding.personNrPasient)
             it.setString(6, tildeltEnhetsnr)
             it.setBoolean(7, false)
+            it.setInt(8, oppgaveId)
             it.executeUpdate()
         }
 

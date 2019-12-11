@@ -23,7 +23,7 @@ val h2Version = "1.4.197"
 val flywayVersion = "5.2.4"
 val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
-val postgresEmbeddedVersion = "0.13.3"
+val postgresEmbeddedVersion = "0.13.1"
 val javaTimeAdapterVersion = "1.1.3"
 val junitJupiterVersion = "5.4.0"
 
