@@ -5,7 +5,7 @@ on:
       - master
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}:${{ github.sha }}
+  IMAGE: docker.pkg.github.com/${{ github.repository }}/syfosmmanuell-backend:${{ github.sha }}
 
 jobs:
   build:
@@ -38,14 +38,13 @@ jobs:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew shadowJar -x test
-      - name: Build docker image
-        run: docker build -t $IMAGE .
-      - name: Login to Github package registry
+      - name: Build and publish Docker image
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-      - name: Push docker image
-        run: docker push $IMAGE
+        run: |
+          docker build --tag ${IMAGE} .
+          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          docker push ${IMAGE}
 
   deploypreprod:
     name: Deploy to Preprod
