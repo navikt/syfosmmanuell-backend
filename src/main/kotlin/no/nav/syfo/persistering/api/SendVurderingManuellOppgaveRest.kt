@@ -163,6 +163,7 @@ suspend fun handleManuellOppgaveOk(
     sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
 }
 
+@KtorExperimentalAPI
 suspend fun handleManuellOppgaveInvalid(
     manuellOppgave: ManuellOppgaveKomplett,
     sm2013ApprecTopicName: String,

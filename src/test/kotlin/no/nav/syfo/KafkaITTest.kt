@@ -56,7 +56,7 @@ internal class KafkaITTest {
         }
 
         @AfterClass
-        internal fun afterClass() {
+        internal fun tearDown() {
             embeddedEnvironment.tearDown()
         }
 

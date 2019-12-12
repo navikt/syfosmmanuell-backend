@@ -25,22 +25,26 @@ internal class OpprettManuellOppgaveTest {
 
     val database = TestDB()
 
-        @AfterClass
-        internal fun afterClass() {
-            database.connection.dropData()
-            database.stop()
-        }
+    @AfterClass
+    internal fun stopDB() {
+        database.connection.dropData()
+        database.stop()
+    }
 
-        @Test
-        internal fun `Skal lagre manuellOppgave i databasen`() {
-            val manuelloppgaveId = "1314"
+    @Test
+    internal fun `Skal lagre manuellOppgave i databasen`() {
+        val manuelloppgaveId = "1314"
 
-            val manuellOppgave = ManuellOppgave(
-                receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-                validationResult = ValidationResult(Status.OK, emptyList()),
-                apprec = objectMapper.readValue(Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(Charsets.UTF_8)),
-                behandlendeEnhet = "1234"
-            )
-            database.opprettManuellOppgave(manuellOppgave, "1354", 123144)
-        }
+        val manuellOppgave = ManuellOppgave(
+            receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
+            validationResult = ValidationResult(Status.OK, emptyList()),
+            apprec = objectMapper.readValue(
+                Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+                    Charsets.UTF_8
+                )
+            ),
+            behandlendeEnhet = "1234"
+        )
+        database.opprettManuellOppgave(manuellOppgave, "1354", 123144)
+    }
 }
