@@ -11,16 +11,13 @@ import io.ktor.util.KtorExperimentalAPI
 import java.io.StringReader
 import javax.jms.MessageProducer
 import javax.jms.Session
-import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
-import no.nav.syfo.model.FerdigStillOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
-import no.nav.syfo.model.OppgaveStatus
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -137,6 +134,7 @@ suspend fun handleManuellOppgaveOk(
         manuellOppgave.receivedSykmelding))
     log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
 
+    /* TODO få til ferdigStillOppgave
     val ferdigStillOppgave = FerdigStillOppgave(
         oppgaveId = manuellOppgave.oppgaveid,
         oppgavestatus = OppgaveStatus.FERDIGSTILT
@@ -149,6 +147,7 @@ suspend fun handleManuellOppgaveOk(
         StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
         fields(loggingMeta)
     )
+    */
 
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,
@@ -192,6 +191,7 @@ suspend fun handleManuellOppgaveInvalid(
         manuellOppgave.receivedSykmelding,
         loggingMeta)
 
+    /* TODO få til ferdigStillOppgave
     val ferdigStillOppgave = FerdigStillOppgave(
         oppgaveId = manuellOppgave.oppgaveid,
         oppgavestatus = OppgaveStatus.FERDIGSTILT
@@ -204,6 +204,8 @@ suspend fun handleManuellOppgaveInvalid(
         StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
         fields(loggingMeta)
     )
+
+     */
 
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,
