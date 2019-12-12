@@ -26,7 +26,7 @@ class OppgaveClient constructor(private val url: String, private val oidcClient:
     }
 
     suspend fun ferdigStillOppgave(ferdigstilloppgave: FerdigStillOppgave, msgId: String): OpprettOppgaveResponse = retry("ferdigstill_oppgave") {
-        httpClient.patch<OpprettOppgaveResponse>(url + ferdigstilloppgave.oppgaveId) {
+        httpClient.patch<OpprettOppgaveResponse>(url + "/" + ferdigstilloppgave.oppgaveId) {
             contentType(ContentType.Application.Json)
             val oidcToken = oidcClient.oidcToken()
             header("Authorization", "Bearer ${oidcToken.access_token}")

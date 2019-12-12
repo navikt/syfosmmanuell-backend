@@ -137,8 +137,6 @@ suspend fun handleManuellOppgaveOk(
         manuellOppgave.receivedSykmelding))
     log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
 
-    // TODO restkall til oppgave, om å ferdigstille den manuelle oppgaven
-
     val ferdigStillOppgave = FerdigStillOppgave(
         oppgaveId = manuellOppgave.oppgaveid,
         oppgavestatus = OppgaveStatus.FERDIGSTILT
@@ -168,7 +166,7 @@ suspend fun handleManuellOppgaveOk(
     sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
 }
 
-fun handleManuellOppgaveInvalid(
+suspend fun handleManuellOppgaveInvalid(
     manuellOppgave: ManuellOppgaveKomplett,
     sm2013ApprecTopicName: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
@@ -194,7 +192,18 @@ fun handleManuellOppgaveInvalid(
         manuellOppgave.receivedSykmelding,
         loggingMeta)
 
-    // TODO restkall til oppgave, om å ferdigstille den manuelle oppgaven
+    val ferdigStillOppgave = FerdigStillOppgave(
+        oppgaveId = manuellOppgave.oppgaveid,
+        oppgavestatus = OppgaveStatus.FERDIGSTILT
+    )
+
+    val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
+    log.info(
+        "Ferdigstilt oppgave med {}, {} {}",
+        StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+        StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
+        fields(loggingMeta)
+    )
 
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,
