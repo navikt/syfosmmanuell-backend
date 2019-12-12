@@ -20,8 +20,9 @@ data class OpprettOppgave(
 )
 
 data class FerdigStillOppgave(
-    val oppgaveId: Int,
-    val oppgavestatus: OppgaveStatus
+    val versjon: Int,
+    val id: Int,
+    val status: OppgaveStatus
 )
 
 data class OpprettOppgaveResponse(

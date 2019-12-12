@@ -137,10 +137,7 @@ suspend fun handleManuellOppgaveOk(
         manuellOppgave.receivedSykmelding))
     log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
 
-    val ferdigStillOppgave = FerdigStillOppgave(
-        oppgaveId = manuellOppgave.oppgaveid,
-        oppgavestatus = OppgaveStatus.FERDIGSTILT
-    )
+    val ferdigStillOppgave = createFerdigStillOppgave(manuellOppgave)
 
     val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
     log.info(
@@ -192,10 +189,7 @@ suspend fun handleManuellOppgaveInvalid(
         manuellOppgave.receivedSykmelding,
         loggingMeta)
 
-    val ferdigStillOppgave = FerdigStillOppgave(
-        oppgaveId = manuellOppgave.oppgaveid,
-        oppgavestatus = OppgaveStatus.FERDIGSTILT
-    )
+    val ferdigStillOppgave = createFerdigStillOppgave(manuellOppgave)
 
     val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
     log.info(
@@ -243,3 +237,9 @@ fun sendValidationResult(
     )
     log.info("Validation results send to kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
 }
+
+fun createFerdigStillOppgave(manuellOppgave: ManuellOppgaveKomplett) = FerdigStillOppgave(
+        versjon = 1,
+        id = manuellOppgave.oppgaveid,
+        status = OppgaveStatus.FERDIGSTILT
+)
