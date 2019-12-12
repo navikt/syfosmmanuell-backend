@@ -5,7 +5,7 @@ import java.sql.ResultSet
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
-import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.objectMapper
 
 fun DatabaseInterface.hentManuellOppgaver(pasientFnr: String): List<ManuellOppgaveDTO> =
@@ -31,11 +31,11 @@ fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO =
         validationResult = objectMapper.readValue(getString("validationresult"))
     )
 
-fun DatabaseInterface.hentKomplettManuellOppgave(manuellOppgaveId: String): List<ManuellOppgave> =
+fun DatabaseInterface.hentKomplettManuellOppgave(manuellOppgaveId: String): List<ManuellOppgaveKomplett> =
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT receivedsykmelding,validationresult,apprec,tildeltenhetsnr
+                SELECT receivedsykmelding,validationresult,apprec,tildeltenhetsnr,oppgaveid
                 FROM MANUELLOPPGAVE  
                 WHERE id=?;
                 """
@@ -45,10 +45,11 @@ fun DatabaseInterface.hentKomplettManuellOppgave(manuellOppgaveId: String): List
         }
     }
 
-fun ResultSet.toManuellOppgave(): ManuellOppgave =
-    ManuellOppgave(
+fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
+    ManuellOppgaveKomplett(
         receivedSykmelding = objectMapper.readValue(getString("receivedsykmelding")),
         validationResult = objectMapper.readValue(getString("validationresult")),
         apprec = objectMapper.readValue(getString("apprec")),
-        behandlendeEnhet = getString("tildeltenhetsnr").trim()
+        behandlendeEnhet = getString("tildeltenhetsnr").trim(),
+        oppgaveid = getInt("oppgaveid")
     )

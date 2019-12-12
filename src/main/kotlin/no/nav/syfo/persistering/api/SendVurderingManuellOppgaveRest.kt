@@ -15,7 +15,7 @@ import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
-import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -49,7 +49,6 @@ fun Routing.sendVurderingManuellOppgave(
 
             if (manuellOppgaveService.oppdaterValidationResuts(manuellOppgaveId, validationResult) > 0) {
                 val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(manuellOppgaveId)
-                // TODO send event update to modia
 
                 if (manuellOppgave != null) {
                     val loggingMeta = LoggingMeta(
@@ -100,7 +99,7 @@ fun Routing.sendVurderingManuellOppgave(
 }
 
 fun handleManuellOppgaveOk(
-    manuellOppgave: ManuellOppgave,
+    manuellOppgave: ManuellOppgaveKomplett,
     sm2013AutomaticHandlingTopic: String,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     loggingMeta: LoggingMeta,
@@ -146,7 +145,7 @@ fun handleManuellOppgaveOk(
 }
 
 fun handleManuellOppgaveInvalid(
-    manuellOppgave: ManuellOppgave,
+    manuellOppgave: ManuellOppgaveKomplett,
     sm2013ApprecTopicName: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     sm2013InvalidHandlingTopic: String,
