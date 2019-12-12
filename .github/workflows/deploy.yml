@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - master
+
+env:
+  IMAGE: docker.pkg.github.com/${{ github.repository }}:$(cat .docker_tag)
+
 jobs:
   build:
     name: Checkout code and create docker tag
