@@ -117,7 +117,8 @@ fun main() {
         kafkaproducervalidationResult,
         env.syfoserviceQueueName,
         session,
-        syfoserviceProducer
+        syfoserviceProducer,
+        oppgaveClient
     )
 
     val applicationServer = ApplicationServer(applicationEngine, connection)

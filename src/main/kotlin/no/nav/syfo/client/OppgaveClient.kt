@@ -2,12 +2,14 @@ package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
 import java.time.LocalDate
 import no.nav.syfo.helpers.retry
+import no.nav.syfo.model.FerdigStillOppgave
 import no.nav.syfo.model.OpprettOppgave
 import no.nav.syfo.model.OpprettOppgaveResponse
 
@@ -20,6 +22,16 @@ class OppgaveClient constructor(private val url: String, private val oidcClient:
             header("Authorization", "Bearer ${oidcToken.access_token}")
             header("X-Correlation-ID", msgId)
             body = opprettOppgave
+        }
+    }
+
+    suspend fun ferdigStillOppgave(ferdigstilloppgave: FerdigStillOppgave, msgId: String): OpprettOppgaveResponse = retry("ferdigstill_oppgave") {
+        httpClient.patch<OpprettOppgaveResponse>(url + ferdigstilloppgave.oppgaveId) {
+            contentType(ContentType.Application.Json)
+            val oidcToken = oidcClient.oidcToken()
+            header("Authorization", "Bearer ${oidcToken.access_token}")
+            header("X-Correlation-ID", msgId)
+            body = ferdigstilloppgave
         }
     }
 }

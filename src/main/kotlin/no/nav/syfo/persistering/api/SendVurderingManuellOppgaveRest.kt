@@ -7,15 +7,20 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.put
 import io.ktor.routing.route
+import io.ktor.util.KtorExperimentalAPI
 import java.io.StringReader
 import javax.jms.MessageProducer
 import javax.jms.Session
+import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
+import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
+import no.nav.syfo.model.FerdigStillOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
+import no.nav.syfo.model.OppgaveStatus
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -27,6 +32,7 @@ import no.nav.syfo.util.fellesformatUnmarshaller
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
+@KtorExperimentalAPI
 fun Routing.sendVurderingManuellOppgave(
     manuellOppgaveService: ManuellOppgaveService,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
@@ -38,7 +44,8 @@ fun Routing.sendVurderingManuellOppgave(
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoserviceQueueName: String,
     session: Session,
-    syfoserviceProducer: MessageProducer
+    syfoserviceProducer: MessageProducer,
+    oppgaveClient: OppgaveClient
 ) {
     route("/api/v1") {
         put("/vurderingmanuelloppgave/{manuelloppgaveId}") {
@@ -67,7 +74,8 @@ fun Routing.sendVurderingManuellOppgave(
                             kafkaproducerreceivedSykmelding,
                             sm2013BehandlingsUtfallToipic,
                             kafkaproducervalidationResult,
-                            loggingMeta)
+                            loggingMeta,
+                            oppgaveClient)
                             call.respond(HttpStatusCode.NoContent) }
                         Status.OK -> {
                             handleManuellOppgaveOk(
@@ -79,7 +87,8 @@ fun Routing.sendVurderingManuellOppgave(
                                 session,
                                 syfoserviceProducer,
                                 sm2013ApprecTopicName,
-                                kafkaproducerApprec)
+                                kafkaproducerApprec,
+                                oppgaveClient)
                             call.respond(HttpStatusCode.NoContent) }
                         else -> { call.respond(HttpStatusCode.BadRequest)
                             log.error("Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
@@ -98,7 +107,8 @@ fun Routing.sendVurderingManuellOppgave(
     }
 }
 
-fun handleManuellOppgaveOk(
+@KtorExperimentalAPI
+suspend fun handleManuellOppgaveOk(
     manuellOppgave: ManuellOppgaveKomplett,
     sm2013AutomaticHandlingTopic: String,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
@@ -107,7 +117,8 @@ fun handleManuellOppgaveOk(
     session: Session,
     syfoserviceProducer: MessageProducer,
     sm2013ApprecTopicName: String,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    oppgaveClient: OppgaveClient
 ) {
     val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(manuellOppgave.receivedSykmelding.fellesformat)) as XMLEIFellesformat
 
@@ -127,6 +138,19 @@ fun handleManuellOppgaveOk(
     log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
 
     // TODO restkall til oppgave, om å ferdigstille den manuelle oppgaven
+
+    val ferdigStillOppgave = FerdigStillOppgave(
+        oppgaveId = manuellOppgave.oppgaveid,
+        oppgavestatus = OppgaveStatus.FERDIGSTILT
+    )
+
+    val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
+    log.info(
+        "Ferdigstilt oppgave med {}, {} {}",
+        StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+        StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
+        fields(loggingMeta)
+    )
 
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,
@@ -152,7 +176,8 @@ fun handleManuellOppgaveInvalid(
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     sm2013BehandlingsUtfallToipic: String,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    loggingMeta: LoggingMeta
+    loggingMeta: LoggingMeta,
+    oppgaveClient: OppgaveClient
 ) {
 
     kafkaproducerreceivedSykmelding.send(ProducerRecord(

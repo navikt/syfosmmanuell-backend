@@ -19,6 +19,11 @@ data class OpprettOppgave(
     val prioritet: String
 )
 
+data class FerdigStillOppgave(
+    val oppgaveId: Int,
+    val oppgavestatus: OppgaveStatus
+)
+
 data class OpprettOppgaveResponse(
     val id: Int
 )
@@ -37,3 +42,11 @@ data class Oppgave(
     val tema: String?,
     val oppgavetype: String?
 )
+
+enum class OppgaveStatus(val status: String) {
+    OPPRETTET("OPPRETTET"),
+    AAPNET("AAPNET"),
+    UNDER_BEHANDLING("UNDER_BEHANDLING"),
+    FERDIGSTILT("FERDIGSTILT"),
+    FEILREGISTRERT("FEILREGISTRERT")
+}
