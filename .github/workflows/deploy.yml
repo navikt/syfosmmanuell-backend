@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v1
+        uses: actions/checkout@master
       - uses: actions/cache@v1
         with:
           path: ~/.gradle/caches
@@ -46,9 +46,7 @@ jobs:
           docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push ${IMAGE}
       - name: Deploy to Preprod
-      - uses: actions/checkout@master
-        name: Checkout code
-      - uses: nais/deploy/actions/deploy@master
+        uses: nais/deploy/actions/deploy@master
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
