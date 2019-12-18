@@ -13,8 +13,8 @@ class ManuellOppgaveService(private val database: DatabaseInterface) {
     fun oppdaterValidationResuts(manueloppgaveId: String, validationResult: ValidationResult): Int =
         database.oppdaterValidationResults(manueloppgaveId, validationResult)
 
-    fun hentManuellOppgaver(pasientFnr: String): List<ManuellOppgaveDTO> =
-        database.hentManuellOppgaver(pasientFnr)
+    fun hentManuellOppgaver(oppgaveId: String): List<ManuellOppgaveDTO> =
+        database.hentManuellOppgaver(oppgaveId)
 
     fun hentKomplettManuellOppgave(manueloppgaveId: String): ManuellOppgaveKomplett? =
         database.hentKomplettManuellOppgave(manueloppgaveId).firstOrNull()

@@ -8,17 +8,17 @@ import no.nav.syfo.db.toList
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.objectMapper
 
-fun DatabaseInterface.hentManuellOppgaver(pasientFnr: String): List<ManuellOppgaveDTO> =
+fun DatabaseInterface.hentManuellOppgaver(oppgaveId: String): List<ManuellOppgaveDTO> =
     connection.use { connection ->
         connection.prepareStatement(
             """
                 SELECT id,receivedsykmelding,validationresult
                 FROM MANUELLOPPGAVE  
-                WHERE pasientfnr=? 
+                WHERE oppgaveid=? 
                 AND ferdigstilt=?;
                 """
         ).use {
-            it.setString(1, pasientFnr)
+            it.setString(1, oppgaveId)
             it.setBoolean(2, false)
             it.executeQuery().toList { toManuellOppgaveDTO() }
         }

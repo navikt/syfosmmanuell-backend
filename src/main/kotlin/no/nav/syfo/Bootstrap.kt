@@ -226,7 +226,7 @@ suspend fun handleMessage(
                 aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
                 opprettetAvEnhetsnr = "9999",
                 behandlesAvApplikasjon = "FS22",
-                beskrivelse = "Trykk på denne linken får å løse den manuelle oppgaven https://syfosmmanuell.nais.preprod.local/?fnr=${manuellOppgave.receivedSykmelding.personNrPasient}",
+                beskrivelse = "Manuell sykmelding oppgave",
                 tema = "SYM",
                 oppgavetype = "BEH_EL_SYM",
                 behandlingstype = "ae0239",

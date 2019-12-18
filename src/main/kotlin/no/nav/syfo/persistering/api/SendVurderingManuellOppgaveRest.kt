@@ -49,13 +49,13 @@ fun Routing.sendVurderingManuellOppgave(
 ) {
     route("/api/v1") {
         put("/vurderingmanuelloppgave/{manuelloppgaveId}") {
-            val manuellOppgaveId = call.parameters["manuelloppgaveId"]!!
+            val oppgaveId = call.parameters["manuelloppgaveId"]!!
             log.info("Recived call to /api/v1/vurderingmanuelloppgave")
 
             val validationResult: ValidationResult = call.receive()
 
-            if (manuellOppgaveService.oppdaterValidationResuts(manuellOppgaveId, validationResult) > 0) {
-                val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(manuellOppgaveId)
+            if (manuellOppgaveService.oppdaterValidationResuts(oppgaveId, validationResult) > 0) {
+                val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(oppgaveId)
 
                 if (manuellOppgave != null) {
                     val loggingMeta = LoggingMeta(
@@ -92,15 +92,15 @@ fun Routing.sendVurderingManuellOppgave(
                             call.respond(HttpStatusCode.NoContent) }
                         else -> { call.respond(HttpStatusCode.BadRequest)
                             log.error("Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
-                                manuellOppgaveId, fields(loggingMeta))
+                                oppgaveId, fields(loggingMeta))
                             }
                     }
                 } else {
-                    log.warn("Henting av komplettManuellOppgave returente null manuelloppgaveid, {}", manuellOppgaveId)
+                    log.warn("Henting av komplettManuellOppgave returente null manuelloppgaveid, {}", oppgaveId)
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             } else {
-                log.error("Oppdatering av oppdaterValidationResuts feilet manuelloppgaveid, {}", manuellOppgaveId)
+                log.error("Oppdatering av oppdaterValidationResuts feilet manuelloppgaveid, {}", oppgaveId)
                 call.respond(HttpStatusCode.InternalServerError)
             }
         }
