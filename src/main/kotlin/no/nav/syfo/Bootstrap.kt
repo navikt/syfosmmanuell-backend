@@ -220,7 +220,7 @@ suspend fun handleMessage(
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
-            log.info("Create oppgave, {}", fields(loggingMeta))
+            log.info("Lager oppgave, {}", fields(loggingMeta))
             val opprettOppgave = OpprettOppgave(
                 tildeltEnhetsnr = manuellOppgave.behandlendeEnhet,
                 aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,

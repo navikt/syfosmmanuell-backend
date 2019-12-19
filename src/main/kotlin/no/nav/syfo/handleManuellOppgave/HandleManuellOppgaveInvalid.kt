@@ -2,6 +2,8 @@ package no.nav.syfo.handleManuellOppgave
 
 import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.fields
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
@@ -35,7 +37,7 @@ suspend fun handleManuellOppgaveInvalid(
             manuellOppgave.receivedSykmelding.sykmelding.id,
             manuellOppgave.receivedSykmelding)
     )
-    log.info("Message send to kafka {}, {}", sm2013InvalidHandlingTopic, StructuredArguments.fields(loggingMeta))
+    log.info("Melding sendt til kafka {}, {}", sm2013InvalidHandlingTopic, StructuredArguments.fields(loggingMeta))
 
     sendValidationResult(
         manuellOppgave.validationResult,
@@ -49,9 +51,9 @@ suspend fun handleManuellOppgaveInvalid(
     val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
     log.info(
         "Ferdigstilt oppgave med {}, {} {}",
-        StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-        StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
-        StructuredArguments.fields(loggingMeta)
+        keyValue("oppgaveId", oppgaveResponse.id),
+        keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
+        fields(loggingMeta)
     )
 
     val apprec = Apprec(
@@ -68,7 +70,7 @@ suspend fun handleManuellOppgaveInvalid(
     )
 
     sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopicName,
-        StructuredArguments.fields(loggingMeta)
+    log.info("Apprec kvittering sent til kafka topic {}, {}", sm2013ApprecTopicName,
+        fields(loggingMeta)
     )
 }

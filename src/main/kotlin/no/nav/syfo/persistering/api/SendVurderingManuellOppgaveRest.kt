@@ -45,7 +45,7 @@ fun Routing.sendVurderingManuellOppgave(
     route("/api/v1") {
         put("/vurderingmanuelloppgave/{oppgaveid}") {
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            log.info("Recived call to /api/v1/vurderingmanuelloppgave with oppgaveid, {}", oppgaveId)
+            log.info("Mottok eit kall til /api/v1/vurderingmanuelloppgave med oppgaveid, {}", oppgaveId)
 
             val validationResult: ValidationResult = call.receive()
 
@@ -121,7 +121,7 @@ fun sendValidationResult(
     kafkaproducervalidationResult.send(
         ProducerRecord(sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult)
     )
-    log.info("Validation results send to kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
+    log.info("Valideringsreultat sendt til kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
 }
 
 fun ferdigStillOppgave(manuellOppgave: ManuellOppgaveKomplett) = FerdigStillOppgave(

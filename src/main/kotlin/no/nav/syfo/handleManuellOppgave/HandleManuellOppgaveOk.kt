@@ -5,6 +5,8 @@ import java.io.StringReader
 import javax.jms.MessageProducer
 import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.fields
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.log
@@ -44,7 +46,7 @@ suspend fun handleManuellOppgaveOk(
         msgId = manuellOppgave.receivedSykmelding.msgId,
         healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
     )
-    log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
+    log.info("Melding sendt til syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
 
     kafkaproducerreceivedSykmelding.send(
         ProducerRecord(
@@ -52,16 +54,16 @@ suspend fun handleManuellOppgaveOk(
             manuellOppgave.receivedSykmelding.sykmelding.id,
             manuellOppgave.receivedSykmelding)
     )
-    log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, StructuredArguments.fields(loggingMeta))
+    log.info("Melding sendt til kafka {}, {}", sm2013AutomaticHandlingTopic, StructuredArguments.fields(loggingMeta))
 
     val ferdigStillOppgave = ferdigStillOppgave(manuellOppgave)
 
     val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
     log.info(
         "Ferdigstilt oppgave med {}, {} {}",
-        StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-        StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
-        StructuredArguments.fields(loggingMeta)
+        keyValue("oppgaveId", oppgaveResponse.id),
+        keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
+        fields(loggingMeta)
     )
 
     val apprec = Apprec(
@@ -78,4 +80,7 @@ suspend fun handleManuellOppgaveOk(
     )
 
     sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
+    log.info("Apprec kvittering sent til kafka topic {}, {}", sm2013ApprecTopicName,
+        fields(loggingMeta)
+    )
 }

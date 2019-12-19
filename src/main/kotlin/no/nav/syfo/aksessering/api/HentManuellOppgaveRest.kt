@@ -13,7 +13,7 @@ import no.nav.syfo.service.ManuellOppgaveService
 fun Routing.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
     route("/api/v1") {
         get("/hentManuellOppgave") {
-            log.info("Recived call to /api/v1/hentManuellOppgave")
+            log.info("Mottok kall til /api/v1/hentManuellOppgave")
             val oppgaveId = call.request.queryParameters["oppgaveid"]?.toInt()
 
             if (oppgaveId == null) {
@@ -29,7 +29,7 @@ fun Routing.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
         }
 
         get("/harManuellOppgave") {
-            log.info("Recived call to /api/v1/harManuellOppgave")
+            log.info("Mottok kall til /api/v1/harManuellOppgave")
             val oppgaveId = call.request.queryParameters["oppgaveid"]?.toInt()
 
             if (oppgaveId == null) {
