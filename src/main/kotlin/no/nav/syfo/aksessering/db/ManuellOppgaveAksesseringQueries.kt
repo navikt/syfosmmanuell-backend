@@ -26,12 +26,12 @@ fun DatabaseInterface.hentManuellOppgaver(oppgaveId: String): List<ManuellOppgav
 
 fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO =
     ManuellOppgaveDTO(
-        manuellOppgaveid = getString("id").trim(),
+        oppgaveid = getString("oppgaveid").trim(),
         receivedSykmelding = objectMapper.readValue(getString("receivedsykmelding")),
         validationResult = objectMapper.readValue(getString("validationresult"))
     )
 
-fun DatabaseInterface.hentKomplettManuellOppgave(manuellOppgaveId: String): List<ManuellOppgaveKomplett> =
+fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: String): List<ManuellOppgaveKomplett> =
     connection.use { connection ->
         connection.prepareStatement(
             """
@@ -40,7 +40,7 @@ fun DatabaseInterface.hentKomplettManuellOppgave(manuellOppgaveId: String): List
                 WHERE oppgaveid=?;
                 """
         ).use {
-            it.setString(1, manuellOppgaveId)
+            it.setString(1, oppgaveId)
             it.executeQuery().toList { toManuellOppgave() }
         }
     }

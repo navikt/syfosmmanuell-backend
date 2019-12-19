@@ -16,6 +16,6 @@ class ManuellOppgaveService(private val database: DatabaseInterface) {
     fun hentManuellOppgaver(oppgaveId: String): List<ManuellOppgaveDTO> =
         database.hentManuellOppgaver(oppgaveId)
 
-    fun hentKomplettManuellOppgave(manueloppgaveId: String): ManuellOppgaveKomplett? =
-        database.hentKomplettManuellOppgave(manueloppgaveId).firstOrNull()
+    fun hentKomplettManuellOppgave(oppgaveId: String): ManuellOppgaveKomplett? =
+        database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
 }
