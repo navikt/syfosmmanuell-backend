@@ -14,9 +14,9 @@ fun Routing.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
     route("/api/v1") {
         get("/hentManuellOppgave") {
             log.info("Recived call to /api/v1/hentManuellOppgave")
-            val oppgaveId = call.request.queryParameters["oppgaveid"]
+            val oppgaveId = call.request.queryParameters["oppgaveid"]?.toInt()
 
-            if (oppgaveId.isNullOrEmpty()) {
+            if (oppgaveId == null) {
                 log.info("Mangler query parameters: oppgaveid")
                 call.respond(HttpStatusCode.BadRequest)
             } else if (manuellOppgaveService.hentManuellOppgaver(oppgaveId).isEmpty()) {
@@ -29,9 +29,9 @@ fun Routing.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
 
         get("/harManuellOppgave") {
             log.info("Recived call to /api/v1/harManuellOppgave")
-            val oppgaveId = call.request.queryParameters["oppgaveid"]
+            val oppgaveId = call.request.queryParameters["oppgaveid"]?.toInt()
 
-            if (oppgaveId.isNullOrEmpty()) {
+            if (oppgaveId == null) {
                 log.info("Mangler query parameters: oppgaveid")
                 call.respond(HttpStatusCode.BadRequest)
             } else if (manuellOppgaveService.hentManuellOppgaver(oppgaveId).isEmpty()) {

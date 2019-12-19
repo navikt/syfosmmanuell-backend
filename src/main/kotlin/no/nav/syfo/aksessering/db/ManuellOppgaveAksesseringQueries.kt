@@ -8,7 +8,7 @@ import no.nav.syfo.db.toList
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.objectMapper
 
-fun DatabaseInterface.hentManuellOppgaver(oppgaveId: String): List<ManuellOppgaveDTO> =
+fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDTO> =
     connection.use { connection ->
         connection.prepareStatement(
             """
@@ -18,7 +18,7 @@ fun DatabaseInterface.hentManuellOppgaver(oppgaveId: String): List<ManuellOppgav
                 AND ferdigstilt=?;
                 """
         ).use {
-            it.setString(1, oppgaveId)
+            it.setInt(1, oppgaveId)
             it.setBoolean(2, false)
             it.executeQuery().toList { toManuellOppgaveDTO() }
         }
@@ -26,12 +26,12 @@ fun DatabaseInterface.hentManuellOppgaver(oppgaveId: String): List<ManuellOppgav
 
 fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO =
     ManuellOppgaveDTO(
-        oppgaveid = getString("oppgaveid").trim(),
+        oppgaveid = getInt("oppgaveid"),
         receivedSykmelding = objectMapper.readValue(getString("receivedsykmelding")),
         validationResult = objectMapper.readValue(getString("validationresult"))
     )
 
-fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: String): List<ManuellOppgaveKomplett> =
+fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: Int): List<ManuellOppgaveKomplett> =
     connection.use { connection ->
         connection.prepareStatement(
             """
@@ -40,7 +40,7 @@ fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: String): List<Manuel
                 WHERE oppgaveid=?;
                 """
         ).use {
-            it.setString(1, oppgaveId)
+            it.setInt(1, oppgaveId)
             it.executeQuery().toList { toManuellOppgave() }
         }
     }

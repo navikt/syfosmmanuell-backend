@@ -10,12 +10,12 @@ import no.nav.syfo.persistering.db.oppdaterValidationResults
 
 class ManuellOppgaveService(private val database: DatabaseInterface) {
 
-    fun oppdaterValidationResuts(manueloppgaveId: String, validationResult: ValidationResult): Int =
-        database.oppdaterValidationResults(manueloppgaveId, validationResult)
+    fun oppdaterValidationResuts(oppgaveId: Int, validationResult: ValidationResult): Int =
+        database.oppdaterValidationResults(oppgaveId, validationResult)
 
-    fun hentManuellOppgaver(oppgaveId: String): List<ManuellOppgaveDTO> =
+    fun hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDTO> =
         database.hentManuellOppgaver(oppgaveId)
 
-    fun hentKomplettManuellOppgave(oppgaveId: String): ManuellOppgaveKomplett? =
+    fun hentKomplettManuellOppgave(oppgaveId: Int): ManuellOppgaveKomplett? =
         database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
 }

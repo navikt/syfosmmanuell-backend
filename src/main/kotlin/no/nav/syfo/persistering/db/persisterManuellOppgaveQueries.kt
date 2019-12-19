@@ -51,18 +51,18 @@ fun DatabaseInterface.erOpprettManuellOppgave(manueloppgaveId: String) =
         }
     }
 
-fun DatabaseInterface.oppdaterValidationResults(manueloppgaveId: String, validationResult: ValidationResult): Int =
+fun DatabaseInterface.oppdaterValidationResults(oppgaveId: Int, validationResult: ValidationResult): Int =
     connection.use { connection ->
         val status = connection.prepareStatement(
             """
             UPDATE MANUELLOPPGAVE
             SET validationResult = ?, ferdigstilt = ?
-            WHERE id = ?;
+            WHERE oppgaveid = ?;
             """
         ).use {
             it.setObject(1, validationResult.toPGObject())
             it.setBoolean(2, true)
-            it.setString(3, manueloppgaveId)
+            it.setInt(3, oppgaveId)
             it.executeUpdate()
         }
         connection.commit()
