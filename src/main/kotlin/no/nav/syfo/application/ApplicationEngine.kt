@@ -16,6 +16,7 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.KtorExperimentalAPI
 import javax.jms.MessageProducer
 import javax.jms.Session
 import no.nav.syfo.Environment
@@ -30,6 +31,7 @@ import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import org.apache.kafka.clients.producer.KafkaProducer
 
+@KtorExperimentalAPI
 fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,

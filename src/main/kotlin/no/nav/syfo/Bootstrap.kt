@@ -216,7 +216,7 @@ suspend fun handleMessage(
 
         if (database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
             log.error(
-                "Manuell oppgave med id {} allerede lagret i databasen, {}",
+                "Manuell oppgave med sykmeldingsid {} er allerede lagret i databasen, {}",
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
@@ -238,7 +238,7 @@ suspend fun handleMessage(
             val oppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
             OPPRETT_OPPGAVE_COUNTER.inc()
             log.info(
-                "Opprettet oppgave med {}, {} {}",
+                "Opprettet oppgave med {}, {}, {}",
                 StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
                 StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
                 fields(loggingMeta)
@@ -246,8 +246,9 @@ suspend fun handleMessage(
 
             database.opprettManuellOppgave(manuellOppgave, manuellOppgave.behandlendeEnhet, oppgaveResponse.id)
             log.info(
-                "Manuell oppgave lagret i databasen, for tildeltEnhetsnr: {}, {}",
-                manuellOppgave.behandlendeEnhet,
+                "Manuell oppgave lagret i databasen, for {}, {}, {}",
+                StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+                StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
                 fields(loggingMeta)
             )
             MESSAGE_STORED_IN_DB_COUNTER.inc()

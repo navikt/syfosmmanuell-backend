@@ -37,7 +37,7 @@ fun DatabaseInterface.hentKomplettManuellOppgave(manuellOppgaveId: String): List
             """
                 SELECT receivedsykmelding,validationresult,apprec,tildeltenhetsnr,oppgaveid
                 FROM MANUELLOPPGAVE  
-                WHERE id=?;
+                WHERE oppgaveid=?;
                 """
         ).use {
             it.setString(1, manuellOppgaveId)
