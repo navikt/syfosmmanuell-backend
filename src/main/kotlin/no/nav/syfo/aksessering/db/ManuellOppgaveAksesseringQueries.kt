@@ -12,7 +12,7 @@ fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDT
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT id,receivedsykmelding,validationresult
+                SELECT oppgaveid,receivedsykmelding,validationresult
                 FROM MANUELLOPPGAVE  
                 WHERE oppgaveid=? 
                 AND ferdigstilt=?;

@@ -23,6 +23,7 @@ fun Routing.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
                 log.info("Fant ingen uløste manuelloppgaver med oppgaveid {}", oppgaveId)
                 call.respond(emptyList<ManuellOppgaveDTO>())
             } else {
+                log.info("Henter ut oppgave med oppgaveid: {}", oppgaveId)
                 call.respond(manuellOppgaveService.hentManuellOppgaver(oppgaveId))
             }
         }
