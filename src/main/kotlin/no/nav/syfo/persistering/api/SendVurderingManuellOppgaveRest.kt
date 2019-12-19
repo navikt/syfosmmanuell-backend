@@ -48,8 +48,8 @@ fun Routing.sendVurderingManuellOppgave(
     oppgaveClient: OppgaveClient
 ) {
     route("/api/v1") {
-        put("/vurderingmanuelloppgave/{manuelloppgaveId}") {
-            val oppgaveId = call.parameters["manuelloppgaveId"]!!
+        put("/vurderingmanuelloppgave/{oppgaveid}") {
+            val oppgaveId = call.parameters["oppgaveid"]!!
             log.info("Recived call to /api/v1/vurderingmanuelloppgave")
 
             val validationResult: ValidationResult = call.receive()
@@ -96,11 +96,11 @@ fun Routing.sendVurderingManuellOppgave(
                             }
                     }
                 } else {
-                    log.warn("Henting av komplettManuellOppgave returente null manuelloppgaveid, {}", oppgaveId)
+                    log.warn("Henting av komplettManuellOppgave returente null oppgaveid, {}", oppgaveId)
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             } else {
-                log.error("Oppdatering av oppdaterValidationResuts feilet manuelloppgaveid, {}", oppgaveId)
+                log.error("Oppdatering av oppdaterValidationResuts feilet oppgaveid, {}", oppgaveId)
                 call.respond(HttpStatusCode.InternalServerError)
             }
         }
