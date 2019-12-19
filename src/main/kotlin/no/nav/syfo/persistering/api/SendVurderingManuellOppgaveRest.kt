@@ -50,7 +50,7 @@ fun Routing.sendVurderingManuellOppgave(
     route("/api/v1") {
         put("/vurderingmanuelloppgave/{oppgaveid}") {
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            log.info("Recived call to /api/v1/vurderingmanuelloppgave")
+            log.info("Recived call to /api/v1/vurderingmanuelloppgave with oppgaveid, {}", oppgaveId)
 
             val validationResult: ValidationResult = call.receive()
 
