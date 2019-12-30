@@ -18,37 +18,37 @@ import org.junit.Test
 
 internal class KafkaITTest {
 
-        val topic = "aapen-test-topic"
+    val topic = "aapen-test-topic"
 
-        val embeddedEnvironment = KafkaEnvironment(
-            autoStart = false,
-            topicNames = listOf(topic)
-        )
+    val embeddedEnvironment = KafkaEnvironment(
+        autoStart = false,
+        topicNames = listOf(topic)
+    )
 
-        val credentials = VaultCredentials("", "", "", "")
+    val credentials = VaultCredentials("", "", "", "")
 
-        val config = Environment(
-            kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-            applicationName = "syfosminfotrygd",
-            mountPathVault = "", databaseName = "", syfosmmanuellbackendDBURL = "url",
-            syfosmmanuellUrl = "https://syfosmmanuell", mqHostname = "mqhost", mqPort = 1342,
-            mqGatewayName = "mqGateway", mqChannelName = "syfomottak", syfoserviceQueueName = ""
-        )
+    val config = Environment(
+        kafkaBootstrapServers = embeddedEnvironment.brokersURL,
+        applicationName = "syfosminfotrygd",
+        mountPathVault = "", databaseName = "", syfosmmanuellbackendDBURL = "url",
+        syfosmmanuellUrl = "https://syfosmmanuell", mqHostname = "mqhost", mqPort = 1342,
+        mqGatewayName = "mqGateway", mqChannelName = "syfomottak", syfoserviceQueueName = ""
+    )
 
-        fun Properties.overrideForTest(): Properties = apply {
-            remove("security.protocol")
-            remove("sasl.mechanism")
-        }
+    fun Properties.overrideForTest(): Properties = apply {
+        remove("security.protocol")
+        remove("sasl.mechanism")
+    }
 
-        val baseConfig = loadBaseConfig(config, credentials).overrideForTest()
+    val baseConfig = loadBaseConfig(config, credentials).overrideForTest()
 
-        val producerProperties = baseConfig
-            .toProducerConfig("junit.integration", valueSerializer = StringSerializer::class)
-        val producer = KafkaProducer<String, String>(producerProperties)
+    val producerProperties = baseConfig
+        .toProducerConfig("junit.integration", valueSerializer = StringSerializer::class)
+    val producer = KafkaProducer<String, String>(producerProperties)
 
-        val consumerProperties = baseConfig
-            .toConsumerConfig("junit.integration-consumer", valueDeserializer = StringDeserializer::class)
-        val consumer = KafkaConsumer<String, String>(consumerProperties)
+    val consumerProperties = baseConfig
+        .toConsumerConfig("junit.integration-consumer", valueDeserializer = StringDeserializer::class)
+    val consumer = KafkaConsumer<String, String>(consumerProperties)
 
         @BeforeClass
         internal fun beforeClass() {
@@ -60,14 +60,14 @@ internal class KafkaITTest {
             embeddedEnvironment.tearDown()
         }
 
-        @Test
-        internal fun `Can read the messages from the kafka topic`() {
-            val message = "Test message"
-            producer.send(ProducerRecord(topic, message))
-            consumer.subscribe(listOf(topic))
+    @Test
+    internal fun `Can read the messages from the kafka topic`() {
+        val message = "Test message"
+        producer.send(ProducerRecord(topic, message))
+        consumer.subscribe(listOf(topic))
 
-            val messages = consumer.poll(Duration.ofMillis(5000)).toList()
-            messages.size shouldEqual 1
-            messages[0].value() shouldEqual message
-        }
+        val messages = consumer.poll(Duration.ofMillis(5000)).toList()
+        messages.size shouldEqual 1
+        messages[0].value() shouldEqual message
+    }
 }

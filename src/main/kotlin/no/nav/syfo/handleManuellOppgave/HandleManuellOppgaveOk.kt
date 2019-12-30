@@ -38,6 +38,7 @@ suspend fun handleManuellOppgaveOk(
     val fellesformat = fellesformatUnmarshaller.unmarshal(
         StringReader(manuellOppgave.receivedSykmelding.fellesformat)) as XMLEIFellesformat
 
+    // TODO remove notifySyfoService, when we no longer uses syfoService app to show sykmeldinger
     notifySyfoService(
         session = session,
         receiptProducer = syfoserviceProducer,

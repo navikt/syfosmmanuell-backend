@@ -37,7 +37,7 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, tild
     }
 }
 
-fun DatabaseInterface.erOpprettManuellOppgave(manueloppgaveId: String) =
+fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
     connection.use { connection ->
         connection.prepareStatement(
             """
@@ -46,7 +46,7 @@ fun DatabaseInterface.erOpprettManuellOppgave(manueloppgaveId: String) =
                 WHERE id=?;
                 """
         ).use {
-            it.setString(1, manueloppgaveId)
+            it.setString(1, sykmledingsId)
             it.executeQuery().next()
         }
     }
