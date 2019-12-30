@@ -1,6 +1,7 @@
 package no.nav.syfo.application
 
 import io.ktor.server.engine.ApplicationEngine
+import java.util.concurrent.TimeUnit
 import javax.jms.Connection
 
 class ApplicationServer(
@@ -11,7 +12,7 @@ class ApplicationServer(
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
-            this.applicationServer.stop(10000, 10000)
+            this.applicationServer.stop(10, 10, TimeUnit.SECONDS)
             this.connection.close()
         })
     }
