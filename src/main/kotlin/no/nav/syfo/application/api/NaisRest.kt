@@ -9,6 +9,7 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
+import io.prometheus.client.exporter.common.TextFormat.write004
 import no.nav.syfo.application.ApplicationState
 
 fun Routing.registerNaisApi(
@@ -34,7 +35,7 @@ fun Routing.registerNaisApi(
     get("/prometheus") {
         val names = call.request.queryParameters.getAll("name[]")?.toSet() ?: setOf()
         call.respondTextWriter(ContentType.parse(TextFormat.CONTENT_TYPE_004)) {
-            TextFormat.write004(this, collectorRegistry.filteredMetricFamilySamples(names))
+            write004(this, collectorRegistry.filteredMetricFamilySamples(names))
         }
     }
 }

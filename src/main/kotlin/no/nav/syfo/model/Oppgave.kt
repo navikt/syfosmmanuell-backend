@@ -29,21 +29,6 @@ data class OpprettOppgaveResponse(
     val id: Int
 )
 
-data class OppgaveResponse(
-    val antallTreffTotalt: Int,
-    val oppgaver: List<Oppgave>
-)
-
-data class Oppgave(
-    val id: Int,
-    val tildeltEnhetsnr: String?,
-    val aktoerId: String?,
-    val journalpostId: String?,
-    val saksreferanse: String?,
-    val tema: String?,
-    val oppgavetype: String?
-)
-
 enum class OppgaveStatus(val status: String) {
     OPPRETTET("OPPRETTET"),
     AAPNET("AAPNET"),

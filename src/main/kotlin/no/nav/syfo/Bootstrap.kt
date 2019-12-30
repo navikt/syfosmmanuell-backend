@@ -82,6 +82,11 @@ fun main() {
     val kafkaBaseConfig = loadBaseConfig(env, credentials)
     val producerProperties =
         kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+    val consumerProperties = kafkaBaseConfig.toConsumerConfig(
+        "${env.applicationName}-consumer",
+        valueDeserializer = StringDeserializer::class
+    )
+
     val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
     val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
     val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
@@ -124,11 +129,6 @@ fun main() {
     val applicationServer = ApplicationServer(applicationEngine, connection)
 
     applicationServer.start()
-
-    val consumerProperties = kafkaBaseConfig.toConsumerConfig(
-        "${env.applicationName}-consumer",
-        valueDeserializer = StringDeserializer::class
-    )
 
     applicationState.ready = true
 
@@ -215,7 +215,7 @@ suspend fun handleMessage(
         log.info("Mottok ein manuell oppgave, {}", fields(loggingMeta))
 
         if (database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
-            log.error(
+            log.warn(
                 "Manuell oppgave med sykmeldingsid {} er allerede lagret i databasen, {}",
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )

@@ -10,7 +10,7 @@ import no.nav.syfo.persistering.db.oppdaterValidationResults
 
 class ManuellOppgaveService(private val database: DatabaseInterface) {
 
-    fun oppdaterValidationResuts(oppgaveId: Int, validationResult: ValidationResult): Int =
+    fun oppdaterValidationResults(oppgaveId: Int, validationResult: ValidationResult): Int =
         database.oppdaterValidationResults(oppgaveId, validationResult)
 
     fun hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDTO> =

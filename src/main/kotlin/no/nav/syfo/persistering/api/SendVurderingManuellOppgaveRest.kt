@@ -49,7 +49,7 @@ fun Routing.sendVurderingManuellOppgave(
 
             val validationResult: ValidationResult = call.receive()
 
-            if (manuellOppgaveService.oppdaterValidationResuts(oppgaveId, validationResult) > 0) {
+            if (manuellOppgaveService.oppdaterValidationResults(oppgaveId, validationResult) > 0) {
                 val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(oppgaveId)
 
                 if (manuellOppgave != null) {

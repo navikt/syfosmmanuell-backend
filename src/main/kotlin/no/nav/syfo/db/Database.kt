@@ -57,7 +57,8 @@ class Database(
             role = Role.ADMIN
         )
         dataSource(env.syfosmmanuellbackendDBURL, credentials.username, credentials.password)
-        initSql("SET ROLE \"${env.databaseName}-${Role.ADMIN}\"") // required for assigning proper owners for the tables
+        // required for assigning proper owners for the tables
+        initSql("SET ROLE \"${env.databaseName}-${Role.ADMIN}\"")
         load().migrate()
     }
 }

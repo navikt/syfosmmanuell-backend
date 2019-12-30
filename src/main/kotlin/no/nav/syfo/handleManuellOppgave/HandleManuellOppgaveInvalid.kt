@@ -1,7 +1,6 @@
 package no.nav.syfo.handleManuellOppgave
 
 import io.ktor.util.KtorExperimentalAPI
-import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.syfo.client.OppgaveClient
@@ -37,7 +36,7 @@ suspend fun handleManuellOppgaveInvalid(
             manuellOppgave.receivedSykmelding.sykmelding.id,
             manuellOppgave.receivedSykmelding)
     )
-    log.info("Melding sendt til kafka {}, {}", sm2013InvalidHandlingTopic, StructuredArguments.fields(loggingMeta))
+    log.info("Melding sendt til kafka {}, {}", sm2013InvalidHandlingTopic, fields(loggingMeta))
 
     sendValidationResult(
         manuellOppgave.validationResult,

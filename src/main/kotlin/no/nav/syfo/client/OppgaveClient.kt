@@ -14,8 +14,13 @@ import no.nav.syfo.model.OpprettOppgave
 import no.nav.syfo.model.OpprettOppgaveResponse
 
 @KtorExperimentalAPI
-class OppgaveClient constructor(private val url: String, private val oidcClient: StsOidcClient, private val httpClient: HttpClient) {
-    suspend fun opprettOppgave(opprettOppgave: OpprettOppgave, msgId: String): OpprettOppgaveResponse = retry("create_oppgave") {
+class OppgaveClient constructor(
+    private val url: String,
+    private val oidcClient: StsOidcClient,
+    private val httpClient: HttpClient
+) {
+    suspend fun opprettOppgave(opprettOppgave: OpprettOppgave, msgId: String):
+            OpprettOppgaveResponse = retry("create_oppgave") {
         httpClient.post<OpprettOppgaveResponse>(url) {
             contentType(ContentType.Application.Json)
             val oidcToken = oidcClient.oidcToken()
@@ -25,7 +30,8 @@ class OppgaveClient constructor(private val url: String, private val oidcClient:
         }
     }
 
-    suspend fun ferdigStillOppgave(ferdigstilloppgave: FerdigStillOppgave, msgId: String): OpprettOppgaveResponse = retry("ferdigstill_oppgave") {
+    suspend fun ferdigStillOppgave(ferdigstilloppgave: FerdigStillOppgave, msgId: String):
+            OpprettOppgaveResponse = retry("ferdigstill_oppgave") {
         httpClient.patch<OpprettOppgaveResponse>(url + "/" + ferdigstilloppgave.id) {
             contentType(ContentType.Application.Json)
             val oidcToken = oidcClient.oidcToken()

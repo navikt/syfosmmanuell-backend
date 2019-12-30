@@ -5,7 +5,10 @@ import kotlinx.coroutines.launch
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.db.VaultCredentialService
 
-class RenewVaultService(val vaultCredentialService: VaultCredentialService, val applicationState: ApplicationState) {
+class RenewVaultService(
+    val vaultCredentialService: VaultCredentialService,
+    val applicationState: ApplicationState
+) {
 
     fun startRenewTasks() {
         GlobalScope.launch {

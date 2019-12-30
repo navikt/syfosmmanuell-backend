@@ -16,15 +16,19 @@ fun Routing.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
             log.info("Mottok kall til /api/v1/hentManuellOppgave")
             val oppgaveId = call.request.queryParameters["oppgaveid"]?.toInt()
 
-            if (oppgaveId == null) {
-                log.info("Mangler query parameters: oppgaveid")
-                call.respond(HttpStatusCode.BadRequest)
-            } else if (manuellOppgaveService.hentManuellOppgaver(oppgaveId).isEmpty()) {
-                log.info("Fant ingen uløste manuelloppgaver med oppgaveid {}", oppgaveId)
-                call.respond(emptyList<ManuellOppgaveDTO>())
-            } else {
-                log.info("Henter ut oppgave med oppgaveid: {}", oppgaveId)
-                call.respond(manuellOppgaveService.hentManuellOppgaver(oppgaveId))
+            when {
+                oppgaveId == null -> {
+                    log.info("Mangler query parameters: oppgaveid")
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+                manuellOppgaveService.hentManuellOppgaver(oppgaveId).isEmpty() -> {
+                    log.info("Fant ingen uløste manuelloppgaver med oppgaveid {}", oppgaveId)
+                    call.respond(emptyList<ManuellOppgaveDTO>())
+                }
+                else -> {
+                    log.info("Henter ut oppgave med oppgaveid: {}", oppgaveId)
+                    call.respond(manuellOppgaveService.hentManuellOppgaver(oppgaveId))
+                }
             }
         }
 
@@ -32,15 +36,19 @@ fun Routing.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
             log.info("Mottok kall til /api/v1/harManuellOppgave")
             val oppgaveId = call.request.queryParameters["oppgaveid"]?.toInt()
 
-            if (oppgaveId == null) {
-                log.info("Mangler query parameters: oppgaveid")
-                call.respond(HttpStatusCode.BadRequest)
-            } else if (manuellOppgaveService.hentManuellOppgaver(oppgaveId).isEmpty()) {
-                log.info("Fant ingen uløste manuelloppgaver med oppgaveid {}", oppgaveId)
-                call.respond(false)
-            } else {
-                log.info("Fant ikke ferdigstile manuelloppgaver med oppgaveid {}", oppgaveId)
-                call.respond(true)
+            when {
+                oppgaveId == null -> {
+                    log.info("Mangler query parameters: oppgaveid")
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+                manuellOppgaveService.hentManuellOppgaver(oppgaveId).isEmpty() -> {
+                    log.info("Fant ingen uløste manuelloppgaver med oppgaveid {}", oppgaveId)
+                    call.respond(false)
+                }
+                else -> {
+                    log.info("Fant ikke ferdigstile manuelloppgaver med oppgaveid {}", oppgaveId)
+                    call.respond(true)
+                }
             }
         }
     }
