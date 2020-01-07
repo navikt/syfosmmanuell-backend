@@ -125,7 +125,7 @@ fun sendValidationResult(
 }
 
 fun ferdigStillOppgave(manuellOppgave: ManuellOppgaveKomplett) = FerdigStillOppgave(
-        versjon = 1,
+        versjon = 2,
         id = manuellOppgave.oppgaveid,
         status = OppgaveStatus.FERDIGSTILT
 )
