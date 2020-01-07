@@ -3,7 +3,6 @@ package no.nav.syfo.client
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.request.parameter
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.http.ContentType
@@ -45,12 +44,11 @@ class OppgaveClient constructor(
 
     suspend fun hentOppgave(oppgaveId: Int, msgId: String):
             OpprettOppgaveResponse = retry("hent_oppgave") {
-        httpClient.get<OpprettOppgaveResponse>(url) {
+        httpClient.get<OpprettOppgaveResponse>("$url/$oppgaveId") {
             contentType(ContentType.Application.Json)
             val oidcToken = oidcClient.oidcToken()
             header("Authorization", "Bearer ${oidcToken.access_token}")
             header("X-Correlation-ID", msgId)
-            parameter("id", oppgaveId)
         }
     }
 }
