@@ -26,7 +26,8 @@ data class FerdigStillOppgave(
 )
 
 data class OpprettOppgaveResponse(
-    val id: Int
+    val id: Int,
+    val versjon: Int
 )
 
 enum class OppgaveStatus(val status: String) {

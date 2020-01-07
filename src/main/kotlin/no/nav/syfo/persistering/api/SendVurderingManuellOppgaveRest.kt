@@ -124,8 +124,8 @@ fun sendValidationResult(
     log.info("Valideringsreultat sendt til kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
 }
 
-fun ferdigStillOppgave(manuellOppgave: ManuellOppgaveKomplett) = FerdigStillOppgave(
-        versjon = 2,
+fun ferdigStillOppgave(manuellOppgave: ManuellOppgaveKomplett, oppgaveVersjon: Int) = FerdigStillOppgave(
+        versjon = oppgaveVersjon,
         id = manuellOppgave.oppgaveid,
         status = OppgaveStatus.FERDIGSTILT
 )

@@ -45,7 +45,9 @@ suspend fun handleManuellOppgaveInvalid(
         manuellOppgave.receivedSykmelding,
         loggingMeta)
 
-    val ferdigStillOppgave = ferdigStillOppgave(manuellOppgave)
+    val oppgaveVersjon = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId).versjon
+
+    val ferdigStillOppgave = ferdigStillOppgave(manuellOppgave, oppgaveVersjon)
 
     val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
     log.info(
