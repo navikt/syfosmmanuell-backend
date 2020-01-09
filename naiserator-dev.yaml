@@ -59,3 +59,5 @@ spec:
       value: Q1_SYFOSMMANUELL_B
     - name: JWT_ISSUER
       value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0
+    - name: CLIENT_ID
+      value: 543ceb1e-eb69-4089-9458-bdec61160afa
