@@ -57,3 +57,5 @@ spec:
       value: MQ1LSC04
     - name: MQ_CHANNEL_NAME
       value: Q1_SYFOSMMANUELL_B
+    - name: JWT_ISSUER
+      value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0

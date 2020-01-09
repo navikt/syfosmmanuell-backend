@@ -57,3 +57,5 @@ spec:
       value: MPLSC04
     - name: MQ_CHANNEL_NAME
       value: P_SYFOSMMANUELL_B
+    - name: JWT_ISSUER
+      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0

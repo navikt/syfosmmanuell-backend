@@ -19,17 +19,22 @@ data class Environment(
     val sm2013BehandlingsUtfallToipic: String = getEnvVar("KAFKA_SM2013_BEHANDLING_TOPIC", "privat-syfo-sm2013-behandlingsUtfall"),
     val syfoserviceQueueName: String = getEnvVar("MQ_SYFOSERVICE_QUEUE_NAME"),
     val oppgavebehandlingUrl: String = getEnvVar("OPPGAVEBEHANDLING_URL", "http://oppgave/api/v1/oppgaver"),
+    val jwkKeysUrl: String = getEnvVar("JWKKEYS_URL", "https://login.microsoftonline.com/common/discovery/keys"),
+    val clientId: String = getEnvVar("CLIENT_ID"),
+    val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
     override val mqHostname: String = getEnvVar("MQ_HOST_NAME"),
     override val mqPort: Int = getEnvVar("MQ_PORT").toInt(),
     override val mqGatewayName: String = getEnvVar("MQ_GATEWAY_NAME"),
     override val mqChannelName: String = getEnvVar("MQ_CHANNEL_NAME")
 ) : MqConfig, KafkaConfig
 
-data class VaultCredentials(
+data class VaultSecrets(
     val serviceuserUsername: String,
     val serviceuserPassword: String,
     val mqUsername: String,
-    val mqPassword: String
+    val mqPassword: String,
+    val oidcWellKnownUri: String,
+    val loginserviceClientId: String
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername
     override val kafkaPassword: String = serviceuserPassword

@@ -1,10 +1,12 @@
 package no.nav.syfo.application
 
+import com.auth0.jwk.JwkProvider
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.auth.authenticate
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
@@ -20,6 +22,7 @@ import io.ktor.util.KtorExperimentalAPI
 import javax.jms.MessageProducer
 import javax.jms.Session
 import no.nav.syfo.Environment
+import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.client.OppgaveClient
@@ -46,12 +49,17 @@ fun createApplicationEngine(
     syfoserviceQueueName: String,
     session: Session,
     syfoserviceProducer: MessageProducer,
-    oppgaveClient: OppgaveClient
+    oppgaveClient: OppgaveClient,
+    vaultSecrets: VaultSecrets,
+    jwkProvider: JwkProvider,
+    issuer: String
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         routing {
             registerNaisApi(applicationState)
-            hentManuellOppgaver(manuellOppgaveService)
+            authenticate("jwt") {
+                hentManuellOppgaver(manuellOppgaveService)
+            }
             sendVurderingManuellOppgave(
                 manuellOppgaveService,
                 kafkaproducerApprec,
@@ -67,6 +75,7 @@ fun createApplicationEngine(
                 oppgaveClient
                 )
         }
+        setupAuth(vaultSecrets, jwkProvider, issuer)
         install(ContentNegotiation) {
             jackson {
                 registerKotlinModule()
