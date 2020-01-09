@@ -20,7 +20,6 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
 import java.nio.file.Paths
-import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
@@ -43,14 +42,9 @@ import org.junit.Test
 @KtorExperimentalAPI
 internal class AuthenticateTest {
 
-    val path = "src/test/resources/jwkset.json"
-    val uri = Paths.get(path).toUri().toURL()
-    val jwkProvider = JwkProviderBuilder(uri).build()
-    val env = Environment(
-        jwtIssuer = "issuer",
-        mountPathVault = "",
-        kafkaBootstrapServers = ""
-    )
+    private val path = "src/test/resources/jwkset.json"
+    private val uri = Paths.get(path).toUri().toURL()
+    private val jwkProvider = JwkProviderBuilder(uri).build()
 
     @Test
     internal fun `Aksepterer gyldig JWT med riktig audience`() {
@@ -110,6 +104,68 @@ internal class AuthenticateTest {
             }) {
                 response.status() shouldEqual HttpStatusCode.OK
                 objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).first().oppgaveid shouldEqual oppgaveid
+            }
+        }
+    }
+
+    @Test
+    internal fun `Gyldig JWT med feil audience gir Unauthorized`() {
+        with(TestApplicationEngine()) {
+            start()
+
+            val database = TestDB()
+
+            val manuellOppgaveService = ManuellOppgaveService(database)
+
+            val manuelloppgaveId = "1314"
+
+            val manuellOppgave = ManuellOppgave(
+                receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
+                validationResult = ValidationResult(Status.OK, emptyList()),
+                apprec = objectMapper.readValue(
+                    Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+                        Charsets.UTF_8
+                    )
+                ),
+                behandlendeEnhet = "1234"
+            )
+            val oppgaveid = 308076319
+            database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
+
+            application.setupAuth(VaultSecrets(
+                serviceuserUsername = "username",
+                serviceuserPassword = "password",
+                mqPassword = "",
+                mqUsername = "srvbruker",
+                oidcWellKnownUri = "https://sts.issuer.net/myid",
+                loginserviceClientId = "clientId"
+            ), jwkProvider, "https://sts.issuer.net/myid")
+            application.routing {
+                authenticate("jwt") {
+                    hentManuellOppgaver(manuellOppgaveService)
+                }
+            }
+
+            application.install(ContentNegotiation) {
+                jackson {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                }
+            }
+            application.install(StatusPages) {
+                exception<Throwable> { cause ->
+                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                    log.error("Caught exception", cause)
+                    throw cause
+                }
+            }
+
+            with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
+                addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")
+            }) {
+                response.status() shouldEqual HttpStatusCode.Unauthorized
+                response.content shouldEqual null
             }
         }
     }
