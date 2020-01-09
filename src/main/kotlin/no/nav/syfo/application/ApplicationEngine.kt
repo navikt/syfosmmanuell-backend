@@ -55,26 +55,6 @@ fun createApplicationEngine(
     issuer: String
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
-        routing {
-            registerNaisApi(applicationState)
-            authenticate("jwt") {
-                hentManuellOppgaver(manuellOppgaveService)
-            }
-            sendVurderingManuellOppgave(
-                manuellOppgaveService,
-                kafkaproducerApprec,
-                sm2013ApprecTopicName,
-                kafkaproducerreceivedSykmelding,
-                sm2013AutomaticHandlingTopic,
-                sm2013InvalidHandlingTopic,
-                sm2013BehandlingsUtfallToipic,
-                kafkaproducervalidationResult,
-                syfoserviceQueueName,
-                session,
-                syfoserviceProducer,
-                oppgaveClient
-                )
-        }
         setupAuth(vaultSecrets, jwkProvider, issuer)
         install(ContentNegotiation) {
             jackson {
@@ -98,5 +78,25 @@ fun createApplicationEngine(
             method(HttpMethod.Options)
             header("Content-Type")
             host(env.syfosmmanuellUrl, schemes = listOf("https", "https"))
+        }
+        routing {
+            registerNaisApi(applicationState)
+            authenticate("jwt") {
+                hentManuellOppgaver(manuellOppgaveService)
+            }
+            sendVurderingManuellOppgave(
+                manuellOppgaveService,
+                kafkaproducerApprec,
+                sm2013ApprecTopicName,
+                kafkaproducerreceivedSykmelding,
+                sm2013AutomaticHandlingTopic,
+                sm2013InvalidHandlingTopic,
+                sm2013BehandlingsUtfallToipic,
+                kafkaproducervalidationResult,
+                syfoserviceQueueName,
+                session,
+                syfoserviceProducer,
+                oppgaveClient
+                )
         }
     }
