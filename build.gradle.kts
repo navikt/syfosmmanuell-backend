@@ -26,6 +26,7 @@ val vaultJavaDriveVersion = "3.1.0"
 val postgresEmbeddedVersion = "0.13.1"
 val javaTimeAdapterVersion = "1.1.3"
 val junitJupiterVersion = "5.4.0"
+val nimbusdsVersion = "7.5.1"
 
 plugins {
     kotlin("jvm") version "1.3.61"
@@ -102,6 +103,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
