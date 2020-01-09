@@ -23,7 +23,11 @@ fun Application.setupAuth(
             validate { credentials ->
                 when {
                     hasLoginserviceClientIdAudience(credentials, vaultSecrets) -> JWTPrincipal(credentials.payload)
-                    else -> unauthorized(credentials)
+                    else -> {
+                        log.warn("unauthorized attempt")
+                        log.warn("issuer + $issuer")
+                        unauthorized(credentials)
+                    }
                 }
             }
         }
