@@ -78,6 +78,7 @@ fun createApplicationEngine(
             method(HttpMethod.Options)
             header("Content-Type")
             host(env.syfosmmanuellUrl, schemes = listOf("https", "https"))
+            allowCredentials = true
         }
         routing {
             registerNaisApi(applicationState)
