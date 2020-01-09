@@ -150,4 +150,29 @@ internal class CORSTest {
             }
         }
     }
+
+    @Test
+    internal fun `Simple credentials`() {
+        with(TestApplicationEngine()) {
+            start()
+            application.install(CORS) {
+                anyHost()
+                allowCredentials = true
+            }
+            val applicationState = ApplicationState()
+            applicationState.ready = true
+            applicationState.alive = true
+            application.routing { registerNaisApi(applicationState) }
+
+            with(handleRequest(HttpMethod.Options, "/is_ready") {
+                addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
+                addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
+            }) {
+                response.status() shouldEqual HttpStatusCode.OK
+                response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual "https://syfosmmanuell.nais.preprod.local"
+                response.headers[HttpHeaders.Vary] shouldEqual HttpHeaders.Origin
+                response.headers[HttpHeaders.AccessControlAllowCredentials] shouldEqual "true"
+            }
+        }
+    }
 }
