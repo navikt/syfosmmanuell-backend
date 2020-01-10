@@ -77,7 +77,7 @@ fun main() {
         mqUsername = getFileAsString("/secrets/default/mqUsername"),
         mqPassword = getFileAsString("/secrets/default/mqPassword"),
         oidcWellKnownUri = getFileAsString("/secrets/default/oidcWellKnownUri"),
-        syfosmmanuellClientId = getFileAsString("/secrets/azuread/syfosmmanuell/client_id")
+        syfosmmanuellBackendClientId = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_id")
 
     )
 
