@@ -40,7 +40,7 @@ spec:
         mountPath: /secrets/azuread/syfosmmanuell-backend
       - kvPath: /azuread/data/dev/creds/syfosmmanuell
         mountPath: /secrets/azuread/syfosmmanuell
-      - kvPath: serviceuser/data/dev/srvsyfosmmanuell-b
+      - kvPath: /serviceuser/data/dev/srvsyfosmmanuell-backend
         mountPath: /secrets/serviceuser
       - kvPath: /kv/preprod/fss/syfosmmanuell-backend/default
         mountPath: /secrets/default
