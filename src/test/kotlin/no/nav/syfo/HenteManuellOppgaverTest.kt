@@ -31,28 +31,29 @@ import org.junit.Test
 
 internal class HenteManuellOppgaverTest {
 
+    val database = TestDB()
+
+    val manuellOppgaveService = ManuellOppgaveService(database)
+
+    val manuelloppgaveId = "1314"
+
+    val manuellOppgave = ManuellOppgave(
+        receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
+        validationResult = ValidationResult(Status.OK, emptyList()),
+        apprec = objectMapper.readValue(
+            Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+                Charsets.UTF_8
+            )
+        ),
+        behandlendeEnhet = "1234"
+    )
+    val oppgaveid = 308076319
+
     @Test
     internal fun `Skal hente ut manuell oppgaver basert, på oppgaveid`() {
         with(TestApplicationEngine()) {
             start()
 
-            val database = TestDB()
-
-            val manuellOppgaveService = ManuellOppgaveService(database)
-
-            val manuelloppgaveId = "1314"
-
-            val manuellOppgave = ManuellOppgave(
-                receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-                validationResult = ValidationResult(Status.OK, emptyList()),
-                apprec = objectMapper.readValue(
-                    Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
-                        Charsets.UTF_8
-                    )
-                ),
-                behandlendeEnhet = "1234"
-            )
-            val oppgaveid = 308076319
             database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
 
             application.routing { hentManuellOppgaver(manuellOppgaveService) }
@@ -74,6 +75,64 @@ internal class HenteManuellOppgaverTest {
             with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid")) {
                 response.status() shouldEqual HttpStatusCode.OK
                 objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).first().oppgaveid shouldEqual oppgaveid
+            }
+        }
+    }
+
+    @Test
+    internal fun `Skal gi Bad Request, når oppgaveid mangler`() {
+        with(TestApplicationEngine()) {
+            start()
+
+            database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
+
+            application.routing { hentManuellOppgaver(manuellOppgaveService) }
+            application.install(ContentNegotiation) {
+                jackson {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                }
+            }
+            application.install(StatusPages) {
+                exception<Throwable> { cause ->
+                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                    log.error("Caught exception", cause)
+                    throw cause
+                }
+            }
+
+            with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?feilparamanter=$oppgaveid")) {
+                response.status() shouldEqual HttpStatusCode.BadRequest
+                response.content shouldEqual null
+            }
+        }
+    }
+
+    @Test
+    internal fun `Skal returnere ein tom liste av oppgaver, når det ikkje finnes noen oppgaver med opggit id`() {
+        with(TestApplicationEngine()) {
+            start()
+
+            application.routing { hentManuellOppgaver(manuellOppgaveService) }
+            application.install(ContentNegotiation) {
+                jackson {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                }
+            }
+            application.install(StatusPages) {
+                exception<Throwable> { cause ->
+                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                    log.error("Caught exception", cause)
+                    throw cause
+                }
+            }
+
+            with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid")) {
+                response.status() shouldEqual HttpStatusCode.OK
+                objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).size shouldEqual 0
             }
         }
     }

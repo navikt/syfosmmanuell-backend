@@ -89,20 +89,20 @@ fun createApplicationEngine(
             registerNaisApi(applicationState)
             authenticate("jwt") {
                 hentManuellOppgaver(manuellOppgaveService)
-            }
-            sendVurderingManuellOppgave(
-                manuellOppgaveService,
-                kafkaproducerApprec,
-                sm2013ApprecTopicName,
-                kafkaproducerreceivedSykmelding,
-                sm2013AutomaticHandlingTopic,
-                sm2013InvalidHandlingTopic,
-                sm2013BehandlingsUtfallToipic,
-                kafkaproducervalidationResult,
-                syfoserviceQueueName,
-                session,
-                syfoserviceProducer,
-                oppgaveClient
+                sendVurderingManuellOppgave(
+                    manuellOppgaveService,
+                    kafkaproducerApprec,
+                    sm2013ApprecTopicName,
+                    kafkaproducerreceivedSykmelding,
+                    sm2013AutomaticHandlingTopic,
+                    sm2013InvalidHandlingTopic,
+                    sm2013BehandlingsUtfallToipic,
+                    kafkaproducervalidationResult,
+                    syfoserviceQueueName,
+                    session,
+                    syfoserviceProducer,
+                    oppgaveClient
                 )
+            }
         }
     }

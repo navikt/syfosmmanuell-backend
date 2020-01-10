@@ -78,7 +78,6 @@ fun main() {
         mqPassword = getFileAsString("/secrets/default/mqPassword"),
         oidcWellKnownUri = getFileAsString("/secrets/default/oidcWellKnownUri"),
         syfosmmanuellBackendClientId = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_id")
-
     )
 
     val wellKnown = getWellKnown(vaultSecrets.oidcWellKnownUri)

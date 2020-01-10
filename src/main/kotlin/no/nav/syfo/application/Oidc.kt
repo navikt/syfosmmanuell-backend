@@ -32,7 +32,8 @@ val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
     }
 }
 
-fun getWellKnown(wellKnownUrl: String) = runBlocking { HttpClient(Apache, proxyConfig).get<WellKnown>(wellKnownUrl) }
+fun getWellKnown(wellKnownUrl: String) =
+    runBlocking { HttpClient(Apache, proxyConfig).get<WellKnown>(wellKnownUrl) }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnown(

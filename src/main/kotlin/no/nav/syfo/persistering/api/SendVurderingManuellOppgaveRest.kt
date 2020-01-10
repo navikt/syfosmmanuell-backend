@@ -4,7 +4,7 @@ import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.routing.Routing
+import io.ktor.routing.Route
 import io.ktor.routing.put
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
@@ -28,7 +28,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
 @KtorExperimentalAPI
-fun Routing.sendVurderingManuellOppgave(
+fun Route.sendVurderingManuellOppgave(
     manuellOppgaveService: ManuellOppgaveService,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     sm2013ApprecTopicName: String,
