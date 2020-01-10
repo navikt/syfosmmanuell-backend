@@ -18,6 +18,8 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.mockk
+import javax.jms.MessageProducer
+import javax.jms.Session
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
@@ -36,10 +38,8 @@ import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.Test
-import javax.jms.MessageProducer
-import javax.jms.Session
 
-internal class SendVurderingManuellOppgaveTest{
+internal class SendVurderingManuellOppgaveTest {
     val database = TestDB()
 
     val manuellOppgaveService = ManuellOppgaveService(database)
@@ -58,17 +58,14 @@ internal class SendVurderingManuellOppgaveTest{
     )
     val oppgaveid = 308076319
 
-
     val sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic"
     val sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic"
     val sm2013BehandlingsUtfallToipic = "sm2013BehandlingsUtfallToipic"
     val sm2013ApprecTopicName = "sm2013ApprecTopicName"
 
-
     val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>()
     val kafkaproducerreceivedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>()
     val kafkaproducervalidationResult = mockk<KafkaProducer<String, ValidationResult>>()
-
 
     val syfoserviceQueueName = "syfoserviceQueueName"
     private val session = mockk<Session>()
@@ -113,7 +110,6 @@ internal class SendVurderingManuellOppgaveTest{
                 }
             }
 
-
             val validationResult = ValidationResult(status = Status.INVALID, ruleHits = listOf(
                 RuleInfo(ruleName = "BEHANDLER_KI_NOT_USING_VALID_DIAGNOSECODE_TYPE",
                     messageForUser = "Den som skrev sykmeldingen mangler autorisasjon.",
@@ -122,8 +118,9 @@ internal class SendVurderingManuellOppgaveTest{
                     ruleStatus = Status.INVALID
                 )))
 
-            with(handleRequest(HttpMethod.Put, "/api/v1/vurderingmanuelloppgave/"){
-                addHeader("oppgaveid", "1234444")
+            with(handleRequest(HttpMethod.Put, "/api/v1/vurderingmanuelloppgave/21314") {
+                addHeader("Accept", "application/json")
+                addHeader("Content-Type", "application/json")
                 setBody(objectMapper.writeValueAsString(validationResult))
             }) {
                 response.status() shouldEqual HttpStatusCode.InternalServerError
@@ -131,5 +128,4 @@ internal class SendVurderingManuellOppgaveTest{
             }
         }
     }
-
 }
