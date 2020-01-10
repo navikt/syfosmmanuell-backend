@@ -1,4 +1,4 @@
-package no.nav.syfo
+package no.nav.syfo.api
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
@@ -6,6 +6,7 @@ import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.objectMapper
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.testutil.TestDB
