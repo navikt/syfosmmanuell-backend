@@ -13,7 +13,6 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.net.URL
-import java.nio.file.Paths
 import java.time.Duration
 import java.time.LocalDate
 import java.util.Properties
@@ -53,6 +52,7 @@ import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
+import no.nav.syfo.util.getFileAsString
 import no.nav.syfo.util.wrapExceptions
 import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -71,8 +71,15 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 @KtorExperimentalAPI
 fun main() {
     val env = Environment()
-    val vaultSecrets =
-        objectMapper.readValue<VaultSecrets>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
+    val vaultSecrets = VaultSecrets(
+        serviceuserPassword = getFileAsString("/secrets/serviceuser/password"),
+        serviceuserUsername = getFileAsString("/secrets/serviceuser/username"),
+        mqUsername = getFileAsString("/secrets/default/mqUsername"),
+        mqPassword = getFileAsString("/secrets/default/mqPassword"),
+        oidcWellKnownUri = getFileAsString("/secrets/default/oidcWellKnownUri"),
+        syfosmmanuellClientId = getFileAsString("/secrets/azuread/syfosmmanuell/client_id")
+
+    )
 
     val wellKnown = getWellKnown(vaultSecrets.oidcWellKnownUri)
     val jwkProvider = JwkProviderBuilder(URL(wellKnown.jwks_uri))

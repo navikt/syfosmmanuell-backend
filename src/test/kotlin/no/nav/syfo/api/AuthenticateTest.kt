@@ -76,7 +76,7 @@ internal class AuthenticateTest {
                 mqPassword = "",
                 mqUsername = "srvbruker",
                 oidcWellKnownUri = "https://sts.issuer.net/myid",
-                loginserviceClientId = "clientId"
+                syfosmmanuellClientId = "clientId"
             ), jwkProvider, "https://sts.issuer.net/myid")
             application.routing {
                 authenticate("jwt") {
@@ -138,7 +138,7 @@ internal class AuthenticateTest {
                 mqPassword = "",
                 mqUsername = "srvbruker",
                 oidcWellKnownUri = "https://sts.issuer.net/myid",
-                loginserviceClientId = "clientId"
+                syfosmmanuellClientId = "clientId"
             ), jwkProvider, "https://sts.issuer.net/myid")
             application.routing {
                 authenticate("jwt") {

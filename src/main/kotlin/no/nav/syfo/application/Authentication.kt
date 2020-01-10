@@ -44,5 +44,5 @@ fun unauthorized(credentials: JWTCredential): Principal? {
 }
 
 fun hasLoginserviceClientIdAudience(credentials: JWTCredential, vaultSecrets: VaultSecrets): Boolean {
-    return credentials.payload.audience.contains(vaultSecrets.loginserviceClientId)
+    return credentials.payload.audience.contains(vaultSecrets.syfosmmanuellClientId)
 }
