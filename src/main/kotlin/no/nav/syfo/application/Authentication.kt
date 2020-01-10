@@ -22,10 +22,8 @@ fun Application.setupAuth(
             verifier(jwkProvider, issuer)
             validate { credentials ->
                 when {
-                    hasLoginserviceClientIdAudience(credentials, vaultSecrets) -> JWTPrincipal(credentials.payload)
+                    hasSyfosmmanuellBackendClientIdAudience(credentials, vaultSecrets) -> JWTPrincipal(credentials.payload)
                     else -> {
-                        log.warn("unauthorized attempt")
-                        log.warn("issuer + $issuer")
                         unauthorized(credentials)
                     }
                 }
@@ -43,6 +41,6 @@ fun unauthorized(credentials: JWTCredential): Principal? {
     return null
 }
 
-fun hasLoginserviceClientIdAudience(credentials: JWTCredential, vaultSecrets: VaultSecrets): Boolean {
+fun hasSyfosmmanuellBackendClientIdAudience(credentials: JWTCredential, vaultSecrets: VaultSecrets): Boolean {
     return credentials.payload.audience.contains(vaultSecrets.syfosmmanuellBackendClientId)
 }
