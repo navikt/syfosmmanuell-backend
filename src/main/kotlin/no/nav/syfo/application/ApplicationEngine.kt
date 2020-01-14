@@ -74,7 +74,7 @@ fun createApplicationEngine(
             }
         }
         install(CallLogging) {
-            level = Level.DEBUG
+            level = Level.TRACE
         }
         install(CORS) {
             method(HttpMethod.Get)
