@@ -31,6 +31,7 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.finnFristForFerdigstillingAvOppgave
 import no.nav.syfo.db.Database
 import no.nav.syfo.db.VaultCredentialService
@@ -124,6 +125,7 @@ fun main() {
     }
     val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword)
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
+    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(env.syfoTilgangsKontrollClientUrl, "", httpClient)
 
     val applicationEngine = createApplicationEngine(
         env,
