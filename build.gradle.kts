@@ -19,11 +19,10 @@ val kluentVersion = "1.49"
 val kafkaEmbeddedVersion = "2.3.0"
 val mockkVersion = "1.9.3"
 val postgresVersion = "42.2.5"
-val h2Version = "1.4.197"
 val flywayVersion = "5.2.4"
 val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
-val postgresEmbeddedVersion = "0.13.1"
+val postgresEmbeddedVersion = "0.13.3"
 val javaTimeAdapterVersion = "1.1.3"
 val junitJupiterVersion = "5.4.0"
 val nimbusdsVersion = "7.5.1"
@@ -90,7 +89,6 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
-    implementation("com.h2database:h2:$h2Version")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")

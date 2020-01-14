@@ -98,6 +98,6 @@ fun createApplicationEngine(
                     syfoserviceProducer,
                     oppgaveClient
                 )
-             }
+            }
         }
     }
