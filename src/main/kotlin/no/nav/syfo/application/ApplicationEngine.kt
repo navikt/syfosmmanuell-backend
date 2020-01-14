@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.auth.authenticate
 import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
@@ -87,7 +86,7 @@ fun createApplicationEngine(
         }
         routing {
             registerNaisApi(applicationState)
-            authenticate("jwt") {
+            // authenticate("jwt") {
                 hentManuellOppgaver(manuellOppgaveService)
                 sendVurderingManuellOppgave(
                     manuellOppgaveService,
@@ -103,6 +102,6 @@ fun createApplicationEngine(
                     syfoserviceProducer,
                     oppgaveClient
                 )
-            }
+            // }
         }
     }
