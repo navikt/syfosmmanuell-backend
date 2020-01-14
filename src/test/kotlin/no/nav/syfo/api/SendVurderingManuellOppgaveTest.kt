@@ -128,4 +128,53 @@ internal class SendVurderingManuellOppgaveTest {
             }
         }
     }
+
+    @KtorExperimentalAPI
+    @Test
+    internal fun `Skal returnere NoContent, naar oppdatering av manuelloppgave med status OK`() {
+        with(TestApplicationEngine()) {
+            start()
+
+            database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
+
+            application.routing { sendVurderingManuellOppgave(
+                manuellOppgaveService,
+                kafkaproducerApprec,
+                sm2013ApprecTopicName,
+                kafkaproducerreceivedSykmelding,
+                sm2013AutomaticHandlingTopic,
+                sm2013InvalidHandlingTopic,
+                sm2013BehandlingsUtfallToipic,
+                kafkaproducervalidationResult,
+                syfoserviceQueueName,
+                session,
+                syfoserviceProducer,
+                oppgaveClient
+            ) }
+            application.install(ContentNegotiation) {
+                jackson {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                }
+            }
+            application.install(StatusPages) {
+                exception<Throwable> { cause ->
+                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                    log.error("Caught exception", cause)
+                    throw cause
+                }
+            }
+
+            val validationResult = ValidationResult(status = Status.OK, ruleHits = emptyList())
+
+            with(handleRequest(HttpMethod.Put, "/api/v1/vurderingmanuelloppgave/$oppgaveid") {
+                addHeader("Accept", "application/json")
+                addHeader("Content-Type", "application/json")
+                setBody(objectMapper.writeValueAsString(validationResult))
+            }) {
+                response.status() shouldEqual HttpStatusCode.NoContent
+            }
+        }
+    }
 }
