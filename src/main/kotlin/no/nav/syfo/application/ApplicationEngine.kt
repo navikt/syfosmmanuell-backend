@@ -6,8 +6,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.auth.authenticate
 import io.ktor.features.CORS
-import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpMethod
@@ -33,7 +33,6 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.slf4j.event.Level
 
 @KtorExperimentalAPI
 fun createApplicationEngine(
@@ -72,9 +71,6 @@ fun createApplicationEngine(
                 throw cause
             }
         }
-        install(CallLogging) {
-            level = Level.TRACE
-        }
         install(CORS) {
             method(HttpMethod.Get)
             method(HttpMethod.Post)
@@ -86,7 +82,7 @@ fun createApplicationEngine(
         }
         routing {
             registerNaisApi(applicationState)
-            // authenticate("jwt") {
+            authenticate("jwt") {
                 hentManuellOppgaver(manuellOppgaveService)
                 sendVurderingManuellOppgave(
                     manuellOppgaveService,
@@ -102,6 +98,6 @@ fun createApplicationEngine(
                     syfoserviceProducer,
                     oppgaveClient
                 )
-            // }
+             }
         }
     }

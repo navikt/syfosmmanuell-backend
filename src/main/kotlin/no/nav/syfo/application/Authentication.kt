@@ -19,9 +19,7 @@ fun Application.setupAuth(
 ) {
     install(Authentication) {
         jwt(name = "jwt") {
-            log.info("Made it to JWT")
             verifier(jwkProvider, issuer)
-            log.info("Made it verifier")
             validate { credentials ->
                 when {
                     hasSyfosmmanuellBackendClientIdAudience(credentials, vaultSecrets) -> JWTPrincipal(credentials.payload)
