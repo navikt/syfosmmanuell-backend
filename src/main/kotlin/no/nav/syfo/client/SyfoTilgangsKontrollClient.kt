@@ -46,8 +46,17 @@ class SyfoTilgangsKontrollClient constructor(
                     log.warn("syfo-tilgangskontroll svarer med NotFound")
                     return@retry null
                 }
+
+                HttpStatusCode.Unauthorized -> {
+                    log.warn("syfo-tilgangskontroll svarer med Unauthorized")
+                    return@retry Tilgang(
+                        harTilgang = false,
+                        begrunnelse = "syfo-tilgangskontroll svarer med Unauthorized"
+                    )
+                }
+
                 else -> {
-                    log.info("httpResponse status kode: {}", httpResponse.status.value)
+                    log.info("syfo-tilgangskontroll svarer med httpResponse status kode: {}", httpResponse.status.value)
                     log.info("Sjekker tilgang for veileder på person")
                     httpResponse.call.response.receive<Tilgang>()
                 }

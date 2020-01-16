@@ -51,7 +51,8 @@ fun Route.hentManuellOppgaver(
                     if (harTilgangTilOppgave != null && harTilgangTilOppgave) {
                         call.respond(manuellOppgaveDTOList)
                     } else {
-                        call.respond(HttpStatusCode.Forbidden)
+                        log.warn("Veileder har ikkje tilgang")
+                        call.respond(HttpStatusCode.Unauthorized)
                     }
                 }
             }

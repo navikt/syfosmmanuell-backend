@@ -61,7 +61,7 @@ fun Route.sendVurderingManuellOppgave(
                         msgId = manuellOppgave.receivedSykmelding.msgId,
                         sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
                     )
-
+                    // TODO legge til tilgangskontroll
                     when (manuellOppgave.validationResult.status) {
                         Status.INVALID -> { handleManuellOppgaveInvalid(
                             manuellOppgave,
