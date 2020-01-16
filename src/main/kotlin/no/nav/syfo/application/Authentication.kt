@@ -50,5 +50,6 @@ fun hasSyfosmmanuellBackendClientIdAudience(credentials: JWTCredential, vaultSec
 
 suspend fun loggedInNavidentHasAccess(syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient, idToken: String): Boolean {
     val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(idToken)
+    log.info("Kall til syfoTilgangsKontrollClient tilgang: {}, grunn: {}", tilgang?.harTilgang, tilgang?.begrunnelse )
     return tilgang?.harTilgang ?: false
 }
