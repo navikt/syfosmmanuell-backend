@@ -47,6 +47,7 @@ class SyfoTilgangsKontrollClient constructor(
                     return@retry null
                 }
                 else -> {
+                    log.info("httpResponse status kode: {}", httpResponse.status.value)
                     log.info("Sjekker tilgang for veileder på person")
                     httpResponse.call.response.receive<Tilgang>()
                 }
