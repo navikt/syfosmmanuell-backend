@@ -1,7 +1,9 @@
 package no.nav.syfo.aksessering.api
 
 import io.ktor.application.call
+import io.ktor.auth.parseAuthorizationHeader
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
@@ -19,8 +21,19 @@ fun Route.hentManuellOppgaver(
         get("/hentManuellOppgave") {
             log.info("Mottok kall til /api/v1/hentManuellOppgave")
             val oppgaveId = call.request.queryParameters["oppgaveid"]?.toInt()
+            val authHeader = call.request.parseAuthorizationHeader()
+            var accessToken: String? = null
+            if (!(authHeader == null ||
+                        authHeader !is HttpAuthHeader.Single ||
+                        authHeader.authScheme != "Bearer")) {
+                accessToken = authHeader.blob
+            }
 
             when {
+                accessToken == null -> {
+                    log.info("Mangler JWT Bearer token i HTTP header")
+                    call.respond(HttpStatusCode.BadRequest)
+                }
                 oppgaveId == null -> {
                     log.info("Mangler query parameters: oppgaveid")
                     call.respond(HttpStatusCode.BadRequest)
@@ -31,7 +44,15 @@ fun Route.hentManuellOppgaver(
                 }
                 else -> {
                     log.info("Henter ut oppgave med oppgaveid: {}", oppgaveId)
-                    call.respond(manuellOppgaveService.hentManuellOppgaver(oppgaveId))
+                    val manuellOppgaveDTOList = manuellOppgaveService.hentManuellOppgaver(oppgaveId)
+                    val pasientFnr = manuellOppgaveDTOList.first().receivedSykmelding.personNrPasient
+
+                    val harTilgangTilOppgave = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(accessToken, pasientFnr)?.harTilgang
+                    if (harTilgangTilOppgave != null && harTilgangTilOppgave) {
+                        call.respond(manuellOppgaveDTOList)
+                    } else {
+                        call.respond(HttpStatusCode.Forbidden)
+                    }
                 }
             }
         }

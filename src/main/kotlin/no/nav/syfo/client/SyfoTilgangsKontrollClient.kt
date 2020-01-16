@@ -9,7 +9,6 @@ import io.ktor.client.request.parameter
 import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import java.io.IOException
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 
@@ -17,19 +16,25 @@ class SyfoTilgangsKontrollClient constructor(
     private val url: String,
     private val httpClient: HttpClient
 ) {
-    suspend fun sjekkVeiledersTilgangTilPersonViaAzure(idToken: String, personFnr: String): Tilgang? =
+    suspend fun sjekkVeiledersTilgangTilPersonViaAzure(accessToken: String, personFnr: String): Tilgang? =
         retry("tilgang_til_person_via_azure") {
             val httpResponse = httpClient.get<HttpResponse>("$url/api/tilgang/bruker") {
             accept(ContentType.Application.Json)
             headers {
-                append("Authorization", "Bearer $idToken")
+                append("Authorization", "Bearer $accessToken")
             }
             parameter("fnr", personFnr)
         }
             when (httpResponse.status) {
                 HttpStatusCode.InternalServerError -> {
-                    log.error("syfo-tilgangskontroll svarte med feilmelding")
-                    throw IOException("syfo-tilgangskontroll svarte med feilmelding")
+                    val internalServerErrorFeilmeldingTekst = "syfo-tilgangskontroll svarte med " +
+                            "feilmeldingcode: ${HttpStatusCode.InternalServerError.value}, " +
+                            "feilmeldingbeskrivelse: ${HttpStatusCode.InternalServerError.description}"
+                    log.error(internalServerErrorFeilmeldingTekst)
+                    Tilgang(
+                        harTilgang = false,
+                        begrunnelse = internalServerErrorFeilmeldingTekst
+                    )
                 }
 
                 HttpStatusCode.BadRequest -> {
