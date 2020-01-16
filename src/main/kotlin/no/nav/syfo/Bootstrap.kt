@@ -125,7 +125,7 @@ fun main() {
     }
     val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword)
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
-    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(env.syfoTilgangsKontrollClientUrl, "", httpClient)
+    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(env.syfoTilgangsKontrollClientUrl, httpClient)
 
     val applicationEngine = createApplicationEngine(
         env,
@@ -144,7 +144,8 @@ fun main() {
         oppgaveClient,
         vaultSecrets,
         jwkProvider,
-        wellKnown.issuer
+        wellKnown.issuer,
+        syfoTilgangsKontrollClient
     )
 
     val applicationServer = ApplicationServer(applicationEngine, connection)

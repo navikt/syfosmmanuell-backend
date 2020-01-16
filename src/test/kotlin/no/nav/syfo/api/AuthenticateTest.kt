@@ -24,6 +24,7 @@ import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.setupAuth
+import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -36,6 +37,7 @@ import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
+import org.amshove.kluent.mock
 import org.amshove.kluent.shouldEqual
 import org.junit.Test
 
@@ -70,6 +72,8 @@ internal class AuthenticateTest {
             val oppgaveid = 308076319
             database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
 
+            val syfoTilgangsKontrollClient = mock<SyfoTilgangsKontrollClient>()
+
             application.setupAuth(VaultSecrets(
                 serviceuserUsername = "username",
                 serviceuserPassword = "password",
@@ -77,7 +81,7 @@ internal class AuthenticateTest {
                 mqUsername = "srvbruker",
                 oidcWellKnownUri = "https://sts.issuer.net/myid",
                 syfosmmanuellBackendClientId = "clientId"
-            ), jwkProvider, "https://sts.issuer.net/myid")
+            ), jwkProvider, "https://sts.issuer.net/myid", syfoTilgangsKontrollClient)
             application.routing {
                 authenticate("jwt") {
                     hentManuellOppgaver(manuellOppgaveService)
@@ -132,6 +136,8 @@ internal class AuthenticateTest {
             val oppgaveid = 308076319
             database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
 
+            val syfoTilgangsKontrollClient = mock<SyfoTilgangsKontrollClient>()
+
             application.setupAuth(VaultSecrets(
                 serviceuserUsername = "username",
                 serviceuserPassword = "password",
@@ -139,7 +145,7 @@ internal class AuthenticateTest {
                 mqUsername = "srvbruker",
                 oidcWellKnownUri = "https://sts.issuer.net/myid",
                 syfosmmanuellBackendClientId = "clientId"
-            ), jwkProvider, "https://sts.issuer.net/myid")
+            ), jwkProvider, "https://sts.issuer.net/myid", syfoTilgangsKontrollClient)
             application.routing {
                 authenticate("jwt") {
                     hentManuellOppgaver(manuellOppgaveService)

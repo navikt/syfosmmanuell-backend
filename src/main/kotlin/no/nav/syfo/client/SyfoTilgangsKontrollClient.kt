@@ -9,10 +9,9 @@ import no.nav.syfo.helpers.retry
 
 class SyfoTilgangsKontrollClient constructor(
     private val url: String,
-    private val idToken: String,
     private val httpClient: HttpClient
 ) {
-    suspend fun sjekkVeiledersTilgangTilPersonViaAzure(): Tilgang? =
+    suspend fun sjekkVeiledersTilgangTilPersonViaAzure(idToken: String): Tilgang? =
         retry("tilgang_til_person_via_azure") {
         httpClient.get<Tilgang>("$url/bruker") {
             accept(ContentType.Application.Json)

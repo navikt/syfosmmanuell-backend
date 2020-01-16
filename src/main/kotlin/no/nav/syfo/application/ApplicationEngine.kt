@@ -26,6 +26,7 @@ import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.client.OppgaveClient
+import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ReceivedSykmelding
@@ -52,10 +53,11 @@ fun createApplicationEngine(
     oppgaveClient: OppgaveClient,
     vaultSecrets: VaultSecrets,
     jwkProvider: JwkProvider,
-    issuer: String
+    issuer: String,
+    syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
-        setupAuth(vaultSecrets, jwkProvider, issuer)
+        setupAuth(vaultSecrets, jwkProvider, issuer, syfoTilgangsKontrollClient)
         install(ContentNegotiation) {
             jackson {
                 registerKotlinModule()
