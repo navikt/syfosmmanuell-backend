@@ -57,7 +57,7 @@ fun createApplicationEngine(
     syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
-        setupAuth(vaultSecrets, jwkProvider, issuer, syfoTilgangsKontrollClient)
+        setupAuth(vaultSecrets, jwkProvider, issuer)
         install(ContentNegotiation) {
             jackson {
                 registerKotlinModule()
@@ -85,7 +85,7 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             authenticate("jwt") {
-                hentManuellOppgaver(manuellOppgaveService)
+                hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
                 sendVurderingManuellOppgave(
                     manuellOppgaveService,
                     kafkaproducerApprec,
@@ -98,7 +98,8 @@ fun createApplicationEngine(
                     syfoserviceQueueName,
                     session,
                     syfoserviceProducer,
-                    oppgaveClient
+                    oppgaveClient,
+                    syfoTilgangsKontrollClient
                 )
             }
         }

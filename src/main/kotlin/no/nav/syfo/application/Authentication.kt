@@ -10,22 +10,19 @@ import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.VaultSecrets
-import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
 
 fun Application.setupAuth(
     vaultSecrets: VaultSecrets,
     jwkProvider: JwkProvider,
-    issuer: String,
-    syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient
+    issuer: String
 ) {
     install(Authentication) {
         jwt(name = "jwt") {
             verifier(jwkProvider, issuer)
             validate { credentials ->
                 when {
-                    hasSyfosmmanuellBackendClientIdAudience(credentials, vaultSecrets) &&
-                            loggedInNavidentHasAccess(syfoTilgangsKontrollClient, "") -> JWTPrincipal(credentials.payload)
+                    hasSyfosmmanuellBackendClientIdAudience(credentials, vaultSecrets) -> JWTPrincipal(credentials.payload)
                     else -> {
                         unauthorized(credentials)
                     }
@@ -46,10 +43,4 @@ fun unauthorized(credentials: JWTCredential): Principal? {
 
 fun hasSyfosmmanuellBackendClientIdAudience(credentials: JWTCredential, vaultSecrets: VaultSecrets): Boolean {
     return credentials.payload.audience.contains(vaultSecrets.syfosmmanuellBackendClientId)
-}
-
-suspend fun loggedInNavidentHasAccess(syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient, idToken: String): Boolean {
-    val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(idToken)
-    log.info("Kall til syfoTilgangsKontrollClient tilgang: {}, grunn: {}", tilgang?.harTilgang, tilgang?.begrunnelse )
-    return tilgang?.harTilgang ?: false
 }

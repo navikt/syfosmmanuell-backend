@@ -12,6 +12,7 @@ import javax.jms.MessageProducer
 import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.client.OppgaveClient
+import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.handleManuellOppgave.handleManuellOppgaveInvalid
 import no.nav.syfo.handleManuellOppgave.handleManuellOppgaveOk
 import no.nav.syfo.log
@@ -40,7 +41,8 @@ fun Route.sendVurderingManuellOppgave(
     syfoserviceQueueName: String,
     session: Session,
     syfoserviceProducer: MessageProducer,
-    oppgaveClient: OppgaveClient
+    oppgaveClient: OppgaveClient,
+    syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient
 ) {
     route("/api/v1") {
         put("/vurderingmanuelloppgave/{oppgaveid}") {

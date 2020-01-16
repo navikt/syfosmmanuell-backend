@@ -21,6 +21,7 @@ import io.mockk.mockk
 import javax.jms.MessageProducer
 import javax.jms.Session
 import no.nav.syfo.client.OppgaveClient
+import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -72,6 +73,7 @@ internal class SendVurderingManuellOppgaveTest {
     private val syfoserviceProducer = mockk<MessageProducer>()
     @KtorExperimentalAPI
     private val oppgaveClient = mockk<OppgaveClient>()
+    private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
 
     @KtorExperimentalAPI
     @Test
@@ -93,7 +95,8 @@ internal class SendVurderingManuellOppgaveTest {
                 syfoserviceQueueName,
                 session,
                 syfoserviceProducer,
-                oppgaveClient
+                oppgaveClient,
+                syfoTilgangsKontrollClient
                 ) }
             application.install(ContentNegotiation) {
                 jackson {
@@ -149,7 +152,8 @@ internal class SendVurderingManuellOppgaveTest {
                 syfoserviceQueueName,
                 session,
                 syfoserviceProducer,
-                oppgaveClient
+                oppgaveClient,
+                syfoTilgangsKontrollClient
             ) }
             application.install(ContentNegotiation) {
                 jackson {

@@ -15,8 +15,10 @@ import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
+import io.mockk.mockk
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
+import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -33,13 +35,13 @@ import org.junit.Test
 
 internal class HenteManuellOppgaverTest {
 
-    val database = TestDB()
+    private val database = TestDB()
 
-    val manuellOppgaveService = ManuellOppgaveService(database)
+    private val manuellOppgaveService = ManuellOppgaveService(database)
 
-    val manuelloppgaveId = "1314"
+    private val manuelloppgaveId = "1314"
 
-    val manuellOppgave = ManuellOppgave(
+    private val manuellOppgave = ManuellOppgave(
         receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
         validationResult = ValidationResult(Status.OK, emptyList()),
         apprec = objectMapper.readValue(
@@ -49,7 +51,8 @@ internal class HenteManuellOppgaverTest {
         ),
         behandlendeEnhet = "1234"
     )
-    val oppgaveid = 308076319
+    private val oppgaveid = 308076319
+    private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
 
     @Test
     internal fun `Skal hente ut manuell oppgaver basert, på oppgaveid`() {
@@ -58,7 +61,7 @@ internal class HenteManuellOppgaverTest {
 
             database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
 
-            application.routing { hentManuellOppgaver(manuellOppgaveService) }
+            application.routing { hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient) }
             application.install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -88,7 +91,7 @@ internal class HenteManuellOppgaverTest {
 
             database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
 
-            application.routing { hentManuellOppgaver(manuellOppgaveService) }
+            application.routing { hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient) }
             application.install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -116,7 +119,7 @@ internal class HenteManuellOppgaverTest {
         with(TestApplicationEngine()) {
             start()
 
-            application.routing { hentManuellOppgaver(manuellOppgaveService) }
+            application.routing { hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient) }
             application.install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()

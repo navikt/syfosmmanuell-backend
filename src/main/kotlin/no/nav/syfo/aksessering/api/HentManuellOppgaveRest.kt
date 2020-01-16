@@ -7,10 +7,14 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
+import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
 import no.nav.syfo.service.ManuellOppgaveService
 
-fun Route.hentManuellOppgaver(manuellOppgaveService: ManuellOppgaveService) {
+fun Route.hentManuellOppgaver(
+    manuellOppgaveService: ManuellOppgaveService,
+    syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient
+) {
     route("/api/v1") {
         get("/hentManuellOppgave") {
             log.info("Mottok kall til /api/v1/hentManuellOppgave")

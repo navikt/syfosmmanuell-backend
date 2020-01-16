@@ -19,6 +19,7 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
+import io.mockk.mockk
 import java.nio.file.Paths
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
@@ -37,7 +38,6 @@ import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.mock
 import org.amshove.kluent.shouldEqual
 import org.junit.Test
 
@@ -47,6 +47,7 @@ internal class AuthenticateTest {
     private val path = "src/test/resources/jwkset.json"
     private val uri = Paths.get(path).toUri().toURL()
     private val jwkProvider = JwkProviderBuilder(uri).build()
+    private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
 
     @Test
     internal fun `Aksepterer gyldig JWT med riktig audience`() {
@@ -72,8 +73,6 @@ internal class AuthenticateTest {
             val oppgaveid = 308076319
             database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
 
-            val syfoTilgangsKontrollClient = mock<SyfoTilgangsKontrollClient>()
-
             application.setupAuth(VaultSecrets(
                 serviceuserUsername = "username",
                 serviceuserPassword = "password",
@@ -81,10 +80,10 @@ internal class AuthenticateTest {
                 mqUsername = "srvbruker",
                 oidcWellKnownUri = "https://sts.issuer.net/myid",
                 syfosmmanuellBackendClientId = "clientId"
-            ), jwkProvider, "https://sts.issuer.net/myid", syfoTilgangsKontrollClient)
+            ), jwkProvider, "https://sts.issuer.net/myid")
             application.routing {
                 authenticate("jwt") {
-                    hentManuellOppgaver(manuellOppgaveService)
+                    hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
                 }
             }
 
@@ -136,8 +135,6 @@ internal class AuthenticateTest {
             val oppgaveid = 308076319
             database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
 
-            val syfoTilgangsKontrollClient = mock<SyfoTilgangsKontrollClient>()
-
             application.setupAuth(VaultSecrets(
                 serviceuserUsername = "username",
                 serviceuserPassword = "password",
@@ -145,10 +142,10 @@ internal class AuthenticateTest {
                 mqUsername = "srvbruker",
                 oidcWellKnownUri = "https://sts.issuer.net/myid",
                 syfosmmanuellBackendClientId = "clientId"
-            ), jwkProvider, "https://sts.issuer.net/myid", syfoTilgangsKontrollClient)
+            ), jwkProvider, "https://sts.issuer.net/myid")
             application.routing {
                 authenticate("jwt") {
-                    hentManuellOppgaver(manuellOppgaveService)
+                    hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
                 }
             }
 
