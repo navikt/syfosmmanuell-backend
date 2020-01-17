@@ -1,9 +1,7 @@
 package no.nav.syfo.aksessering.api
 
 import io.ktor.application.call
-import io.ktor.auth.parseAuthorizationHeader
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
@@ -12,6 +10,7 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
 import no.nav.syfo.service.ManuellOppgaveService
+import no.nav.syfo.util.getAccessTokenFromAuthHeader
 
 fun Route.hentManuellOppgaver(
     manuellOppgaveService: ManuellOppgaveService,
@@ -21,14 +20,7 @@ fun Route.hentManuellOppgaver(
         get("/hentManuellOppgave") {
             log.info("Mottok kall til /api/v1/hentManuellOppgave")
             val oppgaveId = call.request.queryParameters["oppgaveid"]?.toInt()
-            val authHeader = call.request.parseAuthorizationHeader()
-            var accessToken: String? = null
-            if (!(authHeader == null ||
-                        authHeader !is HttpAuthHeader.Single ||
-                        authHeader.authScheme != "Bearer")) {
-                accessToken = authHeader.blob
-            }
-            log.info("accessToken: {}", accessToken)
+            val accessToken = getAccessTokenFromAuthHeader(call.request)
 
             when {
                 accessToken == null -> {

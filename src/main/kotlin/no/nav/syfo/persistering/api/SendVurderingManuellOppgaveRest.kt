@@ -25,6 +25,7 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
+import no.nav.syfo.util.getAccessTokenFromAuthHeader
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
@@ -49,56 +50,86 @@ fun Route.sendVurderingManuellOppgave(
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
             log.info("Mottok eit kall til /api/v1/vurderingmanuelloppgave med oppgaveid, {}", oppgaveId)
 
+            val accessToken = getAccessTokenFromAuthHeader(call.request)
+
             val validationResult: ValidationResult = call.receive()
 
-            if (manuellOppgaveService.oppdaterValidationResults(oppgaveId, validationResult) > 0) {
-                val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(oppgaveId)
-
-                if (manuellOppgave != null) {
-                    val loggingMeta = LoggingMeta(
-                        mottakId = manuellOppgave.receivedSykmelding.navLogId,
-                        orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
-                        msgId = manuellOppgave.receivedSykmelding.msgId,
-                        sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
-                    )
-                    // TODO legge til tilgangskontroll
-                    when (manuellOppgave.validationResult.status) {
-                        Status.INVALID -> { handleManuellOppgaveInvalid(
-                            manuellOppgave,
-                            sm2013ApprecTopicName,
-                            kafkaproducerApprec,
-                            sm2013InvalidHandlingTopic,
-                            kafkaproducerreceivedSykmelding,
-                            sm2013BehandlingsUtfallToipic,
-                            kafkaproducervalidationResult,
-                            loggingMeta,
-                            oppgaveClient)
-                            call.respond(HttpStatusCode.NoContent) }
-                        Status.OK -> {
-                            handleManuellOppgaveOk(
-                                manuellOppgave,
-                                sm2013AutomaticHandlingTopic,
-                                kafkaproducerreceivedSykmelding,
-                                loggingMeta,
-                                syfoserviceQueueName,
-                                session,
-                                syfoserviceProducer,
-                                sm2013ApprecTopicName,
-                                kafkaproducerApprec,
-                                oppgaveClient)
-                            call.respond(HttpStatusCode.NoContent) }
-                        else -> { call.respond(HttpStatusCode.BadRequest)
-                            log.error("Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
-                                oppgaveId, fields(loggingMeta))
-                            }
-                    }
-                } else {
-                    log.warn("Henting av komplettManuellOppgave returente null oppgaveid, {}", oppgaveId)
-                    call.respond(HttpStatusCode.InternalServerError)
+            when {
+                accessToken == null -> {
+                    log.info("Mangler JWT Bearer token i HTTP header")
+                    call.respond(HttpStatusCode.BadRequest)
                 }
-            } else {
-                log.error("Oppdatering av oppdaterValidationResuts feilet oppgaveid, {}", oppgaveId)
-                call.respond(HttpStatusCode.InternalServerError)
+                else -> {
+                    if (manuellOppgaveService.oppdaterValidationResults(oppgaveId, validationResult) > 0) {
+                        val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(oppgaveId)
+
+                        if (manuellOppgave != null) {
+                            val loggingMeta = LoggingMeta(
+                                mottakId = manuellOppgave.receivedSykmelding.navLogId,
+                                orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
+                                msgId = manuellOppgave.receivedSykmelding.msgId,
+                                sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
+                            )
+
+                            val pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient
+
+                            val harTilgangTilOppgave =
+                                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                                    accessToken,
+                                    pasientFnr
+                                )?.harTilgang
+                            if (harTilgangTilOppgave != null && harTilgangTilOppgave) {
+                                when (manuellOppgave.validationResult.status) {
+                                    Status.INVALID -> {
+                                        handleManuellOppgaveInvalid(
+                                            manuellOppgave,
+                                            sm2013ApprecTopicName,
+                                            kafkaproducerApprec,
+                                            sm2013InvalidHandlingTopic,
+                                            kafkaproducerreceivedSykmelding,
+                                            sm2013BehandlingsUtfallToipic,
+                                            kafkaproducervalidationResult,
+                                            loggingMeta,
+                                            oppgaveClient
+                                        )
+                                        call.respond(HttpStatusCode.NoContent)
+                                    }
+                                    Status.OK -> {
+                                        handleManuellOppgaveOk(
+                                            manuellOppgave,
+                                            sm2013AutomaticHandlingTopic,
+                                            kafkaproducerreceivedSykmelding,
+                                            loggingMeta,
+                                            syfoserviceQueueName,
+                                            session,
+                                            syfoserviceProducer,
+                                            sm2013ApprecTopicName,
+                                            kafkaproducerApprec,
+                                            oppgaveClient
+                                        )
+                                        call.respond(HttpStatusCode.NoContent)
+                                    }
+                                    else -> {
+                                        call.respond(HttpStatusCode.BadRequest)
+                                        log.error(
+                                            "Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
+                                            oppgaveId, fields(loggingMeta)
+                                        )
+                                    }
+                                }
+                            } else {
+                                log.warn("Veileder har ikkje tilgang")
+                                call.respond(HttpStatusCode.Unauthorized)
+                            }
+                        } else {
+                            log.warn("Henting av komplettManuellOppgave returente null oppgaveid, {}", oppgaveId)
+                            call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    } else {
+                        log.error("Oppdatering av oppdaterValidationResuts feilet oppgaveid, {}", oppgaveId)
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
+                }
             }
         }
     }
