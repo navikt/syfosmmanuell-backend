@@ -67,7 +67,7 @@ internal class SyfoTilgangsKontrollClientTest {
         runBlocking {
             val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", "123145")
             tilgang?.harTilgang shouldEqual true
-            mockServer.stop(1L, 10L, TimeUnit.SECONDS)
+            mockServer.stop(TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS.toMillis(10))
         }
     }
 }
