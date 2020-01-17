@@ -19,7 +19,7 @@ class SyfoTilgangsKontrollClient constructor(
 ) {
     suspend fun sjekkVeiledersTilgangTilPersonViaAzure(accessToken: String, personFnr: String): Tilgang? =
         retry("tilgang_til_person_via_azure") {
-            val httpResponse = httpClient.get<HttpStatement>("$url/api/tilgang/bruker") {
+            val httpResponse = httpClient.get<HttpStatement>("$url/api/tilgang/navident/bruker") {
             accept(ContentType.Application.Json)
             headers {
                 append("Authorization", "Bearer $accessToken")

@@ -48,7 +48,7 @@ internal class SyfoTilgangsKontrollClientTest {
                 jackson {}
             }
             routing {
-                get("/api/tilgang/bruker") {
+                get("/api/tilgang/navident/bruker") {
                     when {
                         call.request.headers["Authorization"] == "Bearer sdfsdfsfs" -> call.respond(
                             Tilgang(
