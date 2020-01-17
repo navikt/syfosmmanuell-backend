@@ -5,9 +5,7 @@ import io.ktor.client.call.receive
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
-import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpStatement
-import io.ktor.client.statement.response
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import no.nav.syfo.helpers.retry
@@ -19,12 +17,11 @@ class SyfoTilgangsKontrollClient constructor(
 ) {
     suspend fun sjekkVeiledersTilgangTilPersonViaAzure(accessToken: String, personFnr: String): Tilgang? =
         retry("tilgang_til_person_via_azure") {
-            val httpResponse = httpClient.get<HttpStatement>("$url/api/tilgang/navident/bruker") {
+            val httpResponse = httpClient.get<HttpStatement>("$url/api/tilgang/navident/bruker/$personFnr") {
             accept(ContentType.Application.Json)
             headers {
                 append("Authorization", "Bearer $accessToken")
             }
-            parameter("fnr", personFnr)
         }.execute()
             when (httpResponse.status) {
                 HttpStatusCode.InternalServerError -> {

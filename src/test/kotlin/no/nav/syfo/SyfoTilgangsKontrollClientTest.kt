@@ -43,12 +43,13 @@ internal class SyfoTilgangsKontrollClientTest {
 
         val mockHttpServerPort = ServerSocket(0).use { it.localPort }
         val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
+        val pasientFnr = "123145"
         val mockServer = embeddedServer(Netty, mockHttpServerPort) {
             install(ContentNegotiation) {
                 jackson {}
             }
             routing {
-                get("/api/tilgang/navident/bruker") {
+                get("/api/tilgang/navident/bruker/$pasientFnr") {
                     when {
                         call.request.headers["Authorization"] == "Bearer sdfsdfsfs" -> call.respond(
                             Tilgang(
@@ -65,7 +66,7 @@ internal class SyfoTilgangsKontrollClientTest {
         val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(mockHttpServerUrl, httpClient)
 
         runBlocking {
-            val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", "123145")
+            val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
             tilgang?.harTilgang shouldEqual true
             mockServer.stop(TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS.toMillis(10))
         }
