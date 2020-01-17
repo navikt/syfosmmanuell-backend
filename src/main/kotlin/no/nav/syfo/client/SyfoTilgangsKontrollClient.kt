@@ -39,12 +39,18 @@ class SyfoTilgangsKontrollClient constructor(
 
                 HttpStatusCode.BadRequest -> {
                     log.error("syfo-tilgangskontroll svarer med BadRequest")
-                    return@retry null
+                    return@retry Tilgang(
+                        harTilgang = false,
+                        begrunnelse = "syfo-tilgangskontroll svarer med BadRequest"
+                    )
                 }
 
                 HttpStatusCode.NotFound -> {
                     log.warn("syfo-tilgangskontroll svarer med NotFound")
-                    return@retry null
+                    return@retry Tilgang(
+                        harTilgang = false,
+                        begrunnelse = "syfo-tilgangskontroll svarer med NotFound"
+                    )
                 }
 
                 HttpStatusCode.Unauthorized -> {

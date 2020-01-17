@@ -28,6 +28,7 @@ fun Route.hentManuellOppgaver(
                         authHeader.authScheme != "Bearer")) {
                 accessToken = authHeader.blob
             }
+            log.info("accessToken: {}", accessToken)
 
             when {
                 accessToken == null -> {
