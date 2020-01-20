@@ -87,50 +87,49 @@ read postgresql/prod-fss/creds/syfosmmanuell-backend-admin
 ```
 
 ## Testing the whole flow for handling manual sykmelding in preprod
-Submitting sick leave:
+### Submitting sykmelding:
 1. Navigate to syfomock: https://syfomock.nais.preprod.local/syfomock/opprettNyttMottak.html (Can only be accessed from developer image)
 2. Note the number below Msgid (this changes with each submission)
-3. Fill in the content you want in the sick message
+3. Fill in the content you want in the sykmelding
 4. Submit the sick leave
 
-Verification in the sick leave applications:
-1.Check that the sick leave has passed rules checks,
-    a. Log in at https://logs.adeo.no and use the following search string: x_msgId: $ yourMsgId, ex: x_msgId: 58e1d88d-36fa-4756-a06a-32c384ba885f
-    b. Verify that what you expect to happen with a sick leave actually happens. It should then be Ok | Manual processing | rejected
-       What you look for are items: status = OK, status = MANUAL_PROCESSING or status = INVALID
-    c. Your message should het the status = MANUAL_PROCESSING  
+### Verification in the sykmelding applications:
+1. Log in at https://logs.adeo.no and use the following search string: x_msgId: $ yourMsgId, ex: x_msgId: 58e1d88d-36fa-4756-a06a-32c384ba885f
+2. Verify that what you expect to happen with a sykmelding actually happens. It should then be Ok | Manual processing | rejected
+   What you look for are items: status = OK, status = MANUAL_PROCESSING or status = INVALID
+3. Your message should het the status = MANUAL_PROCESSING  
 
-Verification in Gosys:
-Login User (Case managers / supervisors):
-Z992392
-1. Check that the sick leave is placed in gosys:
-  a. Log in at https://gosys-nais-q1.nais.preprod.local/gosys
-  b. Search for user with fnr
-2. Verify that there is a sick leave task under tasks overview and 
-   that this is the sick leave you submitted
-3. Click on the "Start buttom" for that task.   
-4. You may need to login, with the Login User, the mail adress follows this pattern:
+### Verification in Gosys:
+1. Login User (Case managers / supervisors):
+   Z992392
+2. Check that the sykmelding is placed in gosys:
+   - Log in at https://gosys-nais-q1.nais.preprod.local/gosys
+   - Search for user with fnr
+3. Verify that there is a sykmelding task under tasks overview and 
+   that this is the sykmelding you submitted
+4. Click on the "Start buttom" for that task.   
+5. You may need to login, with the Login User, the mail adress follows this pattern:
     F_ZXXXXXX.E_ZXXXXXX@trygdeetaten.no, where you change F_ZXXXXXX to F_Z992392 and E_ZXXXXXX to E_Z992392
     Use the same passord that you used to login in gosys.
     Username and password for testing can be found here(NAV-internal sites):
     https://confluence.adeo.no/display/KES/Generell+testing+av+sykemelding+2013+i+preprod
-5. Consider whether the sick leave should be rejected or approved
-6. Trykk så på knappen "ferdigstill"
-7. Then check that the task has been closed and completed in gosys
+6. Consider whether the sykmelding should be rejected or approved
+7. Trykk så på knappen "ferdigstill"
+8. Then check that the task has been closed and completed in gosys
 
 
-Verification in "your sick leave":
-1. Check that the sick leave is on your sick leave
+### Verification in «ditt sykefravær»:
+1. Check that the sykmelding is on ditt sykefravær
 2. Log in to user: https://service-q1.nav.no/sykefravaer/
-3.Then select Without the ID port
+3. Then select Without the ID port
 4. Enter the user's name again and press sign-in
 5. Verify that a new task has appeared for the user
 
-Verifisering i Modia:
+### Verification in Modia:
 1. Log in to the modes, https://app-q1.adeo.no/sykefravaer/
 2. Log in with Case Manager: User: Z990625, password for testing can be found here (NAV internal sites):
    https://confluence.adeo.no/display/KES/Generell+testing+av+sykemelding+2013+i+preprod under "Verifisering i Modia"
-3. See "Sick-registered person" verifying that sick leave that is there is correct
+3. See "Sykmeldt enkeltperson" verifying that the sykmelding that is there is correct
 
 ## Contact us
 ### Code/project related questions can be sent to
