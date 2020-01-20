@@ -1,13 +1,13 @@
 [![Build status](https://github.com/navikt/syfosmmanuell-backend/workflows/Deploy%20to%20dev%20and%20prod/badge.svg)](https://github.com/navikt/syfosmmanuell-backend/workflows/Deploy%20to%20dev%20and%20prod/badge.svg)
 
-# SYFO mottak
+# SYFO Manuell Backend
 This project contains the backend for handling manual sykmelding, front end kode: https://github.com/navikt/syfosmmanuell
 
 ## Technologies used
 * Kotlin
 * Ktor
 * Gradle
-* Spek
+* Junit
 * Jackson
 * Postgres
 
