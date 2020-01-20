@@ -88,7 +88,7 @@ read postgresql/prod-fss/creds/syfosmmanuell-backend-admin
 
 ## Testing the whole flow for handling manual sykmelding in preprod
 Submitting sick leave:
-1. Navigate to syfomock: https: //syfomock.nais.preprod.local/syfomock/createNewReception.html (Can only be accessed from developer image)
+1. Navigate to syfomock: https://syfomock.nais.preprod.local/syfomock/opprettNyttMottak.html (Can only be accessed from developer image)
 2. Note the number below Msgid (this changes with each submission)
 3. Fill in the content you want in the sick message
 4. Submit the sick leave
