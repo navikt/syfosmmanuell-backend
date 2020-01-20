@@ -97,7 +97,7 @@ read postgresql/prod-fss/creds/syfosmmanuell-backend-admin
 1. Log in at https://logs.adeo.no and use the following search string: x_msgId: $ yourMsgId, ex: x_msgId: 58e1d88d-36fa-4756-a06a-32c384ba885f
 2. Verify that what you expect to happen with a sykmelding actually happens. It should then be Ok | Manual processing | rejected
    What you look for are items: status = OK, status = MANUAL_PROCESSING or status = INVALID
-3. Your message should het the status = MANUAL_PROCESSING  
+3. Your message should get the status = MANUAL_PROCESSING  
 
 ### Verification in Gosys:
 1. Login User (Case managers / supervisors):
