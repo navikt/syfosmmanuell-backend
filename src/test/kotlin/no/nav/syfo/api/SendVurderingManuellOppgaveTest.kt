@@ -54,8 +54,7 @@ internal class SendVurderingManuellOppgaveTest {
             Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
                 Charsets.UTF_8
             )
-        ),
-        behandlendeEnhet = "1234"
+        )
     )
     val oppgaveid = 308076319
 
@@ -81,7 +80,7 @@ internal class SendVurderingManuellOppgaveTest {
         with(TestApplicationEngine()) {
             start()
 
-            database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
+            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
             application.routing { sendVurderingManuellOppgave(
                 manuellOppgaveService,
@@ -138,7 +137,7 @@ internal class SendVurderingManuellOppgaveTest {
         with(TestApplicationEngine()) {
             start()
 
-            database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
+            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
             application.routing { sendVurderingManuellOppgave(
                 manuellOppgaveService,

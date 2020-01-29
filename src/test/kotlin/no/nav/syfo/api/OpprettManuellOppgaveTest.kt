@@ -31,10 +31,9 @@ internal class OpprettManuellOppgaveTest {
                 Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
                     Charsets.UTF_8
                 )
-            ),
-            behandlendeEnhet = "1234"
+            )
         )
-        database.opprettManuellOppgave(manuellOppgave, "1354", 123144)
+        database.opprettManuellOppgave(manuellOppgave, 123144)
         database.hentKomplettManuellOppgave(123144).size shouldEqual 1
 
         database.connection.dropData()
@@ -51,10 +50,9 @@ internal class OpprettManuellOppgaveTest {
                 Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
                     Charsets.UTF_8
                 )
-            ),
-            behandlendeEnhet = "1234"
+            )
         )
-        database.opprettManuellOppgave(manuellOppgave, "1354", 123144)
+        database.opprettManuellOppgave(manuellOppgave, 123144)
         database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id) shouldEqual true
 
         database.connection.dropData()

@@ -6,8 +6,7 @@ import org.postgresql.util.PGobject
 data class ManuellOppgave(
     val receivedSykmelding: ReceivedSykmelding,
     val validationResult: ValidationResult,
-    val apprec: Apprec,
-    val behandlendeEnhet: String
+    val apprec: Apprec
 )
 
 fun ReceivedSykmelding.toPGObject() = PGobject().also {

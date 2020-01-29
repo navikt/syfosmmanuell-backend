@@ -48,8 +48,7 @@ internal class HenteManuellOppgaverTest {
             Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
                 Charsets.UTF_8
             )
-        ),
-        behandlendeEnhet = "1234"
+        )
     )
     private val oppgaveid = 308076319
     private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
@@ -59,7 +58,7 @@ internal class HenteManuellOppgaverTest {
         with(TestApplicationEngine()) {
             start()
 
-            database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
+            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
             application.routing { hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient) }
             application.install(ContentNegotiation) {
@@ -89,7 +88,7 @@ internal class HenteManuellOppgaverTest {
         with(TestApplicationEngine()) {
             start()
 
-            database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
+            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
             application.routing { hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient) }
             application.install(ContentNegotiation) {

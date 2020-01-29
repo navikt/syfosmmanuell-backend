@@ -250,7 +250,6 @@ suspend fun handleMessage(
         } else {
             log.info("Lager oppgave, {}", fields(loggingMeta))
             val opprettOppgave = OpprettOppgave(
-                tildeltEnhetsnr = manuellOppgave.behandlendeEnhet,
                 aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
                 opprettetAvEnhetsnr = "9999",
                 behandlesAvApplikasjon = "FS22",
@@ -266,17 +265,15 @@ suspend fun handleMessage(
             val oppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
             OPPRETT_OPPGAVE_COUNTER.inc()
             log.info(
-                "Opprettet oppgave med {}, {}, {}",
+                "Opprettet oppgave med {}, {}",
                 StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-                StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
                 fields(loggingMeta)
             )
 
-            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.behandlendeEnhet, oppgaveResponse.id)
+            database.opprettManuellOppgave(manuellOppgave, oppgaveResponse.id)
             log.info(
-                "Manuell oppgave lagret i databasen, for {}, {}, {}",
+                "Manuell oppgave lagret i databasen, for {}, {}",
                 StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-                StructuredArguments.keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
                 fields(loggingMeta)
             )
             MESSAGE_STORED_IN_DB_COUNTER.inc()

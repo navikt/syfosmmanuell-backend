@@ -67,11 +67,10 @@ internal class AuthenticateTest {
                     Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
                         Charsets.UTF_8
                     )
-                ),
-                behandlendeEnhet = "1234"
+                )
             )
             val oppgaveid = 308076319
-            database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
+            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
             application.setupAuth(VaultSecrets(
                 serviceuserUsername = "username",
@@ -129,11 +128,10 @@ internal class AuthenticateTest {
                     Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
                         Charsets.UTF_8
                     )
-                ),
-                behandlendeEnhet = "1234"
+                )
             )
             val oppgaveid = 308076319
-            database.opprettManuellOppgave(manuellOppgave, "1354", oppgaveid)
+            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
             application.setupAuth(VaultSecrets(
                 serviceuserUsername = "username",
