@@ -18,7 +18,7 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, oppg
                 ferdigstilt,
                 oppgaveid
                 )
-            VALUES  (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES  (?, ?, ?, ?, ?, ?, ?)
             """
         ).use {
             it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
