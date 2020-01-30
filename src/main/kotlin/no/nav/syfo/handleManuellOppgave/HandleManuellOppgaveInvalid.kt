@@ -51,9 +51,8 @@ suspend fun handleManuellOppgaveInvalid(
 
     val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
     log.info(
-        "Ferdigstilt oppgave med {}, {} {}",
+        "Ferdigstilt oppgave med {}, {}",
         keyValue("oppgaveId", oppgaveResponse.id),
-        keyValue("tildeltEnhetsnr", manuellOppgave.behandlendeEnhet),
         fields(loggingMeta)
     )
 
