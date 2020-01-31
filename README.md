@@ -101,7 +101,7 @@ read postgresql/prod-fss/creds/syfosmmanuell-backend-admin
 
 ### Verification in Gosys:
 1. Login User (Case managers / supervisors):
-   Z992392
+   Z992389
 2. Check that the sykmelding is placed in gosys:
    - Log in at https://gosys-nais-q1.nais.preprod.local/gosys
    - Search for user with fnr
