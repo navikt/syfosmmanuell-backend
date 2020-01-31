@@ -109,7 +109,7 @@ read postgresql/prod-fss/creds/syfosmmanuell-backend-admin
    that this is the sykmelding you submitted
 4. Click on the "Start buttom" for that task.   
 5. You may need to login, with the Login User, the mail adress follows this pattern:
-    F_ZXXXXXX.E_ZXXXXXX@trygdeetaten.no, where you change F_ZXXXXXX to F_Z992392 and E_ZXXXXXX to E_Z992392
+    F_ZXXXXXX.E_ZXXXXXX@trygdeetaten.no, where you change F_ZXXXXXX to F_Z992389 and E_ZXXXXXX to E_Z992389
     Use the same passord that you used to login in gosys.
     Username and password for testing can be found here(NAV-internal sites):
     https://confluence.adeo.no/display/KES/Generell+testing+av+sykemelding+2013+i+preprod
