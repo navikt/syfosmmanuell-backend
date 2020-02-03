@@ -88,7 +88,7 @@ read postgresql/prod-fss/creds/syfosmmanuell-backend-admin
 
 ## Testing the whole flow for handling manual sykmelding in preprod
 ### Submitting sykmelding:
-1. Navigate to syfomock: https://syfomock.dev-sbs.nais.io/
+1. Navigate to syfomock: https://syfomock.dev-sbs.nais.io/ (Remove the "Simple mode" checkbox)
 2. Note the number below Msgid (this changes with each submission)
 3. Fill in the content you want in the sykmelding
 4. Submit the sick leave
