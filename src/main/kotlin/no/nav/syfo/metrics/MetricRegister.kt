@@ -1,6 +1,7 @@
 package no.nav.syfo.metrics
 
 import io.prometheus.client.Counter
+import io.prometheus.client.Histogram
 
 const val METRICS_NS = "syfosmmanuellbackend"
 
@@ -14,4 +15,10 @@ val OPPRETT_OPPGAVE_COUNTER: Counter = Counter.Builder()
         .namespace(METRICS_NS)
         .name("opprett_oppgave_counter")
         .help("Registers a counter for each oppgave that is created")
+        .register()
+
+val HTTP_HISTOGRAM: Histogram = Histogram.Builder()
+        .labelNames("path")
+        .name("requests_duration_seconds")
+        .help("http requests durations for incoming requests in seconds")
         .register()

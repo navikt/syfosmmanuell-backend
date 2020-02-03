@@ -4,6 +4,7 @@ import com.auth0.jwk.JwkProvider
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.authenticate
@@ -28,6 +29,7 @@ import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
+import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
@@ -103,4 +105,5 @@ fun createApplicationEngine(
                 )
             }
         }
+        intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
