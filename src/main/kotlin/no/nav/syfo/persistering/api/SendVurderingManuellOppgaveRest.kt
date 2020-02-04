@@ -1,5 +1,6 @@
 package no.nav.syfo.persistering.api
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
@@ -11,6 +12,7 @@ import io.ktor.util.KtorExperimentalAPI
 import javax.jms.MessageProducer
 import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments.fields
+import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.handleManuellOppgave.handleManuellOppgaveInvalid
@@ -23,6 +25,7 @@ import no.nav.syfo.model.OppgaveStatus
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.objectMapper
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
@@ -52,6 +55,8 @@ fun Route.sendVurderingManuellOppgave(
 
             val accessToken = getAccessTokenFromAuthHeader(call.request)
             log.info("accessToken is mapped OK")
+
+            log.info("Logger object ut ${objectMapper.writeValueAsString(call.receive())}")
 
             val validationResult: ValidationResult = call.receive()
             log.info("validationResult is mapped OK")
