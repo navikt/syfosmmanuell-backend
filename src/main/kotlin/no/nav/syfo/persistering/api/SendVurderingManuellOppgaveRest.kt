@@ -53,6 +53,7 @@ fun Route.sendVurderingManuellOppgave(
             val accessToken = getAccessTokenFromAuthHeader(call.request)
 
             val validationResult: ValidationResult = call.receive()
+            log.info("validationResult is mapped OK")
 
             when {
                 accessToken == null -> {
@@ -62,6 +63,7 @@ fun Route.sendVurderingManuellOppgave(
                 else -> {
                     if (manuellOppgaveService.oppdaterValidationResults(oppgaveId, validationResult) > 0) {
                         val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(oppgaveId)
+                        log.info("hentKomplettManuellOppgave is done")
 
                         if (manuellOppgave != null) {
                             val loggingMeta = LoggingMeta(
