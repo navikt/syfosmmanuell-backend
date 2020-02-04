@@ -51,6 +51,7 @@ fun Route.sendVurderingManuellOppgave(
             log.info("Mottok eit kall til /api/v1/vurderingmanuelloppgave med oppgaveid, {}", oppgaveId)
 
             val accessToken = getAccessTokenFromAuthHeader(call.request)
+            log.info("accessToken is mapped OK")
 
             val validationResult: ValidationResult = call.receive()
             log.info("validationResult is mapped OK")
