@@ -53,14 +53,10 @@ fun Route.sendVurderingManuellOppgave(
             val accessToken = getAccessTokenFromAuthHeader(call.request)
             log.info("accessToken is mapped OK")
 
-            val validationResult: ValidationResult? = call.receive()
+            val validationResult: ValidationResult = call.receive()
             log.info("validationResult is mapped OK")
 
             when {
-                validationResult == null -> {
-                    log.info("Mangler validationResult")
-                    call.respond(HttpStatusCode.BadRequest)
-                }
                 accessToken == null -> {
                     log.info("Mangler JWT Bearer token i HTTP header")
                     call.respond(HttpStatusCode.BadRequest)
