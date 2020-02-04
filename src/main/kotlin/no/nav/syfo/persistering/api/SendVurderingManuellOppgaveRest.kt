@@ -56,9 +56,7 @@ fun Route.sendVurderingManuellOppgave(
             val accessToken = getAccessTokenFromAuthHeader(call.request)
             log.info("accessToken is mapped OK")
 
-            log.info("Logger object ut ${objectMapper.writeValueAsString(call.receive())}")
-
-            val validationResult: ValidationResult = call.receive()
+            val validationResult: ValidationResult = call.receive<ValidationResult>()
             log.info("validationResult is mapped OK")
 
             when {
