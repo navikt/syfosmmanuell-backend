@@ -2,7 +2,7 @@ package no.nav.syfo.persistering.api
 
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.receiveOrNull
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.put
@@ -53,7 +53,7 @@ fun Route.sendVurderingManuellOppgave(
             val accessToken = getAccessTokenFromAuthHeader(call.request)
             log.info("accessToken is mapped OK")
 
-            val validationResult: ValidationResult? = call.receiveOrNull()
+            val validationResult: ValidationResult? = call.receive()
             log.info("validationResult is mapped OK")
 
             when {
