@@ -16,7 +16,6 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.net.URL
 import java.time.Duration
-import java.time.LocalDate
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import javax.jms.Session
@@ -25,7 +24,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
@@ -34,29 +32,23 @@ import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
-import no.nav.syfo.client.finnFristForFerdigstillingAvOppgave
 import no.nav.syfo.db.Database
 import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
-import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
-import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
-import no.nav.syfo.model.OpprettOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.producerForQueue
-import no.nav.syfo.persistering.db.erOpprettManuellOppgave
-import no.nav.syfo.persistering.db.opprettManuellOppgave
+import no.nav.syfo.persistering.handleRecivedMessage
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.util.getFileAsString
-import no.nav.syfo.util.wrapExceptions
 import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -154,9 +146,7 @@ fun main() {
         syfoTilgangsKontrollClient
     )
 
-    val applicationServer = ApplicationServer(applicationEngine, connection)
-
-    applicationServer.start()
+    ApplicationServer(applicationEngine, connection).start()
 
     applicationState.ready = true
 
@@ -221,7 +211,7 @@ suspend fun blockingApplicationLogic(
                 sykmeldingId = receivedManuellOppgave.receivedSykmelding.sykmelding.id
             )
 
-            handleMessage(
+            handleRecivedMessage(
                 receivedManuellOppgave,
                 loggingMeta,
                 database,
@@ -229,54 +219,5 @@ suspend fun blockingApplicationLogic(
             )
         }
         delay(100)
-    }
-}
-
-@KtorExperimentalAPI
-suspend fun handleMessage(
-    manuellOppgave: ManuellOppgave,
-    loggingMeta: LoggingMeta,
-    database: Database,
-    oppgaveClient: OppgaveClient
-) {
-    wrapExceptions(loggingMeta) {
-        log.info("Mottok ein manuell oppgave, {}", fields(loggingMeta))
-
-        if (database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
-            log.warn(
-                "Manuell oppgave med sykmeldingsid {} er allerede lagret i databasen, {}",
-                manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
-            )
-        } else {
-            log.info("Lager oppgave, {}", fields(loggingMeta))
-            val opprettOppgave = OpprettOppgave(
-                aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
-                opprettetAvEnhetsnr = "9999",
-                behandlesAvApplikasjon = "FS22",
-                beskrivelse = "Manuell sykmelding oppgave",
-                tema = "SYM",
-                oppgavetype = "BEH_EL_SYM",
-                behandlingstype = "ae0239",
-                aktivDato = LocalDate.now(),
-                fristFerdigstillelse = finnFristForFerdigstillingAvOppgave(LocalDate.now()),
-                prioritet = "HOY"
-            )
-
-            val oppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
-            OPPRETT_OPPGAVE_COUNTER.inc()
-            log.info(
-                "Opprettet oppgave med {}, {}",
-                StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-                fields(loggingMeta)
-            )
-
-            database.opprettManuellOppgave(manuellOppgave, oppgaveResponse.id)
-            log.info(
-                "Manuell oppgave lagret i databasen, for {}, {}",
-                StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-                fields(loggingMeta)
-            )
-            MESSAGE_STORED_IN_DB_COUNTER.inc()
-        }
     }
 }
