@@ -24,7 +24,7 @@ val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
 val postgresEmbeddedVersion = "0.13.3"
 val javaTimeAdapterVersion = "1.1.3"
-val junitJupiterVersion = "5.4.0"
+val junitJupiterVersion = "5.6.0"
 val nimbusdsVersion = "7.5.1"
 
 plugins {

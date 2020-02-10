@@ -47,7 +47,7 @@ suspend fun handleManuellOppgaveOk(
         msgId = manuellOppgave.receivedSykmelding.msgId,
         healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
     )
-    log.info("Melding sendt til syfoService {}, {}", syfoserviceQueueName, fields(loggingMeta))
+    log.info("Melding sendt til syfoService kø {}, {}", syfoserviceQueueName, fields(loggingMeta))
 
     kafkaproducerreceivedSykmelding.send(
         ProducerRecord(
@@ -55,7 +55,7 @@ suspend fun handleManuellOppgaveOk(
             manuellOppgave.receivedSykmelding.sykmelding.id,
             manuellOppgave.receivedSykmelding)
     )
-    log.info("Melding sendt til kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
+    log.info("Melding sendt til kafka topic {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
 
     val oppgaveVersjon = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId).versjon
 
@@ -63,7 +63,7 @@ suspend fun handleManuellOppgaveOk(
 
     val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
     log.info(
-        "Ferdigstilt oppgave med {}, {}",
+        "Ferdigstilter oppgave med {}, {}",
         keyValue("oppgaveId", oppgaveResponse.id),
         fields(loggingMeta)
     )

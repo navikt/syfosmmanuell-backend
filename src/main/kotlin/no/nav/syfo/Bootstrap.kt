@@ -99,8 +99,8 @@ fun main() {
     )
 
     val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
-    val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
-    val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
+    val kafkaproducerReceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
+    val kafkaproducerValidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
 
     val connection = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
     connection.start()
@@ -131,11 +131,11 @@ fun main() {
         manuellOppgaveService,
         kafkaproducerApprec,
         env.sm2013Apprec,
-        kafkaproducerreceivedSykmelding,
+        kafkaproducerReceivedSykmelding,
         env.sm2013AutomaticHandlingTopic,
         env.sm2013InvalidHandlingTopic,
         env.sm2013BehandlingsUtfallToipic,
-        kafkaproducervalidationResult,
+        kafkaproducerValidationResult,
         env.syfoserviceQueueName,
         session,
         syfoserviceProducer,

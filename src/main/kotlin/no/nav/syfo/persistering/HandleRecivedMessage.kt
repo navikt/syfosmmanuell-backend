@@ -3,6 +3,7 @@ package no.nav.syfo.persistering
 import io.ktor.util.KtorExperimentalAPI
 import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.finnFristForFerdigstillingAvOppgave
 import no.nav.syfo.db.Database
@@ -24,20 +25,19 @@ suspend fun handleRecivedMessage(
     oppgaveClient: OppgaveClient
 ) {
     wrapExceptions(loggingMeta) {
-        log.info("Mottok ein manuell oppgave, {}", StructuredArguments.fields(loggingMeta))
+        log.info("Mottok ein manuell oppgave, {}", fields(loggingMeta))
 
         if (database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
             log.warn(
-                "Manuell oppgave med sykmeldingsid {} er allerede lagret i databasen, {}",
-                manuellOppgave.receivedSykmelding.sykmelding.id, StructuredArguments.fields(loggingMeta)
+                "Manuell oppgave med sykmeldingsid {}, er allerede lagret i databasen, {}",
+                manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
-            log.info("Lager oppgave, {}", StructuredArguments.fields(loggingMeta))
             val opprettOppgave = OpprettOppgave(
                 aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
                 opprettetAvEnhetsnr = "9999",
                 behandlesAvApplikasjon = "FS22",
-                beskrivelse = "Manuell sykmelding oppgave",
+                beskrivelse = "Manuell sykmeldings oppgave",
                 tema = "SYM",
                 oppgavetype = "BEH_EL_SYM",
                 behandlingstype = "ae0239",
@@ -49,16 +49,16 @@ suspend fun handleRecivedMessage(
             val oppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
             OPPRETT_OPPGAVE_COUNTER.inc()
             log.info(
-                "Opprettet oppgave med {}, {}",
+                "Opprettet manuell sykmeldings oppgave med {}, {}",
                 StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-                StructuredArguments.fields(loggingMeta)
+                fields(loggingMeta)
             )
 
             database.opprettManuellOppgave(manuellOppgave, oppgaveResponse.id)
             log.info(
                 "Manuell oppgave lagret i databasen, for {}, {}",
                 StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-                StructuredArguments.fields(loggingMeta)
+                fields(loggingMeta)
             )
             MESSAGE_STORED_IN_DB_COUNTER.inc()
         }

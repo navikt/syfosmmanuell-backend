@@ -36,7 +36,7 @@ suspend fun handleManuellOppgaveInvalid(
             manuellOppgave.receivedSykmelding.sykmelding.id,
             manuellOppgave.receivedSykmelding)
     )
-    log.info("Melding sendt til kafka {}, {}", sm2013InvalidHandlingTopic, fields(loggingMeta))
+    log.info("Melding sendt til kafka topic {}, {}", sm2013InvalidHandlingTopic, fields(loggingMeta))
 
     sendValidationResult(
         manuellOppgave.validationResult,
@@ -51,7 +51,7 @@ suspend fun handleManuellOppgaveInvalid(
 
     val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
     log.info(
-        "Ferdigstilt oppgave med {}, {}",
+        "Ferdigstilter oppgave med {}, {}",
         keyValue("oppgaveId", oppgaveResponse.id),
         fields(loggingMeta)
     )
