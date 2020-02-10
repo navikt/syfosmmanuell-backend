@@ -18,11 +18,13 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.util.KtorExperimentalAPI
+import io.mockk.coEvery
 import io.mockk.mockk
 import javax.jms.MessageProducer
 import javax.jms.Session
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.client.Tilgang
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -41,6 +43,7 @@ import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.Test
+import javax.jms.TextMessage
 
 internal class SendVurderingManuellOppgaveTest {
     val database = TestDB()
@@ -181,6 +184,9 @@ internal class SendVurderingManuellOppgaveTest {
             }
 
             val validationResult = ValidationResult(status = Status.OK, ruleHits = emptyList())
+
+            coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+            coEvery { session.createTextMessage(any()) } returns mockk<TextMessage>()
 
             with(handleRequest(HttpMethod.Put, "/api/v1/vurderingmanuelloppgave/$oppgaveid") {
                 addHeader("Accept", "application/json")

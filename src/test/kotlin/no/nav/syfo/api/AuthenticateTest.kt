@@ -19,6 +19,7 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
+import io.mockk.coEvery
 import io.mockk.mockk
 import java.nio.file.Paths
 import no.nav.syfo.VaultSecrets
@@ -26,6 +27,7 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.client.Tilgang
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -100,6 +102,7 @@ internal class AuthenticateTest {
                     throw cause
                 }
             }
+            coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
 
             with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
                 addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
