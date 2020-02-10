@@ -12,8 +12,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
-import org.junit.AfterClass
-import org.junit.BeforeClass
 import org.junit.Test
 
 internal class KafkaITTest {
@@ -32,7 +30,7 @@ internal class KafkaITTest {
         applicationName = "syfosminfotrygd",
         mountPathVault = "", databaseName = "", syfosmmanuellbackendDBURL = "url",
         syfosmmanuellUrl = "https://syfosmmanuell", mqHostname = "mqhost", mqPort = 1342,
-        mqGatewayName = "mqGateway", mqChannelName = "syfomottak", syfoserviceQueueName = ""
+        mqGatewayName = "mqGateway", mqChannelName = "syfomottak", syfoserviceQueueName = "", jwtIssuer = ""
     )
 
     fun Properties.overrideForTest(): Properties = apply {
@@ -50,18 +48,9 @@ internal class KafkaITTest {
         .toConsumerConfig("junit.integration-consumer", valueDeserializer = StringDeserializer::class)
     val consumer = KafkaConsumer<String, String>(consumerProperties)
 
-        @BeforeClass
-        internal fun beforeClass() {
-            embeddedEnvironment.start()
-        }
-
-        @AfterClass
-        internal fun tearDown() {
-            embeddedEnvironment.tearDown()
-        }
-
     @Test
     internal fun `Can read the messages from the kafka topic`() {
+        embeddedEnvironment.start()
         val message = "Test message"
         producer.send(ProducerRecord(topic, message))
         consumer.subscribe(listOf(topic))
@@ -69,5 +58,6 @@ internal class KafkaITTest {
         val messages = consumer.poll(Duration.ofMillis(5000)).toList()
         messages.size shouldEqual 1
         messages[0].value() shouldEqual message
+        embeddedEnvironment.tearDown()
     }
 }

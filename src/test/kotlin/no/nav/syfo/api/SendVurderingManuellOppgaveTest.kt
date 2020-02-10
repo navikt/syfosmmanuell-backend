@@ -8,6 +8,7 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
@@ -34,6 +35,7 @@ import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.testutil.TestDB
+import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
@@ -82,21 +84,23 @@ internal class SendVurderingManuellOppgaveTest {
 
             database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
-            application.routing { sendVurderingManuellOppgave(
-                manuellOppgaveService,
-                kafkaproducerApprec,
-                sm2013ApprecTopicName,
-                kafkaproducerreceivedSykmelding,
-                sm2013AutomaticHandlingTopic,
-                sm2013InvalidHandlingTopic,
-                sm2013BehandlingsUtfallToipic,
-                kafkaproducervalidationResult,
-                syfoserviceQueueName,
-                session,
-                syfoserviceProducer,
-                oppgaveClient,
-                syfoTilgangsKontrollClient
-                ) }
+            application.routing {
+                sendVurderingManuellOppgave(
+                    manuellOppgaveService,
+                    kafkaproducerApprec,
+                    sm2013ApprecTopicName,
+                    kafkaproducerreceivedSykmelding,
+                    sm2013AutomaticHandlingTopic,
+                    sm2013InvalidHandlingTopic,
+                    sm2013BehandlingsUtfallToipic,
+                    kafkaproducervalidationResult,
+                    syfoserviceQueueName,
+                    session,
+                    syfoserviceProducer,
+                    oppgaveClient,
+                    syfoTilgangsKontrollClient
+                )
+            }
             application.install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -112,17 +116,22 @@ internal class SendVurderingManuellOppgaveTest {
                 }
             }
 
-            val validationResult = ValidationResult(status = Status.INVALID, ruleHits = listOf(
-                RuleInfo(ruleName = "BEHANDLER_KI_NOT_USING_VALID_DIAGNOSECODE_TYPE",
-                    messageForUser = "Den som skrev sykmeldingen mangler autorisasjon.",
-                    messageForSender = "Behandler er manuellterapeut/kiropraktor eller fysioterapeut med " +
-                            "autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
-                    ruleStatus = Status.INVALID
-                )))
+            val validationResult = ValidationResult(
+                status = Status.INVALID, ruleHits = listOf(
+                    RuleInfo(
+                        ruleName = "BEHANDLER_KI_NOT_USING_VALID_DIAGNOSECODE_TYPE",
+                        messageForUser = "Den som skrev sykmeldingen mangler autorisasjon.",
+                        messageForSender = "Behandler er manuellterapeut/kiropraktor eller fysioterapeut med " +
+                                "autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
+                        ruleStatus = Status.INVALID
+                    )
+                )
+            )
 
             with(handleRequest(HttpMethod.Put, "/api/v1/vurderingmanuelloppgave/21314") {
                 addHeader("Accept", "application/json")
                 addHeader("Content-Type", "application/json")
+                addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 setBody(objectMapper.writeValueAsString(validationResult))
             }) {
                 response.status() shouldEqual HttpStatusCode.InternalServerError
@@ -133,27 +142,29 @@ internal class SendVurderingManuellOppgaveTest {
 
     @KtorExperimentalAPI
     @Test
-    internal fun `Skal returnere NoContent, naar oppdatering av manuelloppgave med status OK`() {
+    internal fun `noConten oppdatering av manuelloppgave med status OK`() {
         with(TestApplicationEngine()) {
             start()
 
             database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
-            application.routing { sendVurderingManuellOppgave(
-                manuellOppgaveService,
-                kafkaproducerApprec,
-                sm2013ApprecTopicName,
-                kafkaproducerreceivedSykmelding,
-                sm2013AutomaticHandlingTopic,
-                sm2013InvalidHandlingTopic,
-                sm2013BehandlingsUtfallToipic,
-                kafkaproducervalidationResult,
-                syfoserviceQueueName,
-                session,
-                syfoserviceProducer,
-                oppgaveClient,
-                syfoTilgangsKontrollClient
-            ) }
+            application.routing {
+                sendVurderingManuellOppgave(
+                    manuellOppgaveService,
+                    kafkaproducerApprec,
+                    sm2013ApprecTopicName,
+                    kafkaproducerreceivedSykmelding,
+                    sm2013AutomaticHandlingTopic,
+                    sm2013InvalidHandlingTopic,
+                    sm2013BehandlingsUtfallToipic,
+                    kafkaproducervalidationResult,
+                    syfoserviceQueueName,
+                    session,
+                    syfoserviceProducer,
+                    oppgaveClient,
+                    syfoTilgangsKontrollClient
+                )
+            }
             application.install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -174,6 +185,7 @@ internal class SendVurderingManuellOppgaveTest {
             with(handleRequest(HttpMethod.Put, "/api/v1/vurderingmanuelloppgave/$oppgaveid") {
                 addHeader("Accept", "application/json")
                 addHeader("Content-Type", "application/json")
+                addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 setBody(objectMapper.writeValueAsString(validationResult))
             }) {
                 response.status() shouldEqual HttpStatusCode.NoContent

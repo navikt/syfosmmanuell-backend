@@ -128,7 +128,7 @@ tasks {
     }
 
     withType<Test> {
-        useJUnitPlatform()
+        useJUnit()
         testLogging {
             showStandardStreams = true
         }
