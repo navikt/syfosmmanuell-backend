@@ -20,14 +20,17 @@ import io.ktor.server.testing.setBody
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.util.concurrent.Future
 import javax.jms.MessageProducer
 import javax.jms.Session
+import javax.jms.TextMessage
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.OpprettOppgaveResponse
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
@@ -42,8 +45,8 @@ import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.Test
-import javax.jms.TextMessage
 
 internal class SendVurderingManuellOppgaveTest {
     val database = TestDB()
@@ -71,6 +74,8 @@ internal class SendVurderingManuellOppgaveTest {
     val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>()
     val kafkaproducerreceivedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>()
     val kafkaproducervalidationResult = mockk<KafkaProducer<String, ValidationResult>>()
+
+    val textMessage = mockk<TextMessage>()
 
     val syfoserviceQueueName = "syfoserviceQueueName"
     private val session = mockk<Session>()
@@ -186,7 +191,13 @@ internal class SendVurderingManuellOppgaveTest {
             val validationResult = ValidationResult(status = Status.OK, ruleHits = emptyList())
 
             coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
-            coEvery { session.createTextMessage(any()) } returns mockk<TextMessage>()
+            coEvery { textMessage.text = any() } returns Unit
+            coEvery { session.createTextMessage() } returns textMessage
+            coEvery { syfoserviceProducer.send(any()) } returns Unit
+            coEvery { kafkaproducerreceivedSykmelding.send(any()) } returns mockk<Future<RecordMetadata>>()
+            coEvery { oppgaveClient.hentOppgave(any(), any()) } returns OpprettOppgaveResponse(123, 1)
+            coEvery { oppgaveClient.ferdigStillOppgave(any(), any()) } returns OpprettOppgaveResponse(123, 2)
+            coEvery { kafkaproducerApprec.send(any()) } returns mockk<Future<RecordMetadata>>()
 
             with(handleRequest(HttpMethod.Put, "/api/v1/vurderingmanuelloppgave/$oppgaveid") {
                 addHeader("Accept", "application/json")
