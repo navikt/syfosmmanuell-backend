@@ -120,9 +120,10 @@ read postgresql/prod-fss/creds/syfosmmanuell-backend-admin
 
 ### Verification in «ditt sykefravær»:
 1. Check that the sykmelding is on ditt sykefravær
-2. Log in to user: https://tjenester-q1.nav.no/sykefravaer
-3. Then select Without the ID port
-4. Enter the user's name again and press sign-in
+2. Go to https://tjenester-q1.nav.no/sykefravaer
+3. Log in with the fnr for the user as the username and a password
+3. Then select "Uten IDPorten"
+4. Enter the user's fnr again and press sign-in
 5. Verify that a new task has appeared for the user
 
 ### Verification in Modia:
