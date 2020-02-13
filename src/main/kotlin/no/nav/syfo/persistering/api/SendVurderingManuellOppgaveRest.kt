@@ -13,6 +13,7 @@ import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.handleManuellOppgave.handleManuellOppgaveInvalid
 import no.nav.syfo.handleManuellOppgave.handleManuellOppgaveOk
 import no.nav.syfo.log
@@ -32,12 +33,8 @@ import org.apache.kafka.clients.producer.ProducerRecord
 @KtorExperimentalAPI
 fun Route.sendVurderingManuellOppgave(
     manuellOppgaveService: ManuellOppgaveService,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    sm2013ApprecTopicName: String,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    sm2013AutomaticHandlingTopic: String,
-    sm2013InvalidHandlingTopic: String,
-    sm2013BehandlingsUtfallToipic: String,
+    kafkaApprecProducer: KafkaProducers.Companion.KafkaApprecProducer,
+    kafkaRecievedSykmeldingProducer: KafkaProducers.Companion.KafkaRecievedSykmeldingProducer,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoserviceQueueName: String,
     session: Session,
@@ -83,11 +80,11 @@ fun Route.sendVurderingManuellOppgave(
                                     Status.INVALID -> {
                                         handleManuellOppgaveInvalid(
                                             manuellOppgave,
-                                            sm2013ApprecTopicName,
-                                            kafkaproducerApprec,
-                                            sm2013InvalidHandlingTopic,
-                                            kafkaproducerreceivedSykmelding,
-                                            sm2013BehandlingsUtfallToipic,
+                                            kafkaApprecProducer.sm2013ApprecTopic,
+                                            kafkaApprecProducer.producer,
+                                            kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic,
+                                            kafkaRecievedSykmeldingProducer.producer,
+                                            kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallToipic,
                                             kafkaproducervalidationResult,
                                             loggingMeta,
                                             oppgaveClient
@@ -97,14 +94,14 @@ fun Route.sendVurderingManuellOppgave(
                                     Status.OK -> {
                                         handleManuellOppgaveOk(
                                             manuellOppgave,
-                                            sm2013AutomaticHandlingTopic,
-                                            kafkaproducerreceivedSykmelding,
+                                            kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic,
+                                            kafkaRecievedSykmeldingProducer.producer,
                                             loggingMeta,
                                             syfoserviceQueueName,
                                             session,
                                             syfoserviceProducer,
-                                            sm2013ApprecTopicName,
-                                            kafkaproducerApprec,
+                                            kafkaApprecProducer.sm2013ApprecTopic,
+                                            kafkaApprecProducer.producer,
                                             oppgaveClient
                                         )
                                         call.respond(HttpStatusCode.NoContent)

@@ -29,28 +29,20 @@ import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
-import no.nav.syfo.model.Apprec
-import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
-import org.apache.kafka.clients.producer.KafkaProducer
 
 @KtorExperimentalAPI
 fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
     manuellOppgaveService: ManuellOppgaveService,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    sm2013ApprecTopicName: String,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    sm2013AutomaticHandlingTopic: String,
-    sm2013InvalidHandlingTopic: String,
-    sm2013BehandlingsUtfallToipic: String,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    syfoserviceQueueName: String,
+    kafkaApprecProducer: KafkaProducers.Companion.KafkaApprecProducer,
+    kafkaRecievedSykmeldingProducer: KafkaProducers.Companion.KafkaRecievedSykmeldingProducer,
+    kafkaValidationResultProducer: KafkaProducers.Companion.KafkaValidationResultProducer,
     session: Session,
     syfoserviceProducer: MessageProducer,
     oppgaveClient: OppgaveClient,
@@ -92,14 +84,10 @@ fun createApplicationEngine(
                 hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
                 sendVurderingManuellOppgave(
                     manuellOppgaveService,
-                    kafkaproducerApprec,
-                    sm2013ApprecTopicName,
-                    kafkaproducerreceivedSykmelding,
-                    sm2013AutomaticHandlingTopic,
-                    sm2013InvalidHandlingTopic,
-                    sm2013BehandlingsUtfallToipic,
-                    kafkaproducervalidationResult,
-                    syfoserviceQueueName,
+                    kafkaApprecProducer,
+                    kafkaRecievedSykmeldingProducer,
+                    kafkaValidationResultProducer.producer,
+                    kafkaValidationResultProducer.syfoserviceQueueName,
                     session,
                     syfoserviceProducer,
                     oppgaveClient,
