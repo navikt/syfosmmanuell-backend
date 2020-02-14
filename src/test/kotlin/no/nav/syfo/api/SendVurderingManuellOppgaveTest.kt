@@ -19,6 +19,7 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import java.util.concurrent.Future
 import javax.jms.MessageProducer
@@ -44,10 +45,14 @@ import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
+import org.amshove.kluent.mock
 import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.Test
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 internal class SendVurderingManuellOppgaveTest {
     val database = TestDB()
@@ -76,10 +81,6 @@ internal class SendVurderingManuellOppgaveTest {
     val sm2013BehandlingsUtfallToipic = "sm2013BehandlingsUtfallToipic"
     val sm2013ApprecTopicName = "sm2013ApprecTopicName"
 
-    val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>()
-    val kafkaproducerreceivedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>()
-    val kafkaproducervalidationResult = mockk<KafkaProducer<String, ValidationResult>>()
-
     val textMessage = mockk<TextMessage>()
 
     val syfoserviceQueueName = "syfoserviceQueueName"
@@ -95,6 +96,9 @@ internal class SendVurderingManuellOppgaveTest {
         with(TestApplicationEngine()) {
             start()
 
+            coEvery { kafkaValidationResultProducer.producer } returns mockk<KafkaProducer<String, ValidationResult>>()
+            coEvery { kafkaValidationResultProducer.syfoserviceQueueName } returns "Foo"
+
             database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
             application.routing {
@@ -102,8 +106,7 @@ internal class SendVurderingManuellOppgaveTest {
                         manuellOppgaveService,
                         kafkaApprecProducer,
                         kafkaRecievedSykmeldingProducer,
-                        kafkaValidationResultProducer.producer,
-                        kafkaValidationResultProducer.syfoserviceQueueName,
+                        kafkaValidationResultProducer,
                         session,
                         syfoserviceProducer,
                         oppgaveClient,
@@ -155,6 +158,17 @@ internal class SendVurderingManuellOppgaveTest {
         with(TestApplicationEngine()) {
             start()
 
+            coEvery { kafkaApprecProducer.producer } returns mockk()
+            coEvery { kafkaApprecProducer.sm2013ApprecTopic } returns sm2013ApprecTopicName
+
+            coEvery { kafkaValidationResultProducer.producer } returns mockk()
+            coEvery { kafkaValidationResultProducer.syfoserviceQueueName } returns syfoserviceQueueName
+
+            coEvery { kafkaRecievedSykmeldingProducer.producer } returns mockk()
+            coEvery { kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic } returns sm2013AutomaticHandlingTopic
+            coEvery { kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic } returns sm2013InvalidHandlingTopic
+            coEvery { kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallToipic } returns sm2013BehandlingsUtfallToipic
+
             database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
             application.routing {
@@ -162,8 +176,7 @@ internal class SendVurderingManuellOppgaveTest {
                         manuellOppgaveService,
                         kafkaApprecProducer,
                         kafkaRecievedSykmeldingProducer,
-                        kafkaValidationResultProducer.producer,
-                        kafkaValidationResultProducer.syfoserviceQueueName,
+                        kafkaValidationResultProducer,
                         session,
                         syfoserviceProducer,
                         oppgaveClient,
@@ -191,10 +204,10 @@ internal class SendVurderingManuellOppgaveTest {
             coEvery { textMessage.text = any() } returns Unit
             coEvery { session.createTextMessage() } returns textMessage
             coEvery { syfoserviceProducer.send(any()) } returns Unit
-            coEvery { kafkaproducerreceivedSykmelding.send(any()) } returns mockk<Future<RecordMetadata>>()
+            coEvery { kafkaRecievedSykmeldingProducer.producer.send(any()) } returns mockk<Future<RecordMetadata>>()
             coEvery { oppgaveClient.hentOppgave(any(), any()) } returns OpprettOppgaveResponse(123, 1)
             coEvery { oppgaveClient.ferdigStillOppgave(any(), any()) } returns OpprettOppgaveResponse(123, 2)
-            coEvery { kafkaproducerApprec.send(any()) } returns mockk<Future<RecordMetadata>>()
+            coEvery { kafkaApprecProducer.producer.send(any()) } returns mockk<Future<RecordMetadata>>()
 
             with(handleRequest(HttpMethod.Put, "/api/v1/vurderingmanuelloppgave/$oppgaveid") {
                 addHeader("Accept", "application/json")

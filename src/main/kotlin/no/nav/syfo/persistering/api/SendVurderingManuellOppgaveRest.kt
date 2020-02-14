@@ -35,8 +35,7 @@ fun Route.sendVurderingManuellOppgave(
     manuellOppgaveService: ManuellOppgaveService,
     kafkaApprecProducer: KafkaProducers.Companion.KafkaApprecProducer,
     kafkaRecievedSykmeldingProducer: KafkaProducers.Companion.KafkaRecievedSykmeldingProducer,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    syfoserviceQueueName: String,
+    kafkaValidationResultProducer: KafkaProducers.Companion.KafkaValidationResultProducer,
     session: Session,
     syfoserviceProducer: MessageProducer,
     oppgaveClient: OppgaveClient,
@@ -85,7 +84,7 @@ fun Route.sendVurderingManuellOppgave(
                                             kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic,
                                             kafkaRecievedSykmeldingProducer.producer,
                                             kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallToipic,
-                                            kafkaproducervalidationResult,
+                                            kafkaValidationResultProducer.producer,
                                             loggingMeta,
                                             oppgaveClient
                                         )
@@ -97,7 +96,7 @@ fun Route.sendVurderingManuellOppgave(
                                             kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic,
                                             kafkaRecievedSykmeldingProducer.producer,
                                             loggingMeta,
-                                            syfoserviceQueueName,
+                                            kafkaValidationResultProducer.syfoserviceQueueName,
                                             session,
                                             syfoserviceProducer,
                                             kafkaApprecProducer.sm2013ApprecTopic,
