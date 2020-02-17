@@ -19,15 +19,15 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 @KtorExperimentalAPI
 suspend fun handleManuellOppgaveInvalid(
-    manuellOppgave: ManuellOppgaveKomplett,
-    sm2013ApprecTopicName: String,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    sm2013InvalidHandlingTopic: String,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    sm2013BehandlingsUtfallToipic: String,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    loggingMeta: LoggingMeta,
-    oppgaveClient: OppgaveClient
+        manuellOppgave: ManuellOppgaveKomplett,
+        sm2013ApprecTopicName: String,
+        kafkaproducerApprec: KafkaProducer<String, Apprec>,
+        sm2013InvalidHandlingTopic: String,
+        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+        sm2013BehandlingsUtfallTopic: String,
+        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+        loggingMeta: LoggingMeta,
+        oppgaveClient: OppgaveClient
 ) {
 
     kafkaproducerreceivedSykmelding.send(
@@ -41,7 +41,7 @@ suspend fun handleManuellOppgaveInvalid(
     sendValidationResult(
         manuellOppgave.validationResult,
         kafkaproducervalidationResult,
-        sm2013BehandlingsUtfallToipic,
+        sm2013BehandlingsUtfallTopic,
         manuellOppgave.receivedSykmelding,
         loggingMeta)
 

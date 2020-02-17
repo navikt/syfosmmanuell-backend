@@ -83,7 +83,7 @@ fun Route.sendVurderingManuellOppgave(
                                             kafkaApprecProducer.producer,
                                             kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic,
                                             kafkaRecievedSykmeldingProducer.producer,
-                                            kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallToipic,
+                                            kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallTopic,
                                             kafkaValidationResultProducer.producer,
                                             loggingMeta,
                                             oppgaveClient
@@ -140,17 +140,17 @@ fun sendReceipt(
 }
 
 fun sendValidationResult(
-    validationResult: ValidationResult,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    sm2013BehandlingsUtfallToipic: String,
-    receivedSykmelding: ReceivedSykmelding,
-    loggingMeta: LoggingMeta
+        validationResult: ValidationResult,
+        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+        sm2013BehandlingsUtfallTopic: String,
+        receivedSykmelding: ReceivedSykmelding,
+        loggingMeta: LoggingMeta
 ) {
 
     kafkaproducervalidationResult.send(
-        ProducerRecord(sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult)
+        ProducerRecord(sm2013BehandlingsUtfallTopic, receivedSykmelding.sykmelding.id, validationResult)
     )
-    log.info("Valideringsreultat sendt til kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
+    log.info("Valideringsreultat sendt til kafka {}, {}", sm2013BehandlingsUtfallTopic, fields(loggingMeta))
 }
 
 fun ferdigStillOppgave(manuellOppgave: ManuellOppgaveKomplett, oppgaveVersjon: Int) = FerdigStillOppgave(

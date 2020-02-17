@@ -32,7 +32,7 @@ class KafkaProducers constructor(env: Environment, vaultSecrets: VaultSecrets) {
 
             val sm2013AutomaticHandlingTopic = env.sm2013AutomaticHandlingTopic
             val sm2013InvalidHandlingTopic = env.sm2013InvalidHandlingTopic
-            val sm2013BehandlingsUtfallToipic = env.sm2013BehandlingsUtfallToipic
+            val sm2013BehandlingsUtfallTopic = env.sm2013BehandlingsUtfallTopic
         }
 
         class KafkaValidationResultProducer constructor(env: Environment, properties: Properties) {

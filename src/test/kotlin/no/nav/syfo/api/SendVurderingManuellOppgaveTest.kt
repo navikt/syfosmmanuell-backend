@@ -72,7 +72,7 @@ internal class SendVurderingManuellOppgaveTest {
 
     val sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic"
     val sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic"
-    val sm2013BehandlingsUtfallToipic = "sm2013BehandlingsUtfallToipic"
+    val sm2013BehandlingsUtfallTopic = "sm2013BehandlingsUtfallTopic"
     val sm2013ApprecTopicName = "sm2013ApprecTopicName"
 
     val textMessage = mockk<TextMessage>()
@@ -161,7 +161,7 @@ internal class SendVurderingManuellOppgaveTest {
             coEvery { kafkaRecievedSykmeldingProducer.producer } returns mockk()
             coEvery { kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic } returns sm2013AutomaticHandlingTopic
             coEvery { kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic } returns sm2013InvalidHandlingTopic
-            coEvery { kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallToipic } returns sm2013BehandlingsUtfallToipic
+            coEvery { kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallTopic } returns sm2013BehandlingsUtfallTopic
 
             database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
