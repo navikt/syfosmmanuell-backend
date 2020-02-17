@@ -20,14 +20,13 @@ class KafkaProducers (env: Environment, vaultSecrets: VaultSecrets) {
     val kafkaRecievedSykmeldingProducer = KafkaRecievedSykmeldingProducer(env, properties)
     val kafkaValidationResultProducer = KafkaValidationResultProducer(env, properties)
 
-    companion object {
-        class KafkaApprecProducer (env: Environment, properties: Properties) {
+        inner class KafkaApprecProducer(env: Environment, properties: Properties) {
             val producer = KafkaProducer<String, Apprec>(properties)
 
             val sm2013ApprecTopic = env.sm2013Apprec
         }
 
-        class KafkaRecievedSykmeldingProducer (env: Environment, properties: Properties) {
+        inner class KafkaRecievedSykmeldingProducer(env: Environment, properties: Properties) {
             val producer = KafkaProducer<String, ReceivedSykmelding>(properties)
 
             val sm2013AutomaticHandlingTopic = env.sm2013AutomaticHandlingTopic
@@ -35,10 +34,9 @@ class KafkaProducers (env: Environment, vaultSecrets: VaultSecrets) {
             val sm2013BehandlingsUtfallTopic = env.sm2013BehandlingsUtfallTopic
         }
 
-        class KafkaValidationResultProducer (env: Environment, properties: Properties) {
+        inner class KafkaValidationResultProducer(env: Environment, properties: Properties) {
             val producer = KafkaProducer<String, ValidationResult>(properties)
 
             val syfoserviceQueueName = env.syfoserviceQueueName
         }
-    }
 }

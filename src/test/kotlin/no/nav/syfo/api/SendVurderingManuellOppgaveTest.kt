@@ -66,9 +66,9 @@ internal class SendVurderingManuellOppgaveTest {
     )
     val oppgaveid = 308076319
 
-    val kafkaApprecProducer = mockk<KafkaProducers.Companion.KafkaApprecProducer>()
-    val kafkaRecievedSykmeldingProducer = mockk<KafkaProducers.Companion.KafkaRecievedSykmeldingProducer>()
-    val kafkaValidationResultProducer = mockk<KafkaProducers.Companion.KafkaValidationResultProducer>()
+    val kafkaApprecProducer = mockk<KafkaProducers.KafkaApprecProducer>()
+    val kafkaRecievedSykmeldingProducer = mockk<KafkaProducers.KafkaRecievedSykmeldingProducer>()
+    val kafkaValidationResultProducer = mockk<KafkaProducers.KafkaValidationResultProducer>()
 
     val sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic"
     val sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic"
