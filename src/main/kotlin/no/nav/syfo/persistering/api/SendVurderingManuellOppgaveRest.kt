@@ -33,9 +33,9 @@ import org.apache.kafka.clients.producer.ProducerRecord
 @KtorExperimentalAPI
 fun Route.sendVurderingManuellOppgave(
     manuellOppgaveService: ManuellOppgaveService,
-    kafkaApprecProducer: KafkaProducers.Companion.KafkaApprecProducer,
-    kafkaRecievedSykmeldingProducer: KafkaProducers.Companion.KafkaRecievedSykmeldingProducer,
-    kafkaValidationResultProducer: KafkaProducers.Companion.KafkaValidationResultProducer,
+    kafkaApprecProducer: KafkaProducers.KafkaApprecProducer,
+    kafkaRecievedSykmeldingProducer: KafkaProducers.KafkaRecievedSykmeldingProducer,
+    kafkaValidationResultProducer: KafkaProducers.KafkaValidationResultProducer,
     session: Session,
     syfoserviceProducer: MessageProducer,
     oppgaveClient: OppgaveClient,
