@@ -15,7 +15,7 @@ import no.nav.syfo.model.OpprettOppgave
 import no.nav.syfo.model.OpprettOppgaveResponse
 
 @KtorExperimentalAPI
-class OppgaveClient constructor(
+class OppgaveClient (
     private val url: String,
     private val oidcClient: StsOidcClient,
     private val httpClient: HttpClient
