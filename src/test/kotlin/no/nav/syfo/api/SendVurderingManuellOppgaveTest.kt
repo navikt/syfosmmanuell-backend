@@ -19,7 +19,6 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import java.util.concurrent.Future
 import javax.jms.MessageProducer
@@ -33,7 +32,6 @@ import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveResponse
-import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -45,14 +43,10 @@ import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.mock
 import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.Test
-import java.util.*
-import kotlin.collections.HashMap
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 internal class SendVurderingManuellOppgaveTest {
     val database = TestDB()
