@@ -11,7 +11,7 @@ import io.ktor.http.HttpStatusCode
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 
-class SyfoTilgangsKontrollClient (
+class SyfoTilgangsKontrollClient(
     private val url: String,
     private val httpClient: HttpClient
 ) {

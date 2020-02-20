@@ -146,8 +146,8 @@ internal class HenteManuellOppgaverTest {
             with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
                 addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
             }) {
-                response.status() shouldEqual HttpStatusCode.OK
-                objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).size shouldEqual 0
+                response.status() shouldEqual HttpStatusCode.NoContent
+                response.content!! shouldEqual "Fant ingen uløste manuelle oppgaver med oppgaveid $oppgaveid"
             }
         }
     }

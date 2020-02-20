@@ -140,11 +140,11 @@ fun sendReceipt(
 }
 
 fun sendValidationResult(
-        validationResult: ValidationResult,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        sm2013BehandlingsUtfallTopic: String,
-        receivedSykmelding: ReceivedSykmelding,
-        loggingMeta: LoggingMeta
+    validationResult: ValidationResult,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    sm2013BehandlingsUtfallTopic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    loggingMeta: LoggingMeta
 ) {
 
     kafkaproducervalidationResult.send(

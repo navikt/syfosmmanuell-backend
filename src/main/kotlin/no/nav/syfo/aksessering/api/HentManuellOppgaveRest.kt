@@ -6,7 +6,6 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
-import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
 import no.nav.syfo.service.ManuellOppgaveService
