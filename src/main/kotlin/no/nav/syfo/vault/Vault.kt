@@ -10,7 +10,6 @@ import no.nav.syfo.application.ApplicationState
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("no.nav.syfo.vault")
-
 object Vault {
     private const val MIN_REFRESH_MARGIN = 600_000L // 10 minutes
     private val vaultToken: String = System.getenv("VAULT_TOKEN")

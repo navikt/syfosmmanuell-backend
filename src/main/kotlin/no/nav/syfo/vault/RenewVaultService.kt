@@ -5,15 +5,13 @@ import kotlinx.coroutines.launch
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.db.VaultCredentialService
 
-class RenewVaultService(
-    val vaultCredentialService: VaultCredentialService,
-    val applicationState: ApplicationState
-) {
-
+class RenewVaultService(private val vaultCredentialService: VaultCredentialService, private val applicationState: ApplicationState) {
     fun startRenewTasks() {
         GlobalScope.launch {
             try {
                 Vault.renewVaultTokenTask(applicationState)
+            } catch (e: Exception) {
+                no.nav.syfo.log.error("Noe gikk galt ved fornying av vault-token", e.message)
             } finally {
                 applicationState.ready = false
             }
@@ -22,6 +20,8 @@ class RenewVaultService(
         GlobalScope.launch {
             try {
                 vaultCredentialService.runRenewCredentialsTask(applicationState)
+            } catch (e: Exception) {
+                no.nav.syfo.log.error("Noe gikk galt ved fornying av vault-credentials", e.message)
             } finally {
                 applicationState.ready = false
             }
