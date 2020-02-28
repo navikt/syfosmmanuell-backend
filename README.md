@@ -82,7 +82,7 @@ read postgresql/preprod-fss/creds/syfosmmanuell-backend-admin
 Prod credentials:
 
 ```
-read postgresql/prod-fss/creds/syfosmmanuell-backend-admin
+read postgresql/prod-fss/creds/syfosmmanuell-backend-readonly
 
 ```
 
@@ -148,6 +148,7 @@ To get started:
 * Sebastian Knudsen, `sebastian.knudsen@nav.no`
 * Tia Firing, `tia.firing@nav.no`
 * Jonas Henie, `jonas.henie@nav.no`
+* Mathias Hellevang, `mathias.hellevang@nav.no`
 
 ### For NAV employees
 We are available at the Slack channel #team-sykmelding

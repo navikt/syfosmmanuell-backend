@@ -17,6 +17,8 @@ import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.handleManuellOppgave.handleManuellOppgaveInvalid
 import no.nav.syfo.handleManuellOppgave.handleManuellOppgaveOk
 import no.nav.syfo.log
+import no.nav.syfo.metrics.RULE_HIT_COUNTER
+import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.FerdigStillOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
@@ -75,6 +77,8 @@ fun Route.sendVurderingManuellOppgave(
                                     pasientFnr
                                 )?.harTilgang
                             if (harTilgangTilOppgave != null && harTilgangTilOppgave) {
+                                validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
+                                RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
                                 when (manuellOppgave.validationResult.status) {
                                     Status.INVALID -> {
                                         handleManuellOppgaveInvalid(
@@ -140,11 +144,11 @@ fun sendReceipt(
 }
 
 fun sendValidationResult(
-        validationResult: ValidationResult,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        sm2013BehandlingsUtfallTopic: String,
-        receivedSykmelding: ReceivedSykmelding,
-        loggingMeta: LoggingMeta
+    validationResult: ValidationResult,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    sm2013BehandlingsUtfallTopic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    loggingMeta: LoggingMeta
 ) {
 
     kafkaproducervalidationResult.send(

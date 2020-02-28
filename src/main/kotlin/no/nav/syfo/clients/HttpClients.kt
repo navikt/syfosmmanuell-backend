@@ -17,7 +17,7 @@ import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 
-class HttpClients (env: Environment, vaultSecrets: VaultSecrets) {
+class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     private val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
             serializer = JacksonSerializer {

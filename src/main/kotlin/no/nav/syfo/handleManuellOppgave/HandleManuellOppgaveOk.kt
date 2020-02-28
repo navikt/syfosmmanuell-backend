@@ -9,6 +9,7 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.log
+import no.nav.syfo.metrics.FERDIGSTILT_OPPGAVE_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
 import no.nav.syfo.model.ManuellOppgaveKomplett
@@ -85,4 +86,6 @@ suspend fun handleManuellOppgaveOk(
     log.info("Apprec sendt til kafka topic {}, {}", sm2013ApprecTopicName,
         fields(loggingMeta)
     )
+
+    FERDIGSTILT_OPPGAVE_COUNTER.inc()
 }

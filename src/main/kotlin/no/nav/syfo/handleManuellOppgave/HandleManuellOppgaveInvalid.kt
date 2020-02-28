@@ -5,6 +5,7 @@ import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.log
+import no.nav.syfo.metrics.FERDIGSTILT_OPPGAVE_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
 import no.nav.syfo.model.ManuellOppgaveKomplett
@@ -19,15 +20,15 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 @KtorExperimentalAPI
 suspend fun handleManuellOppgaveInvalid(
-        manuellOppgave: ManuellOppgaveKomplett,
-        sm2013ApprecTopicName: String,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>,
-        sm2013InvalidHandlingTopic: String,
-        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-        sm2013BehandlingsUtfallTopic: String,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        loggingMeta: LoggingMeta,
-        oppgaveClient: OppgaveClient
+    manuellOppgave: ManuellOppgaveKomplett,
+    sm2013ApprecTopicName: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    sm2013InvalidHandlingTopic: String,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    sm2013BehandlingsUtfallTopic: String,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    loggingMeta: LoggingMeta,
+    oppgaveClient: OppgaveClient
 ) {
 
     kafkaproducerreceivedSykmelding.send(
@@ -73,4 +74,6 @@ suspend fun handleManuellOppgaveInvalid(
     log.info("Apprec kvittering sent til kafka topic {}, {}", sm2013ApprecTopicName,
         fields(loggingMeta)
     )
+
+    FERDIGSTILT_OPPGAVE_COUNTER.inc()
 }

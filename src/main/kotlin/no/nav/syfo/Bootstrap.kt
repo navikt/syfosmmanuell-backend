@@ -70,8 +70,6 @@ fun main() {
 
     val applicationState = ApplicationState()
 
-    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
-
     val manuellOppgaveService = ManuellOppgaveService(database)
 
     val kafkaProducers = KafkaProducers(env, vaultSecrets)
@@ -101,6 +99,8 @@ fun main() {
     ApplicationServer(applicationEngine, connection).start()
 
     applicationState.ready = true
+
+    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
 
     launchListeners(
         applicationState,

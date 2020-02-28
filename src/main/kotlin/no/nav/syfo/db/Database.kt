@@ -13,10 +13,7 @@ enum class Role {
     override fun toString() = name.toLowerCase()
 }
 
-class Database(
-    private val env: Environment,
-    private val vaultCredentialService: VaultCredentialService
-) : DatabaseInterface {
+class Database(private val env: Environment, private val vaultCredentialService: VaultCredentialService) : DatabaseInterface {
     private val dataSource: HikariDataSource
 
     override val connection: Connection
@@ -37,6 +34,7 @@ class Database(
             maximumPoolSize = 3
             minimumIdle = 1
             idleTimeout = 10001
+            maxLifetime = 300000
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             validate()

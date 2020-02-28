@@ -8,6 +8,7 @@ import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.finnFristForFerdigstillingAvOppgave
 import no.nav.syfo.db.Database
 import no.nav.syfo.log
+import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
 import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.ManuellOppgave
@@ -26,6 +27,7 @@ suspend fun handleRecivedMessage(
 ) {
     wrapExceptions(loggingMeta) {
         log.info("Mottok ein manuell oppgave, {}", fields(loggingMeta))
+        INCOMING_MESSAGE_COUNTER.inc()
 
         if (database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
             log.warn(
