@@ -33,7 +33,7 @@ class HttpClients (env: Environment, vaultSecrets: VaultSecrets) {
     private val httpClient = HttpClient(Apache, config)
 
     @KtorExperimentalAPI
-    val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword)
+    val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenUrl)
     @KtorExperimentalAPI
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(env.syfoTilgangsKontrollClientUrl, httpClient)

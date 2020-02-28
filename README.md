@@ -132,6 +132,15 @@ read postgresql/prod-fss/creds/syfosmmanuell-backend-admin
    https://confluence.adeo.no/display/KES/Generell+testing+av+sykemelding+2013+i+preprod under "Verifisering i Modia"
 3. See "Sykmeldt enkeltperson" verifying that the sykmelding that is there is correct
 
+## Running in development mode
+To run syfosmmanuell-backend locally you need a bunch of other services like Vault, a PostgreSQL database, an authentication service, Kafka, Zookeeper etc. 
+The dependencies are available as a Docker compose setup at https://github.com/navikt/syfosmmanuell-backend-docker-compose 
+
+To get started:
+1. Check out the [syfosmmanuell-backend-docker-compose](https://github.com/navikt/syfosmmanuell-backend-docker-compose) repository and start the services as described in the [readme](https://github.com/navikt/syfosmmanuell-backend-docker-compose/blob/master/README.md) file.
+2. Create a local run config for syfosmmanuell-backend pointing to Bootstrap.tk
+3. Add the contents of dev-stack/dev-runtime-env as runtime environments in the run config. 
+
 ## Contact us
 ### Code/project related questions can be sent to
 * Joakim Kartveit, `joakim.kartveit@nav.no`

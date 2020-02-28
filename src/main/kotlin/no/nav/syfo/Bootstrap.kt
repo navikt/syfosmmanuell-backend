@@ -51,12 +51,12 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 fun main() {
     val env = Environment()
     val vaultSecrets = VaultSecrets(
-        serviceuserPassword = getFileAsString("/secrets/serviceuser/password"),
-        serviceuserUsername = getFileAsString("/secrets/serviceuser/username"),
-        mqUsername = getFileAsString("/secrets/default/mqUsername"),
-        mqPassword = getFileAsString("/secrets/default/mqPassword"),
-        oidcWellKnownUri = getFileAsString("/secrets/default/oidcWellKnownUri"),
-        syfosmmanuellBackendClientId = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_id")
+            serviceuserUsername = getFileAsString(env.serviceuserUsername),
+            serviceuserPassword = getFileAsString(env.serviceuserPassword),
+            mqUsername = getFileAsString(env.mqUsername),
+            mqPassword = getFileAsString(env.mqPassword),
+            oidcWellKnownUri = getFileAsString(env.oidcWellKnownUri),
+            syfosmmanuellBackendClientId = getFileAsString(env.syfosmmanuellBackendClientId)
     )
 
     val wellKnown = getWellKnown(vaultSecrets.oidcWellKnownUri)
@@ -93,8 +93,7 @@ fun main() {
         session,
         syfoserviceProducer,
         httpClients.oppgaveClient,
-        vaultSecrets,
-        jwkProvider,
+        vaultSecrets,        jwkProvider,
         wellKnown.issuer,
         httpClients.syfoTilgangsKontrollClient
     )

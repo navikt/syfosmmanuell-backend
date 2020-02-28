@@ -3,6 +3,7 @@ package no.nav.syfo
 import no.nav.syfo.kafka.KafkaConfig
 import no.nav.syfo.kafka.KafkaCredentials
 import no.nav.syfo.mq.MqConfig
+import no.nav.syfo.util.getFileAsString
 
 data class Environment(
         val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
@@ -22,6 +23,17 @@ data class Environment(
         val syfoTilgangsKontrollClientUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL", "http://syfo-tilgangskontroll/syfo-tilgangskontroll"),
         val jwkKeysUrl: String = getEnvVar("JWKKEYS_URL", "https://login.microsoftonline.com/common/discovery/keys"),
         val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
+
+        val serviceuserUsername: String = getEnvVar("SERVICE_USER_USERNAME", "/secrets/serviceuser/username"),
+        val serviceuserPassword: String = getEnvVar("SERVICE_USER_PASSWORD", "/secrets/serviceuser/password"),
+        val mqUsername: String = getEnvVar("MQ_USERNAME", "/secrets/default/mqUsername"),
+        val mqPassword: String = getEnvVar("MQ_PASSWORD", "/secrets/default/mqPassword"),
+        val oidcWellKnownUri: String = getEnvVar("OID_WELL_KNOWN_URI", "/secrets/default/oidcWellKnownUri"),
+        val securityTokenUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service/rest/v1/sts/token"),
+        val syfosmmanuellBackendClientId: String = getEnvVar("SYFOSMMANUELL_BACKEND_CLIENT_ID", "/secrets/azuread/syfosmmanuell-backend/client_id"),
+
+        val disalbeKafkaSSL: String = getEnvVar("DISABLE_KAFKA_SSL", "NO"),
+
         override val mqHostname: String = getEnvVar("MQ_HOST_NAME"),
         override val mqPort: Int = getEnvVar("MQ_PORT").toInt(),
         override val mqGatewayName: String = getEnvVar("MQ_GATEWAY_NAME"),
