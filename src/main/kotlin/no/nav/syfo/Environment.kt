@@ -32,7 +32,7 @@ data class Environment(
     val securityTokenUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service/rest/v1/sts/token"),
     val syfosmmanuellBackendClientId: String = getEnvVar("SYFOSMMANUELL_BACKEND_CLIENT_ID", "/secrets/azuread/syfosmmanuell-backend/client_id"),
 
-    val disalbeKafkaSSL: String = getEnvVar("DISABLE_KAFKA_SSL", "NO"),
+    val disalbeKafkaSSL: Boolean = getEnvVar("DISABLE_KAFKA_SSL", "false").toBoolean(),
     override val mqHostname: String = getEnvVar("MQ_HOST_NAME"),
     override val mqPort: Int = getEnvVar("MQ_PORT").toInt(),
     override val mqGatewayName: String = getEnvVar("MQ_GATEWAY_NAME"),
