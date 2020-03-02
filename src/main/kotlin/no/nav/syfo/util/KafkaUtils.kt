@@ -1,7 +1,7 @@
 package no.nav.syfo.util
 
 import no.nav.syfo.Environment
-import java.util.*
+import java.util.Properties
 
 fun setSecurityProtocol (environment: Environment, properties: Properties): Properties {
     if (environment.disalbeKafkaSSL) {
