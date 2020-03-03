@@ -100,7 +100,9 @@ fun main() {
 
     applicationState.ready = true
 
-    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
+    if (!env.developmentMode) {
+        RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
+    }
 
     launchListeners(
         applicationState,
