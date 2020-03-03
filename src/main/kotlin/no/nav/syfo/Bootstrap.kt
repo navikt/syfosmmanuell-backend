@@ -91,7 +91,8 @@ fun main() {
         session,
         syfoserviceProducer,
         httpClients.oppgaveClient,
-        vaultSecrets,        jwkProvider,
+        vaultSecrets,
+        jwkProvider,
         wellKnown.issuer,
         httpClients.syfoTilgangsKontrollClient
     )
