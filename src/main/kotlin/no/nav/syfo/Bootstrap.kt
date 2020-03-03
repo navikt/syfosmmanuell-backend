@@ -51,12 +51,12 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 fun main() {
     val env = Environment()
     val vaultSecrets = VaultSecrets(
-            serviceuserUsername = getFileAsString(env.serviceuserUsername),
-            serviceuserPassword = getFileAsString(env.serviceuserPassword),
-            mqUsername = getFileAsString(env.mqUsername),
-            mqPassword = getFileAsString(env.mqPassword),
-            oidcWellKnownUri = getFileAsString(env.oidcWellKnownUri),
-            syfosmmanuellBackendClientId = getFileAsString(env.syfosmmanuellBackendClientId)
+            serviceuserUsername = getFileAsString(env.serviceuserUsernamePath),
+            serviceuserPassword = getFileAsString(env.serviceuserPasswordPath),
+            mqUsername = getFileAsString(env.mqUsernamePath),
+            mqPassword = getFileAsString(env.mqPasswordPath),
+            oidcWellKnownUri = getFileAsString(env.oidcWellKnownUriPath),
+            syfosmmanuellBackendClientId = getFileAsString(env.syfosmmanuellBackendClientIdPath)
     )
 
     val wellKnown = getWellKnown(vaultSecrets.oidcWellKnownUri)

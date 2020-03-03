@@ -26,11 +26,24 @@ internal class KafkaITTest {
     val credentials = VaultSecrets("", "", "", "", "", "")
 
     val config = Environment(
-        kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-        applicationName = "syfosminfotrygd",
-        mountPathVault = "", databaseName = "", syfosmmanuellbackendDBURL = "url",
-        syfosmmanuellUrl = "https://syfosmmanuell", mqHostname = "mqhost", mqPort = 1342,
-        mqGatewayName = "mqGateway", mqChannelName = "syfomottak", syfoserviceQueueName = "", jwtIssuer = ""
+            kafkaBootstrapServers = embeddedEnvironment.brokersURL,
+            applicationName = "syfosminfotrygd",
+            serviceuserUsernamePath = "/secrets/serviceuser/username",
+            serviceuserPasswordPath = "/secrets/serviceuser/password",
+            mqUsernamePath = "foo",
+            mqPasswordPath = "bar",
+            oidcWellKnownUriPath = "baz",
+            syfosmmanuellBackendClientIdPath = "",
+            mountPathVault = "",
+            databaseName = "",
+            syfosmmanuellbackendDBURL = "url",
+            syfosmmanuellUrl = "https://syfosmmanuell",
+            mqHostname = "mqhost",
+            mqPort = 1342,
+            mqGatewayName = "mqGateway",
+            mqChannelName = "syfomottak",
+            syfoserviceQueueName = "",
+            jwtIssuer = ""
     )
 
     fun Properties.overrideForTest(): Properties = apply {
