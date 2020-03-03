@@ -48,6 +48,18 @@ spec:
   env:
     - name: SYFOSMMANUELL_BACKEND_DB_URL
       value: jdbc:postgresql://b27dbvl009.preprod.local:5432/syfosmmanuell-backend
+    - name: SERVICE_USER_USERNAME
+      value: /secrets/serviceuser/username
+    - name: SERVICE_USER_PASSWORD
+      value: /secrets/serviceuser/password
+    - name: MQ_USERNAME
+      value: /secrets/default/mqUsername
+    - name: MQ_PASSWORD
+      value: /secrets/default/mqPassword
+    - name: OID_WELL_KNOWN_URI
+      value: /secrets/default/oidcWellKnownUri
+    - name: SYFOSMMANUELL_BACKEND_CLIENT_ID
+      value: /secrets/azuread/syfosmmanuell-backend/client_id
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
       value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
     - name: MOUNT_PATH_VAULT

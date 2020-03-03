@@ -51,12 +51,12 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 fun main() {
     val env = Environment()
     val vaultSecrets = VaultSecrets(
-        serviceuserPassword = getFileAsString("/secrets/serviceuser/password"),
-        serviceuserUsername = getFileAsString("/secrets/serviceuser/username"),
-        mqUsername = getFileAsString("/secrets/default/mqUsername"),
-        mqPassword = getFileAsString("/secrets/default/mqPassword"),
-        oidcWellKnownUri = getFileAsString("/secrets/default/oidcWellKnownUri"),
-        syfosmmanuellBackendClientId = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_id")
+            serviceuserUsername = getFileAsString(env.serviceuserUsernamePath),
+            serviceuserPassword = getFileAsString(env.serviceuserPasswordPath),
+            mqUsername = getFileAsString(env.mqUsernamePath),
+            mqPassword = getFileAsString(env.mqPasswordPath),
+            oidcWellKnownUri = getFileAsString(env.oidcWellKnownUriPath),
+            syfosmmanuellBackendClientId = getFileAsString(env.syfosmmanuellBackendClientIdPath)
     )
 
     val wellKnown = getWellKnown(vaultSecrets.oidcWellKnownUri)
@@ -101,7 +101,9 @@ fun main() {
 
     applicationState.ready = true
 
-    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
+    if (!env.developmentMode) {
+        RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
+    }
 
     launchListeners(
         applicationState,
