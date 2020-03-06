@@ -10,7 +10,7 @@ import org.apache.kafka.common.serialization.StringDeserializer
 
 class KafkaConsumers(env: Environment, vaultSecrets: KafkaCredentials) {
     private val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets)
-    private val properties =  setSecurityProtocol(env, kafkaBaseConfig.toConsumerConfig(
+    private val properties = setSecurityProtocol(env, kafkaBaseConfig.toConsumerConfig(
             "${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class))
 
     val kafkaConsumerManuellOppgave = KafkaConsumer<String, String>(properties)
