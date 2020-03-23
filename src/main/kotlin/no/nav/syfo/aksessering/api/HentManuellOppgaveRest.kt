@@ -32,7 +32,8 @@ fun Route.hentManuellOppgaver(
                     call.respond(HttpStatusCode.BadRequest)
                 }
                 manuellOppgaveService.hentManuellOppgaver(oppgaveId).isEmpty() -> {
-                    log.info("Fant ingen uløste manuelloppgaver med oppgaveid {}", oppgaveId)
+                    log.info("Fant ingen uløste manuelloppgaver med oppgaveid {}",
+                        StructuredArguments.keyValue("oppgaveId", oppgaveId))
                     call.respond(HttpStatusCode.NoContent, "Fant ingen uløste manuelle oppgaver med oppgaveid $oppgaveId")
                 }
                 else -> {
