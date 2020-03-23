@@ -10,6 +10,7 @@ import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import javax.jms.MessageProducer
 import javax.jms.Session
+import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -46,7 +47,8 @@ fun Route.sendVurderingManuellOppgave(
     route("/api/v1") {
         put("/vurderingmanuelloppgave/{oppgaveid}") {
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            log.info("Mottok eit kall til /api/v1/vurderingmanuelloppgave med oppgaveid, {}", oppgaveId)
+            log.info("Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
+                StructuredArguments.keyValue("oppgaveId", oppgaveId))
 
             val accessToken = getAccessTokenFromAuthHeader(call.request)
 
@@ -113,20 +115,23 @@ fun Route.sendVurderingManuellOppgave(
                                         call.respond(HttpStatusCode.BadRequest)
                                         log.error(
                                             "Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
-                                            oppgaveId, fields(loggingMeta)
+                                            StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta)
                                         )
                                     }
                                 }
                             } else {
-                                log.warn("Veileder har ikkje tilgang")
+                                log.warn("Veileder har ikkje tilgang, {}, {}",
+                                    StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta))
                                 call.respond(HttpStatusCode.Unauthorized)
                             }
                         } else {
-                            log.warn("Henting av komplettManuellOppgave returente null oppgaveid, {}", oppgaveId)
+                            log.warn("Henting av komplettManuellOppgave returente null {}",
+                                StructuredArguments.keyValue("oppgaveId", oppgaveId))
                             call.respond(HttpStatusCode.InternalServerError)
                         }
                     } else {
-                        log.error("Oppdatering av oppdaterValidationResuts feilet oppgaveid, {}", oppgaveId)
+                        log.error("Oppdatering av oppdaterValidationResuts feilet {}",
+                            StructuredArguments.keyValue("oppgaveId", oppgaveId))
                         call.respond(HttpStatusCode.InternalServerError)
                     }
                 }
