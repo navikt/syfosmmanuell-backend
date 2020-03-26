@@ -47,8 +47,10 @@ fun Route.sendVurderingManuellOppgave(
     route("/api/v1") {
         put("/vurderingmanuelloppgave/{oppgaveid}") {
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            log.info("Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
-                StructuredArguments.keyValue("oppgaveId", oppgaveId))
+            log.info(
+                "Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
+                StructuredArguments.keyValue("oppgaveId", oppgaveId)
+            )
 
             val accessToken = getAccessTokenFromAuthHeader(call.request)
 
@@ -60,27 +62,26 @@ fun Route.sendVurderingManuellOppgave(
                     call.respond(HttpStatusCode.BadRequest)
                 }
                 else -> {
-                    if (manuellOppgaveService.oppdaterValidationResults(oppgaveId, validationResult) > 0) {
-                        val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(oppgaveId)
+                    val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(oppgaveId)
+                    if (manuellOppgave != null) {
+                        val loggingMeta = LoggingMeta(
+                            mottakId = manuellOppgave.receivedSykmelding.navLogId,
+                            orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
+                            msgId = manuellOppgave.receivedSykmelding.msgId,
+                            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
+                        )
 
-                        if (manuellOppgave != null) {
-                            val loggingMeta = LoggingMeta(
-                                mottakId = manuellOppgave.receivedSykmelding.navLogId,
-                                orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
-                                msgId = manuellOppgave.receivedSykmelding.msgId,
-                                sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
-                            )
+                        val pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient
 
-                            val pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient
-
-                            val harTilgangTilOppgave =
-                                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                                    accessToken,
-                                    pasientFnr
-                                )?.harTilgang
-                            if (harTilgangTilOppgave != null && harTilgangTilOppgave) {
-                                validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
-                                RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
+                        val harTilgangTilOppgave =
+                            syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                                accessToken,
+                                pasientFnr
+                            )?.harTilgang
+                        if (harTilgangTilOppgave != null && harTilgangTilOppgave) {
+                            validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
+                            RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
+                            if (manuellOppgaveService.oppdaterValidationResults(oppgaveId, validationResult) > 0) {
                                 when (manuellOppgave.validationResult.status) {
                                     Status.INVALID -> {
                                         handleManuellOppgaveInvalid(
@@ -120,18 +121,24 @@ fun Route.sendVurderingManuellOppgave(
                                     }
                                 }
                             } else {
-                                log.warn("Veileder har ikkje tilgang, {}, {}",
-                                    StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta))
-                                call.respond(HttpStatusCode.Unauthorized)
+                                log.error(
+                                    "Oppdatering av oppdaterValidationResuts feilet {}",
+                                    StructuredArguments.keyValue("oppgaveId", oppgaveId)
+                                )
+                                call.respond(HttpStatusCode.InternalServerError)
                             }
                         } else {
-                            log.warn("Henting av komplettManuellOppgave returente null {}",
-                                StructuredArguments.keyValue("oppgaveId", oppgaveId))
-                            call.respond(HttpStatusCode.InternalServerError)
+                            log.warn(
+                                "Veileder har ikkje tilgang, {}, {}",
+                                StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta)
+                            )
+                            call.respond(HttpStatusCode.Unauthorized)
                         }
                     } else {
-                        log.error("Oppdatering av oppdaterValidationResuts feilet {}",
-                            StructuredArguments.keyValue("oppgaveId", oppgaveId))
+                        log.warn(
+                            "Henting av komplettManuellOppgave returente null {}",
+                            StructuredArguments.keyValue("oppgaveId", oppgaveId)
+                        )
                         call.respond(HttpStatusCode.InternalServerError)
                     }
                 }
@@ -163,7 +170,7 @@ fun sendValidationResult(
 }
 
 fun ferdigStillOppgave(manuellOppgave: ManuellOppgaveKomplett, oppgaveVersjon: Int) = FerdigStillOppgave(
-        versjon = oppgaveVersjon,
-        id = manuellOppgave.oppgaveid,
-        status = OppgaveStatus.FERDIGSTILT
+    versjon = oppgaveVersjon,
+    id = manuellOppgave.oppgaveid,
+    status = OppgaveStatus.FERDIGSTILT
 )
