@@ -28,7 +28,8 @@ suspend fun handleManuellOppgaveInvalid(
     sm2013BehandlingsUtfallTopic: String,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     loggingMeta: LoggingMeta,
-    oppgaveClient: OppgaveClient
+    oppgaveClient: OppgaveClient,
+    validationResult: ValidationResult
 ) {
 
     kafkaproducerreceivedSykmelding.send(
@@ -40,7 +41,7 @@ suspend fun handleManuellOppgaveInvalid(
     log.info("Melding sendt til kafka topic {}, {}", sm2013InvalidHandlingTopic, fields(loggingMeta))
 
     sendValidationResult(
-        manuellOppgave.validationResult,
+        validationResult,
         kafkaproducervalidationResult,
         sm2013BehandlingsUtfallTopic,
         manuellOppgave.receivedSykmelding,

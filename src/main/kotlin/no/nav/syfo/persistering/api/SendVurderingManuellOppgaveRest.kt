@@ -81,9 +81,13 @@ fun Route.sendVurderingManuellOppgave(
                         if (harTilgangTilOppgave != null && harTilgangTilOppgave) {
                             validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
                             RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
-                            if (manuellOppgaveService.oppdaterValidationResults(oppgaveId, validationResult) > 0) {
-                                when (manuellOppgave.validationResult.status) {
-                                    Status.INVALID -> {
+                            when (validationResult.status) {
+                                Status.INVALID -> {
+                                    if (manuellOppgaveService.oppdaterValidationResults(
+                                            oppgaveId,
+                                            validationResult
+                                        ) > 0
+                                    ) {
                                         handleManuellOppgaveInvalid(
                                             manuellOppgave,
                                             kafkaApprecProducer.sm2013ApprecTopic,
@@ -93,11 +97,24 @@ fun Route.sendVurderingManuellOppgave(
                                             kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallTopic,
                                             kafkaValidationResultProducer.producer,
                                             loggingMeta,
-                                            oppgaveClient
+                                            oppgaveClient,
+                                            validationResult
                                         )
                                         call.respond(HttpStatusCode.NoContent)
+                                    } else {
+                                        log.error(
+                                            "Oppdatering av oppdaterValidationResuts feilet {}",
+                                            StructuredArguments.keyValue("oppgaveId", oppgaveId)
+                                        )
+                                        call.respond(HttpStatusCode.InternalServerError)
                                     }
-                                    Status.OK -> {
+                                }
+                                Status.OK -> {
+                                    if (manuellOppgaveService.oppdaterValidationResults(
+                                            oppgaveId,
+                                            validationResult
+                                        ) > 0
+                                    ) {
                                         handleManuellOppgaveOk(
                                             manuellOppgave,
                                             kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic,
@@ -111,21 +128,22 @@ fun Route.sendVurderingManuellOppgave(
                                             oppgaveClient
                                         )
                                         call.respond(HttpStatusCode.NoContent)
-                                    }
-                                    else -> {
-                                        call.respond(HttpStatusCode.BadRequest)
+                                    } else {
                                         log.error(
-                                            "Syfosmmanuell sendt ein ugyldig validationResult.status, {}, {}",
-                                            StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta)
+                                            "Oppdatering av oppdaterValidationResuts feilet {}",
+                                            StructuredArguments.keyValue("oppgaveId", oppgaveId)
                                         )
+                                        call.respond(HttpStatusCode.InternalServerError)
                                     }
                                 }
-                            } else {
-                                log.error(
-                                    "Oppdatering av oppdaterValidationResuts feilet {}",
-                                    StructuredArguments.keyValue("oppgaveId", oppgaveId)
-                                )
-                                call.respond(HttpStatusCode.InternalServerError)
+                                else -> {
+                                    call.respond(HttpStatusCode.BadRequest)
+                                    log.error(
+                                        "Syfosmmanuell sendt ein ugyldig validationResult.status,{}  {}, {}",
+                                        validationResult.status.name,
+                                        StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta)
+                                    )
+                                }
                             }
                         } else {
                             log.warn(
