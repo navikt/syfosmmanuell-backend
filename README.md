@@ -127,9 +127,12 @@ read postgresql/prod-fss/creds/syfosmmanuell-backend-readonly
 5. Verify that a new task has appeared for the user
 
 ### Verification in Modia:
-1. Log in to the modes, https://app-q1.adeo.no/sykefravaer/
-2. Log in with Case Manager: User: Z990625, password for testing can be found here (NAV internal sites):
-   https://confluence.adeo.no/display/KES/Generell+testing+av+sykemelding+2013+i+preprod under "Verifisering i Modia"
+1. Log in to the modes, https://syfomodiaperson.nais.preprod.local/sykefravaer/$fnr
+2. You may need to login, with the Login User, the mail adress follows this pattern:
+    F_ZXXXXXX.E_ZXXXXXX@trygdeetaten.no, where you change F_ZXXXXXX to F_Z992389 and E_ZXXXXXX to E_Z992389
+    Use the same passord that you used to login in gosys.
+    Username and password for testing can be found here(NAV-internal sites):
+    https://confluence.adeo.no/display/KES/Generell+testing+av+sykemelding+2013+i+preprod under "Verifisering i Modia"
 3. See "Sykmeldt enkeltperson" verifying that the sykmelding that is there is correct
 
 ## Running in development mode
