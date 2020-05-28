@@ -12,7 +12,6 @@ import javax.jms.MessageProducer
 import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.handleManuellOppgave.handleManuellOppgaveInvalid
@@ -21,12 +20,10 @@ import no.nav.syfo.log
 import no.nav.syfo.metrics.RULE_HIT_COUNTER
 import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
 import no.nav.syfo.model.Apprec
-import no.nav.syfo.model.FerdigStillOppgave
-import no.nav.syfo.model.ManuellOppgaveKomplett
-import no.nav.syfo.model.OppgaveStatus
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
@@ -41,7 +38,7 @@ fun Route.sendVurderingManuellOppgave(
     kafkaValidationResultProducer: KafkaProducers.KafkaValidationResultProducer,
     session: Session,
     syfoserviceProducer: MessageProducer,
-    oppgaveClient: OppgaveClient,
+    oppgaveService: OppgaveService,
     syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient
 ) {
     route("/api/v1") {
@@ -56,8 +53,8 @@ fun Route.sendVurderingManuellOppgave(
 
             val validationResult: ValidationResult = call.receive()
 
-            when {
-                accessToken == null -> {
+            when (accessToken) {
+                null -> {
                     log.info("Mangler JWT Bearer token i HTTP header")
                     call.respond(HttpStatusCode.BadRequest)
                 }
@@ -65,73 +62,73 @@ fun Route.sendVurderingManuellOppgave(
                     val manuellOppgave = manuellOppgaveService.hentKomplettManuellOppgave(oppgaveId)
                     if (manuellOppgave != null) {
                         val loggingMeta = LoggingMeta(
-                            mottakId = manuellOppgave.receivedSykmelding.navLogId,
-                            orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
-                            msgId = manuellOppgave.receivedSykmelding.msgId,
-                            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
+                                mottakId = manuellOppgave.receivedSykmelding.navLogId,
+                                orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
+                                msgId = manuellOppgave.receivedSykmelding.msgId,
+                                sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
                         )
 
                         val pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient
 
                         val harTilgangTilOppgave =
-                            syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                                accessToken,
-                                pasientFnr
-                            )?.harTilgang
-                        if (harTilgangTilOppgave != null && harTilgangTilOppgave) {
+                                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                                        accessToken,
+                                        pasientFnr
+                                )?.harTilgang
+                        if (harTilgangTilOppgave == true) {
                             validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
                             RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
                             when (validationResult.status) {
                                 Status.INVALID -> {
                                     if (manuellOppgaveService.oppdaterValidationResults(
-                                            oppgaveId,
-                                            validationResult
-                                        ) > 0
+                                                    oppgaveId,
+                                                    validationResult
+                                            ) > 0
                                     ) {
                                         handleManuellOppgaveInvalid(
-                                            manuellOppgave,
-                                            kafkaApprecProducer.sm2013ApprecTopic,
-                                            kafkaApprecProducer.producer,
-                                            kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic,
-                                            kafkaRecievedSykmeldingProducer.producer,
-                                            kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallTopic,
-                                            kafkaValidationResultProducer.producer,
-                                            loggingMeta,
-                                            oppgaveClient,
-                                            validationResult
+                                                manuellOppgave,
+                                                kafkaApprecProducer.sm2013ApprecTopic,
+                                                kafkaApprecProducer.producer,
+                                                kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic,
+                                                kafkaRecievedSykmeldingProducer.producer,
+                                                kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallTopic,
+                                                kafkaValidationResultProducer.producer,
+                                                loggingMeta,
+                                                oppgaveService,
+                                                validationResult
                                         )
                                         call.respond(HttpStatusCode.NoContent)
                                     } else {
                                         log.error(
-                                            "Oppdatering av oppdaterValidationResuts feilet {}",
-                                            StructuredArguments.keyValue("oppgaveId", oppgaveId)
+                                                "Oppdatering av oppdaterValidationResuts feilet {}",
+                                                StructuredArguments.keyValue("oppgaveId", oppgaveId)
                                         )
                                         call.respond(HttpStatusCode.InternalServerError)
                                     }
                                 }
                                 Status.OK -> {
                                     if (manuellOppgaveService.oppdaterValidationResults(
-                                            oppgaveId,
-                                            validationResult
-                                        ) > 0
+                                                    oppgaveId,
+                                                    validationResult
+                                            ) > 0
                                     ) {
                                         handleManuellOppgaveOk(
-                                            manuellOppgave,
-                                            kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic,
-                                            kafkaRecievedSykmeldingProducer.producer,
-                                            loggingMeta,
-                                            kafkaValidationResultProducer.syfoserviceQueueName,
-                                            session,
-                                            syfoserviceProducer,
-                                            kafkaApprecProducer.sm2013ApprecTopic,
-                                            kafkaApprecProducer.producer,
-                                            oppgaveClient
+                                                manuellOppgave,
+                                                kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic,
+                                                kafkaRecievedSykmeldingProducer.producer,
+                                                loggingMeta,
+                                                kafkaValidationResultProducer.syfoserviceQueueName,
+                                                session,
+                                                syfoserviceProducer,
+                                                kafkaApprecProducer.sm2013ApprecTopic,
+                                                kafkaApprecProducer.producer,
+                                                oppgaveService
                                         )
                                         call.respond(HttpStatusCode.NoContent)
                                     } else {
                                         log.error(
-                                            "Oppdatering av oppdaterValidationResuts feilet {}",
-                                            StructuredArguments.keyValue("oppgaveId", oppgaveId)
+                                                "Oppdatering av oppdaterValidationResuts feilet {}",
+                                                StructuredArguments.keyValue("oppgaveId", oppgaveId)
                                         )
                                         call.respond(HttpStatusCode.InternalServerError)
                                     }
@@ -139,23 +136,23 @@ fun Route.sendVurderingManuellOppgave(
                                 else -> {
                                     call.respond(HttpStatusCode.BadRequest)
                                     log.error(
-                                        "Syfosmmanuell sendt ein ugyldig validationResult.status,{}  {}, {}",
-                                        validationResult.status.name,
-                                        StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta)
+                                            "Syfosmmanuell sendt ein ugyldig validationResult.status,{}  {}, {}",
+                                            validationResult.status.name,
+                                            StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta)
                                     )
                                 }
                             }
                         } else {
                             log.warn(
-                                "Veileder har ikkje tilgang, {}, {}",
-                                StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta)
+                                    "Veileder har ikkje tilgang, {}, {}",
+                                    StructuredArguments.keyValue("oppgaveId", oppgaveId), fields(loggingMeta)
                             )
                             call.respond(HttpStatusCode.Unauthorized)
                         }
                     } else {
                         log.warn(
-                            "Henting av komplettManuellOppgave returente null {}",
-                            StructuredArguments.keyValue("oppgaveId", oppgaveId)
+                                "Henting av komplettManuellOppgave returente null {}",
+                                StructuredArguments.keyValue("oppgaveId", oppgaveId)
                         )
                         call.respond(HttpStatusCode.InternalServerError)
                     }
@@ -170,7 +167,28 @@ fun sendReceipt(
     sm2013ApprecTopic: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
-    kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
+    try {
+        kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec)).get()
+        log.info("Apprec kvittering sent til kafka topic {}", sm2013ApprecTopic)
+    } catch (ex: Exception) {
+        log.error("Failed to send apprec")
+        throw ex
+    }
+}
+
+fun sendReceivedSykmelding(sm2013Topic: String, receivedSykmelding: ReceivedSykmelding, kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>) {
+    try {
+        kafkaproducerreceivedSykmelding.send(
+                ProducerRecord(
+                        sm2013Topic,
+                        receivedSykmelding.sykmelding.id,
+                        receivedSykmelding)
+        ).get()
+        log.info("Sendt sykmelding {} to topic {}", receivedSykmelding.sykmelding.id, sm2013Topic)
+    } catch (ex: Exception) {
+        log.error("Failed to send sykmelding {} to topic {}", receivedSykmelding.sykmelding.id, sm2013Topic)
+        throw ex
+    }
 }
 
 fun sendValidationResult(
@@ -180,15 +198,13 @@ fun sendValidationResult(
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta
 ) {
-
-    kafkaproducervalidationResult.send(
-        ProducerRecord(sm2013BehandlingsUtfallTopic, receivedSykmelding.sykmelding.id, validationResult)
-    )
-    log.info("Valideringsreultat sendt til kafka {}, {}", sm2013BehandlingsUtfallTopic, fields(loggingMeta))
+    try {
+        kafkaproducervalidationResult.send(
+                ProducerRecord(sm2013BehandlingsUtfallTopic, receivedSykmelding.sykmelding.id, validationResult)
+        ).get()
+        log.info("Valideringsreultat sendt til kafka {}, {}", sm2013BehandlingsUtfallTopic, fields(loggingMeta))
+    } catch (ex: Exception) {
+        log.error("Failed to send validation result for sykmelding {} to topic {}", receivedSykmelding.sykmelding.id, sm2013BehandlingsUtfallTopic)
+        throw ex
+    }
 }
-
-fun ferdigStillOppgave(manuellOppgave: ManuellOppgaveKomplett, oppgaveVersjon: Int) = FerdigStillOppgave(
-    versjon = oppgaveVersjon,
-    id = manuellOppgave.oppgaveid,
-    status = OppgaveStatus.FERDIGSTILT
-)

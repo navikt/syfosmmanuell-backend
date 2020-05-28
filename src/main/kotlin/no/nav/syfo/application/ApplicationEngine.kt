@@ -27,11 +27,11 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
-import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
+import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 
@@ -45,7 +45,7 @@ fun createApplicationEngine(
     kafkaValidationResultProducer: KafkaProducers.KafkaValidationResultProducer,
     session: Session,
     syfoserviceProducer: MessageProducer,
-    oppgaveClient: OppgaveClient,
+    oppgaveService: OppgaveService,
     vaultSecrets: VaultSecrets,
     jwkProvider: JwkProvider,
     issuer: String,
@@ -89,7 +89,7 @@ fun createApplicationEngine(
                     kafkaValidationResultProducer,
                     session,
                     syfoserviceProducer,
-                    oppgaveClient,
+                    oppgaveService,
                     syfoTilgangsKontrollClient
                 )
             }

@@ -5,8 +5,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.client.OppgaveClient
-import no.nav.syfo.client.finnFristForFerdigstillingAvOppgave
 import no.nav.syfo.db.Database
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
@@ -16,6 +14,8 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgave
 import no.nav.syfo.model.Periode
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.oppgave.client.OppgaveClient
+import no.nav.syfo.oppgave.client.finnFristForFerdigstillingAvOppgave
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.util.LoggingMeta

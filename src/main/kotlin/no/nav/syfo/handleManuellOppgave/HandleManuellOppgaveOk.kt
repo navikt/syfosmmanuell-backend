@@ -5,23 +5,21 @@ import java.io.StringReader
 import javax.jms.MessageProducer
 import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments.fields
-import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
-import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.FERDIGSTILT_OPPGAVE_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.persistering.api.ferdigStillOppgave
+import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.api.sendReceipt
+import no.nav.syfo.persistering.api.sendReceivedSykmelding
 import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.fellesformatUnmarshaller
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
 
 @KtorExperimentalAPI
 suspend fun handleManuellOppgaveOk(
@@ -34,40 +32,12 @@ suspend fun handleManuellOppgaveOk(
     syfoserviceProducer: MessageProducer,
     sm2013ApprecTopicName: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    oppgaveClient: OppgaveClient
+    oppgaveService: OppgaveService
 ) {
     val fellesformat = fellesformatUnmarshaller.unmarshal(
         StringReader(manuellOppgave.receivedSykmelding.fellesformat)) as XMLEIFellesformat
 
-    // TODO remove notifySyfoService, when we no longer uses syfoService app to show sykmeldinger
-    notifySyfoService(
-        session = session,
-        receiptProducer = syfoserviceProducer,
-        ediLoggId = manuellOppgave.receivedSykmelding.navLogId,
-        sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
-        msgId = manuellOppgave.receivedSykmelding.msgId,
-        healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
-    )
-    log.info("Melding sendt til syfoService kø {}, {}", syfoserviceQueueName, fields(loggingMeta))
-
-    kafkaproducerreceivedSykmelding.send(
-        ProducerRecord(
-            sm2013AutomaticHandlingTopic,
-            manuellOppgave.receivedSykmelding.sykmelding.id,
-            manuellOppgave.receivedSykmelding)
-    )
-    log.info("Melding sendt til kafka topic {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
-
-    val oppgaveVersjon = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId).versjon
-
-    val ferdigStillOppgave = ferdigStillOppgave(manuellOppgave, oppgaveVersjon)
-
-    val oppgaveResponse = oppgaveClient.ferdigStillOppgave(ferdigStillOppgave, manuellOppgave.receivedSykmelding.msgId)
-    log.info(
-        "Ferdigstilter oppgave med {}, {}",
-        keyValue("oppgaveId", oppgaveResponse.id),
-        fields(loggingMeta)
-    )
+    sendReceivedSykmelding(sm2013AutomaticHandlingTopic, manuellOppgave.receivedSykmelding, kafkaproducerreceivedSykmelding)
 
     val apprec = Apprec(
         ediloggid = manuellOppgave.apprec.ediloggid,
@@ -81,11 +51,20 @@ suspend fun handleManuellOppgaveOk(
         mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
         validationResult = null
     )
-
     sendReceipt(apprec, sm2013ApprecTopicName, kafkaproducerApprec)
-    log.info("Apprec sendt til kafka topic {}, {}", sm2013ApprecTopicName,
-        fields(loggingMeta)
+
+    // TODO remove notifySyfoService, when we no longer uses syfoService app to show sykmeldinger
+    notifySyfoService(
+            session = session,
+            receiptProducer = syfoserviceProducer,
+            ediLoggId = manuellOppgave.receivedSykmelding.navLogId,
+            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
+            msgId = manuellOppgave.receivedSykmelding.msgId,
+            healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
     )
+    log.info("Melding sendt til syfoService kø {}, {}", syfoserviceQueueName, fields(loggingMeta))
+
+    oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta)
 
     FERDIGSTILT_OPPGAVE_COUNTER.inc()
 }
