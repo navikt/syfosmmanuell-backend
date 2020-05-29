@@ -26,21 +26,17 @@ class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
 
         inner class KafkaApprecProducer() {
             val producer = KafkaProducer<String, Apprec>(properties)
-
             val sm2013ApprecTopic = env.sm2013Apprec
         }
 
         inner class KafkaRecievedSykmeldingProducer() {
             val producer = KafkaProducer<String, ReceivedSykmelding>(properties)
-
             val sm2013AutomaticHandlingTopic = env.sm2013AutomaticHandlingTopic
             val sm2013InvalidHandlingTopic = env.sm2013InvalidHandlingTopic
-            val sm2013BehandlingsUtfallTopic = env.sm2013BehandlingsUtfallTopic
         }
 
         inner class KafkaValidationResultProducer() {
             val producer = KafkaProducer<String, ValidationResult>(properties)
-
-            val syfoserviceQueueName = env.syfoserviceQueueName
+            val sm2013BehandlingsUtfallTopic = env.sm2013BehandlingsUtfallTopic
         }
 }

@@ -71,27 +71,25 @@ fun main() {
 
     val applicationState = ApplicationState()
 
-    val manuellOppgaveService = ManuellOppgaveService(database)
-
     val kafkaProducers = KafkaProducers(env, vaultSecrets)
     val kafkaConsumers = KafkaConsumers(env, vaultSecrets)
     val httpClients = HttpClients(env, vaultSecrets)
+    val oppgaveService = OppgaveService(httpClients.oppgaveClient)
 
     val connection = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
     connection.start()
+
     val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
     val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
-    val oppgaveService = OppgaveService(httpClients.oppgaveClient)
+
+    val manuellOppgaveService = ManuellOppgaveService(database,
+            httpClients.syfoTilgangsKontrollClient,
+            kafkaProducers, oppgaveService, syfoserviceProducer, session, env.syfoserviceQueueName)
+
     val applicationEngine = createApplicationEngine(
         env,
         applicationState,
         manuellOppgaveService,
-        kafkaProducers.kafkaApprecProducer,
-        kafkaProducers.kafkaRecievedSykmeldingProducer,
-        kafkaProducers.kafkaValidationResultProducer,
-        session,
-        syfoserviceProducer,
-        oppgaveService,
         vaultSecrets,
         jwkProvider,
         wellKnown.issuer,

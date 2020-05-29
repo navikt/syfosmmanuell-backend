@@ -53,7 +53,13 @@ import org.junit.jupiter.api.BeforeEach
 internal class SendVurderingManuellOppgaveTest {
     val database = TestDB()
 
-    val manuellOppgaveService = ManuellOppgaveService(database)
+    private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+    private val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
+    private val oppgaveService = mockk<OppgaveService>(relaxed = true)
+    private val syfoserviceProducer = mockk<MessageProducer>(relaxed = true)
+    private val session = mockk<Session>(relaxed = true)
+
+    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService, syfoserviceProducer, session, "")
 
     val manuelloppgaveId = "1314"
 
@@ -68,10 +74,6 @@ internal class SendVurderingManuellOppgaveTest {
     )
     val oppgaveid = 308076319
 
-    val kafkaApprecProducer = mockk<KafkaProducers.KafkaApprecProducer>()
-    val kafkaRecievedSykmeldingProducer = mockk<KafkaProducers.KafkaRecievedSykmeldingProducer>()
-    val kafkaValidationResultProducer = mockk<KafkaProducers.KafkaValidationResultProducer>()
-
     val sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic"
     val sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic"
     val sm2013BehandlingsUtfallTopic = "sm2013BehandlingsUtfallTopic"
@@ -80,11 +82,6 @@ internal class SendVurderingManuellOppgaveTest {
     val textMessage = mockk<TextMessage>()
 
     val syfoserviceQueueName = "syfoserviceQueueName"
-    private val session = mockk<Session>()
-    private val syfoserviceProducer = mockk<MessageProducer>()
-    @KtorExperimentalAPI
-    private val oppgaveService = mockk<OppgaveService>()
-    private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
 
     @BeforeEach
     fun beforeEach() {
@@ -97,21 +94,13 @@ internal class SendVurderingManuellOppgaveTest {
         with(TestApplicationEngine()) {
             start()
 
-            coEvery { kafkaValidationResultProducer.producer } returns mockk<KafkaProducer<String, ValidationResult>>()
-            coEvery { kafkaValidationResultProducer.syfoserviceQueueName } returns "Foo"
+            coEvery { kafkaProducers.kafkaValidationResultProducer.producer } returns mockk<KafkaProducer<String, ValidationResult>>()
 
             database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
             application.routing {
                 sendVurderingManuellOppgave(
-                        manuellOppgaveService,
-                        kafkaApprecProducer,
-                        kafkaRecievedSykmeldingProducer,
-                        kafkaValidationResultProducer,
-                        session,
-                        syfoserviceProducer,
-                        oppgaveService,
-                        syfoTilgangsKontrollClient
+                        manuellOppgaveService
                 )
             }
             application.install(ContentNegotiation) {
@@ -125,7 +114,6 @@ internal class SendVurderingManuellOppgaveTest {
                 exception<Throwable> { cause ->
                     call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                     log.error("Caught exception", cause)
-                    throw cause
                 }
             }
 
@@ -148,7 +136,7 @@ internal class SendVurderingManuellOppgaveTest {
                 setBody(objectMapper.writeValueAsString(validationResult))
             }) {
                 response.status() shouldEqual HttpStatusCode.InternalServerError
-                response.content shouldEqual null
+                response.content shouldEqual "Veilder har ikke tilgang"
             }
         }
     }
@@ -161,7 +149,7 @@ internal class SendVurderingManuellOppgaveTest {
             setUpTest(this)
 
             val validationResult = ValidationResult(status = Status.INVALID, ruleHits = emptyList())
-            every { kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
+            every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
             sendRequest(validationResult, HttpStatusCode.InternalServerError, oppgaveid)
         }
     }
@@ -174,7 +162,7 @@ internal class SendVurderingManuellOppgaveTest {
             setUpTest(this)
 
             val validationResult = ValidationResult(status = Status.OK, ruleHits = emptyList())
-            every { kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
+            every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
             sendRequest(validationResult, HttpStatusCode.InternalServerError, oppgaveid)
         }
     }
@@ -186,7 +174,7 @@ internal class SendVurderingManuellOppgaveTest {
             start()
             setUpTest(this)
             val validationResult = ValidationResult(status = Status.OK, ruleHits = emptyList())
-            every { kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
+            every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
             val statusCode = HttpStatusCode.InternalServerError
             sendRequest(validationResult, statusCode, oppgaveid)
         }
@@ -199,7 +187,7 @@ internal class SendVurderingManuellOppgaveTest {
             start()
             setUpTest(this)
             val validationResult = ValidationResult(status = Status.INVALID, ruleHits = emptyList())
-            every { kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
+            every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
             val statusCode = HttpStatusCode.InternalServerError
             sendRequest(validationResult, statusCode, oppgaveid)
         }
@@ -212,7 +200,7 @@ internal class SendVurderingManuellOppgaveTest {
             start()
             setUpTest(this)
             val validationResult = ValidationResult(status = Status.INVALID, ruleHits = emptyList())
-            every { kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
+            every { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
             val statusCode = HttpStatusCode.InternalServerError
             sendRequest(validationResult, statusCode, oppgaveid)
         }
@@ -242,36 +230,28 @@ internal class SendVurderingManuellOppgaveTest {
 
     @KtorExperimentalAPI
     private fun setUpTest(testApplicationEngine: TestApplicationEngine) {
-        coEvery { kafkaApprecProducer.producer } returns mockk()
-        coEvery { kafkaApprecProducer.sm2013ApprecTopic } returns sm2013ApprecTopicName
+        coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
+        coEvery { kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic } returns sm2013ApprecTopicName
 
-        coEvery { kafkaValidationResultProducer.producer } returns mockk()
-        coEvery { kafkaValidationResultProducer.syfoserviceQueueName } returns syfoserviceQueueName
+        coEvery { kafkaProducers.kafkaValidationResultProducer.producer } returns mockk()
 
-        coEvery { kafkaRecievedSykmeldingProducer.producer } returns mockk()
-        coEvery { kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic } returns sm2013AutomaticHandlingTopic
-        coEvery { kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic } returns sm2013InvalidHandlingTopic
-        coEvery { kafkaRecievedSykmeldingProducer.sm2013BehandlingsUtfallTopic } returns sm2013BehandlingsUtfallTopic
+        coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer } returns mockk()
+        coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic } returns sm2013AutomaticHandlingTopic
+        coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic } returns sm2013InvalidHandlingTopic
+        coEvery { kafkaProducers.kafkaValidationResultProducer.sm2013BehandlingsUtfallTopic } returns sm2013BehandlingsUtfallTopic
         coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
         coEvery { textMessage.text = any() } returns Unit
         coEvery { session.createTextMessage() } returns textMessage
         coEvery { syfoserviceProducer.send(any()) } returns Unit
-        coEvery { kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         coEvery { oppgaveService.ferdigstillOppgave(any(), any()) } returns Unit
-        coEvery { kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        coEvery { kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        coEvery { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         database.opprettManuellOppgave(manuellOppgave, oppgaveid)
 
         testApplicationEngine.application.routing {
             sendVurderingManuellOppgave(
-                    manuellOppgaveService,
-                    kafkaApprecProducer,
-                    kafkaRecievedSykmeldingProducer,
-                    kafkaValidationResultProducer,
-                    session,
-                    syfoserviceProducer,
-                    oppgaveService,
-                    syfoTilgangsKontrollClient
+                    manuellOppgaveService
             )
         }
         testApplicationEngine.application.install(ContentNegotiation) {
