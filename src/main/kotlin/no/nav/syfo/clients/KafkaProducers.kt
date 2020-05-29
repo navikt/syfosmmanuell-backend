@@ -10,10 +10,15 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.setSecurityProtocol
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerConfig
 
 class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
     private val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets)
     private val properties = setSecurityProtocol(env, kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class))
+
+    init {
+        properties[ProducerConfig.RETRIES_CONFIG] = 30
+    }
 
     val kafkaApprecProducer = KafkaApprecProducer()
     val kafkaRecievedSykmeldingProducer = KafkaRecievedSykmeldingProducer()
