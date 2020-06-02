@@ -1,4 +1,4 @@
-package no.nav.syfo.client
+package no.nav.syfo.oppgave.client
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -9,6 +9,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
 import java.time.LocalDate
+import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.model.FerdigStillOppgave
 import no.nav.syfo.model.OpprettOppgave

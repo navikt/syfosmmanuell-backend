@@ -21,15 +21,11 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
-import javax.jms.MessageProducer
-import javax.jms.Session
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
-import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
-import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
@@ -40,12 +36,6 @@ fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
     manuellOppgaveService: ManuellOppgaveService,
-    kafkaApprecProducer: KafkaProducers.KafkaApprecProducer,
-    kafkaRecievedSykmeldingProducer: KafkaProducers.KafkaRecievedSykmeldingProducer,
-    kafkaValidationResultProducer: KafkaProducers.KafkaValidationResultProducer,
-    session: Session,
-    syfoserviceProducer: MessageProducer,
-    oppgaveClient: OppgaveClient,
     vaultSecrets: VaultSecrets,
     jwkProvider: JwkProvider,
     issuer: String,
@@ -64,7 +54,6 @@ fun createApplicationEngine(
         install(StatusPages) {
             exception<Throwable> { cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-
                 log.error("Caught exception", cause)
                 throw cause
             }
@@ -83,14 +72,7 @@ fun createApplicationEngine(
             authenticate("jwt") {
                 hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
                 sendVurderingManuellOppgave(
-                    manuellOppgaveService,
-                    kafkaApprecProducer,
-                    kafkaRecievedSykmeldingProducer,
-                    kafkaValidationResultProducer,
-                    session,
-                    syfoserviceProducer,
-                    oppgaveClient,
-                    syfoTilgangsKontrollClient
+                    manuellOppgaveService
                 )
             }
         }

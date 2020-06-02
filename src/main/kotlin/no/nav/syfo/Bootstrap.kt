@@ -21,7 +21,6 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.getWellKnown
-import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
 import no.nav.syfo.clients.KafkaProducers
@@ -30,6 +29,8 @@ import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.producerForQueue
+import no.nav.syfo.oppgave.client.OppgaveClient
+import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.handleRecivedMessage
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
@@ -70,27 +71,25 @@ fun main() {
 
     val applicationState = ApplicationState()
 
-    val manuellOppgaveService = ManuellOppgaveService(database)
-
     val kafkaProducers = KafkaProducers(env, vaultSecrets)
     val kafkaConsumers = KafkaConsumers(env, vaultSecrets)
     val httpClients = HttpClients(env, vaultSecrets)
+    val oppgaveService = OppgaveService(httpClients.oppgaveClient)
 
     val connection = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
     connection.start()
+
     val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
     val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
+
+    val manuellOppgaveService = ManuellOppgaveService(database,
+            httpClients.syfoTilgangsKontrollClient,
+            kafkaProducers, oppgaveService, syfoserviceProducer, session, env.syfoserviceQueueName)
 
     val applicationEngine = createApplicationEngine(
         env,
         applicationState,
         manuellOppgaveService,
-        kafkaProducers.kafkaApprecProducer,
-        kafkaProducers.kafkaRecievedSykmeldingProducer,
-        kafkaProducers.kafkaValidationResultProducer,
-        session,
-        syfoserviceProducer,
-        httpClients.oppgaveClient,
         vaultSecrets,
         jwkProvider,
         wellKnown.issuer,

@@ -10,10 +10,15 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.setSecurityProtocol
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerConfig
 
 class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
     private val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets)
     private val properties = setSecurityProtocol(env, kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class))
+
+    init {
+        properties[ProducerConfig.RETRIES_CONFIG] = 30
+    }
 
     val kafkaApprecProducer = KafkaApprecProducer()
     val kafkaRecievedSykmeldingProducer = KafkaRecievedSykmeldingProducer()
@@ -21,21 +26,17 @@ class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
 
         inner class KafkaApprecProducer() {
             val producer = KafkaProducer<String, Apprec>(properties)
-
             val sm2013ApprecTopic = env.sm2013Apprec
         }
 
         inner class KafkaRecievedSykmeldingProducer() {
             val producer = KafkaProducer<String, ReceivedSykmelding>(properties)
-
             val sm2013AutomaticHandlingTopic = env.sm2013AutomaticHandlingTopic
             val sm2013InvalidHandlingTopic = env.sm2013InvalidHandlingTopic
-            val sm2013BehandlingsUtfallTopic = env.sm2013BehandlingsUtfallTopic
         }
 
         inner class KafkaValidationResultProducer() {
             val producer = KafkaProducer<String, ValidationResult>(properties)
-
-            val syfoserviceQueueName = env.syfoserviceQueueName
+            val sm2013BehandlingsUtfallTopic = env.sm2013BehandlingsUtfallTopic
         }
 }

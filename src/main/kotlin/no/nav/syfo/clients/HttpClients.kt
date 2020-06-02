@@ -13,9 +13,9 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
-import no.nav.syfo.client.OppgaveClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.oppgave.client.OppgaveClient
 
 class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     private val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
