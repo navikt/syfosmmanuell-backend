@@ -54,7 +54,7 @@ class ManuellOppgaveService(
         val manuellOppgave = hentKomplettManuellOppgave(oppgaveId)
 
         if (manuellOppgave == null) {
-            throw OppgaveNotFoundException("Veilder har ikke tilgang")
+            throw OppgaveNotFoundException("Veileder har ikke tilgang")
         }
         val harTilgangTilOppgave =
                 syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(

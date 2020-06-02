@@ -136,7 +136,7 @@ internal class SendVurderingManuellOppgaveTest {
                 setBody(objectMapper.writeValueAsString(validationResult))
             }) {
                 response.status() shouldEqual HttpStatusCode.InternalServerError
-                response.content shouldEqual "Veilder har ikke tilgang"
+                response.content shouldEqual "Veileder har ikke tilgang"
             }
         }
     }
