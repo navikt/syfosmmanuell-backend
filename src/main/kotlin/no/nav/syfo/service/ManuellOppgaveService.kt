@@ -1,8 +1,6 @@
 package no.nav.syfo.service
 
 import java.io.StringReader
-import javax.jms.MessageProducer
-import javax.jms.Session
 import javax.ws.rs.ForbiddenException
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
@@ -34,10 +32,7 @@ class ManuellOppgaveService(
     private val database: DatabaseInterface,
     private val syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
     private val kafkaProducers: KafkaProducers,
-    private val oppgaveService: OppgaveService,
-    private val syfoserviceProducer: MessageProducer,
-    private val session: Session,
-    private val syfoserviceQueueName: String
+    private val oppgaveService: OppgaveService
 ) {
 
     private fun oppdaterValidationResults(oppgaveId: Int, validationResult: ValidationResult): Int =
@@ -95,14 +90,13 @@ class ManuellOppgaveService(
                 StringReader(manuellOppgave.receivedSykmelding.fellesformat)) as XMLEIFellesformat
 
         notifySyfoService(
-                session = session,
-                receiptProducer = syfoserviceProducer,
+                syfoserviceProducer = kafkaProducers.kafkaSyfoserviceProducer,
                 ediLoggId = manuellOppgave.receivedSykmelding.navLogId,
                 sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
                 msgId = manuellOppgave.receivedSykmelding.msgId,
-                healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+                healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat),
+                loggingMeta = loggingMeta
         )
-        log.info("Melding sendt til syfoService kø {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
     }
 
     private fun sendApprec(validationResult: ValidationResult, manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta) {

@@ -22,10 +22,8 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.util.concurrent.CompletableFuture
-import javax.jms.MessageProducer
-import javax.jms.Session
-import javax.jms.TextMessage
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
@@ -47,8 +45,8 @@ import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
-import org.junit.Test
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 internal class SendVurderingManuellOppgaveTest {
     val database = TestDB()
@@ -56,10 +54,7 @@ internal class SendVurderingManuellOppgaveTest {
     private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     private val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     private val oppgaveService = mockk<OppgaveService>(relaxed = true)
-    private val syfoserviceProducer = mockk<MessageProducer>(relaxed = true)
-    private val session = mockk<Session>(relaxed = true)
-
-    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService, syfoserviceProducer, session, "")
+    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
     val manuelloppgaveId = "1314"
 
@@ -78,10 +73,6 @@ internal class SendVurderingManuellOppgaveTest {
     val sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic"
     val sm2013BehandlingsUtfallTopic = "sm2013BehandlingsUtfallTopic"
     val sm2013ApprecTopicName = "sm2013ApprecTopicName"
-
-    val textMessage = mockk<TextMessage>()
-
-    val syfoserviceQueueName = "syfoserviceQueueName"
 
     @BeforeEach
     fun beforeEach() {
@@ -225,6 +216,19 @@ internal class SendVurderingManuellOppgaveTest {
             setUpTest(this)
             val validationResult = ValidationResult(status = Status.INVALID, ruleHits = emptyList())
             sendRequest(validationResult, HttpStatusCode.NoContent, oppgaveid)
+            verify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
+        }
+    }
+
+    @KtorExperimentalAPI
+    @Test
+    internal fun `should fail when writing sykmelding syfoservice kafka`() {
+        with(TestApplicationEngine()) {
+            start()
+            setUpTest(this)
+            every { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
+            val validationResult = ValidationResult(status = Status.OK, ruleHits = emptyList())
+            sendRequest(validationResult, HttpStatusCode.InternalServerError, oppgaveid)
         }
     }
 
@@ -240,9 +244,7 @@ internal class SendVurderingManuellOppgaveTest {
         coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic } returns sm2013InvalidHandlingTopic
         coEvery { kafkaProducers.kafkaValidationResultProducer.sm2013BehandlingsUtfallTopic } returns sm2013BehandlingsUtfallTopic
         coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
-        coEvery { textMessage.text = any() } returns Unit
-        coEvery { session.createTextMessage() } returns textMessage
-        coEvery { syfoserviceProducer.send(any()) } returns Unit
+
         coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         coEvery { oppgaveService.ferdigstillOppgave(any(), any()) } returns Unit
         coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }

@@ -10,7 +10,6 @@ import io.ktor.util.KtorExperimentalAPI
 import java.net.URL
 import java.time.Duration
 import java.util.concurrent.TimeUnit
-import javax.jms.Session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -27,8 +26,6 @@ import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.Database
 import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.model.ManuellOppgave
-import no.nav.syfo.mq.connectionFactory
-import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.handleRecivedMessage
@@ -54,8 +51,6 @@ fun main() {
     val vaultSecrets = VaultSecrets(
             serviceuserUsername = getFileAsString(env.serviceuserUsernamePath),
             serviceuserPassword = getFileAsString(env.serviceuserPasswordPath),
-            mqUsername = getFileAsString(env.mqUsernamePath),
-            mqPassword = getFileAsString(env.mqPasswordPath),
             oidcWellKnownUri = getFileAsString(env.oidcWellKnownUriPath),
             syfosmmanuellBackendClientId = getFileAsString(env.syfosmmanuellBackendClientIdPath)
     )
@@ -76,15 +71,9 @@ fun main() {
     val httpClients = HttpClients(env, vaultSecrets)
     val oppgaveService = OppgaveService(httpClients.oppgaveClient)
 
-    val connection = connectionFactory(env).createConnection(vaultSecrets.mqUsername, vaultSecrets.mqPassword)
-    connection.start()
-
-    val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
-    val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
-
     val manuellOppgaveService = ManuellOppgaveService(database,
             httpClients.syfoTilgangsKontrollClient,
-            kafkaProducers, oppgaveService, syfoserviceProducer, session, env.syfoserviceQueueName)
+            kafkaProducers, oppgaveService)
 
     val applicationEngine = createApplicationEngine(
         env,
@@ -96,7 +85,7 @@ fun main() {
         httpClients.syfoTilgangsKontrollClient
     )
 
-    ApplicationServer(applicationEngine, connection).start()
+    ApplicationServer(applicationEngine).start()
 
     applicationState.ready = true
 
@@ -124,6 +113,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
             )
         } finally {
             applicationState.alive = false
+            applicationState.ready = false
         }
     }
 
