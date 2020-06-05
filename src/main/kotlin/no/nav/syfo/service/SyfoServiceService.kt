@@ -1,11 +1,11 @@
 package no.nav.syfo.service
 
 import java.io.ByteArrayOutputStream
-import java.util.Base64
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.kafka.model.KafkaMessageMetadata
+import no.nav.syfo.kafka.model.SyfoserviceSykmeldingKafkaMessage
 import no.nav.syfo.log
-import no.nav.syfo.model.Syfo
 import no.nav.syfo.model.Tilleggsdata
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.extractSyketilfelleStartDato
@@ -22,10 +22,11 @@ fun notifySyfoService(
 ) {
 
     val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
-    val sykmelding = convertSykemeldingToBase64(healthInformation)
-    val syfo = Syfo(
+
+    val syfo = SyfoserviceSykmeldingKafkaMessage(
+            helseopplysninger = healthInformation,
             tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, sykmeldingId = sykmeldingId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato),
-            sykmelding = Base64.getEncoder().encodeToString(sykmelding))
+            metadata = KafkaMessageMetadata(sykmeldingId, "syfosmmanuell-backend"))
 
     try {
         syfoserviceProducer.producer.send(ProducerRecord(syfoserviceProducer.topic, sykmeldingId, syfo)).get()

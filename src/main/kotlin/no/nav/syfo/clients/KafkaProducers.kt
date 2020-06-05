@@ -3,10 +3,10 @@ package no.nav.syfo.clients
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.kafka.loadBaseConfig
+import no.nav.syfo.kafka.model.SyfoserviceSykmeldingKafkaMessage
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.model.Syfo
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.setSecurityProtocol
@@ -42,7 +42,7 @@ class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
     }
 
     inner class KafkaSyfoserviceProducer() {
-        val producer = KafkaProducer<String, Syfo>(properties)
+        val producer = KafkaProducer<String, SyfoserviceSykmeldingKafkaMessage>(properties)
         val topic = env.smSyfoserviceMqTopic
     }
 }
