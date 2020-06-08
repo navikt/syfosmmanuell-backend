@@ -22,8 +22,6 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.nio.file.Paths
-import javax.jms.MessageProducer
-import javax.jms.Session
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
@@ -45,7 +43,7 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 @KtorExperimentalAPI
 internal class AuthenticateTest {
@@ -56,8 +54,6 @@ internal class AuthenticateTest {
     private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     private val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     private val oppgaveService = mockk<OppgaveService>(relaxed = true)
-    private val syfoserviceProducer = mockk<MessageProducer>(relaxed = true)
-    private val session = mockk<Session>(relaxed = true)
 
     @Test
     internal fun `Aksepterer gyldig JWT med riktig audience`() {
@@ -66,7 +62,7 @@ internal class AuthenticateTest {
 
             val database = TestDB()
 
-            val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService, syfoserviceProducer, session, "")
+            val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
             val manuelloppgaveId = "1314"
 
@@ -85,8 +81,6 @@ internal class AuthenticateTest {
             application.setupAuth(VaultSecrets(
                 serviceuserUsername = "username",
                 serviceuserPassword = "password",
-                mqPassword = "",
-                mqUsername = "srvbruker",
                 oidcWellKnownUri = "https://sts.issuer.net/myid",
                 syfosmmanuellBackendClientId = "clientId"
             ), jwkProvider, "https://sts.issuer.net/myid")
@@ -128,7 +122,7 @@ internal class AuthenticateTest {
 
             val database = TestDB()
 
-            val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService, syfoserviceProducer, session, "")
+            val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
             val manuelloppgaveId = "1314"
 
@@ -147,8 +141,6 @@ internal class AuthenticateTest {
             application.setupAuth(VaultSecrets(
                 serviceuserUsername = "username",
                 serviceuserPassword = "password",
-                mqPassword = "",
-                mqUsername = "srvbruker",
                 oidcWellKnownUri = "https://sts.issuer.net/myid",
                 syfosmmanuellBackendClientId = "clientId"
             ), jwkProvider, "https://sts.issuer.net/myid")

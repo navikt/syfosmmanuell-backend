@@ -52,10 +52,6 @@ spec:
       value: /secrets/serviceuser/username
     - name: SERVICE_USER_PASSWORD
       value: /secrets/serviceuser/password
-    - name: MQ_USERNAME
-      value: /secrets/default/mqUsername
-    - name: MQ_PASSWORD
-      value: /secrets/default/mqPassword
     - name: OID_WELL_KNOWN_URI
       value: /secrets/default/oidcWellKnownUri
     - name: SYFOSMMANUELL_BACKEND_CLIENT_ID
@@ -66,15 +62,5 @@ spec:
       value: /postgresql/preprod-fss
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.nais.preprod.local
-    - name: MQ_SYFOSERVICE_QUEUE_NAME
-      value: QA.Q1_EIA_SYFO_OUTBOUND
-    - name: MQ_HOST_NAME
-      value: b27apvl177.preprod.local
-    - name: MQ_PORT
-      value: '1413'
-    - name: MQ_GATEWAY_NAME
-      value: MQ1LSC04
-    - name: MQ_CHANNEL_NAME
-      value: Q1_SYFOSMMANUELL_B
     - name: JWT_ISSUER
       value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0

@@ -18,8 +18,6 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.mockk.coEvery
 import io.mockk.mockk
-import javax.jms.MessageProducer
-import javax.jms.Session
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -39,7 +37,7 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 internal class HenteManuellOppgaverTest {
 
@@ -47,9 +45,7 @@ internal class HenteManuellOppgaverTest {
     private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     private val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     private val oppgaveService = mockk<OppgaveService>(relaxed = true)
-    private val syfoserviceProducer = mockk<MessageProducer>(relaxed = true)
-    private val session = mockk<Session>(relaxed = true)
-    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService, syfoserviceProducer, session, "")
+    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
     private val manuelloppgaveId = "1314"
 

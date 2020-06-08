@@ -23,7 +23,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import org.amshove.kluent.shouldEqual
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 internal class SyfoTilgangsKontrollClientTest {
 

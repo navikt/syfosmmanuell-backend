@@ -12,7 +12,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 internal class KafkaITTest {
 
@@ -23,26 +23,19 @@ internal class KafkaITTest {
         topicNames = listOf(topic)
     )
 
-    val credentials = VaultSecrets("", "", "", "", "", "")
+    val credentials = VaultSecrets("", "", "", "")
 
     val config = Environment(
             kafkaBootstrapServers = embeddedEnvironment.brokersURL,
             applicationName = "syfosminfotrygd",
             serviceuserUsernamePath = "/secrets/serviceuser/username",
             serviceuserPasswordPath = "/secrets/serviceuser/password",
-            mqUsernamePath = "foo",
-            mqPasswordPath = "bar",
             oidcWellKnownUriPath = "baz",
             syfosmmanuellBackendClientIdPath = "",
             mountPathVault = "",
             databaseName = "",
             syfosmmanuellbackendDBURL = "url",
             syfosmmanuellUrl = "https://syfosmmanuell",
-            mqHostname = "mqhost",
-            mqPort = 1342,
-            mqGatewayName = "mqGateway",
-            mqChannelName = "syfomottak",
-            syfoserviceQueueName = "",
             jwtIssuer = ""
     )
 

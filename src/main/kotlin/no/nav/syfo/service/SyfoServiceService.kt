@@ -1,34 +1,40 @@
 package no.nav.syfo.service
 
 import java.io.ByteArrayOutputStream
-import java.util.Base64
-import javax.jms.MessageProducer
-import javax.jms.Session
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
-import no.nav.syfo.model.Syfo
+import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.kafka.model.KafkaMessageMetadata
+import no.nav.syfo.kafka.model.SyfoserviceSykmeldingKafkaMessage
+import no.nav.syfo.log
 import no.nav.syfo.model.Tilleggsdata
+import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.extractSyketilfelleStartDato
 import no.nav.syfo.util.sykmeldingMarshaller
-import no.nav.syfo.util.xmlObjectWriter
+import org.apache.kafka.clients.producer.ProducerRecord
 
 fun notifySyfoService(
-    session: Session,
-    receiptProducer: MessageProducer,
+    syfoserviceProducer: KafkaProducers.KafkaSyfoserviceProducer,
     ediLoggId: String,
     sykmeldingId: String,
     msgId: String,
-    healthInformation: HelseOpplysningerArbeidsuforhet
-
+    healthInformation: HelseOpplysningerArbeidsuforhet,
+    loggingMeta: LoggingMeta
 ) {
-    receiptProducer.send(session.createTextMessage().apply {
 
-        val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
-        val sykmelding = convertSykemeldingToBase64(healthInformation)
-        val syfo = Syfo(
-                tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, sykmeldingId = sykmeldingId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato),
-                sykmelding = Base64.getEncoder().encodeToString(sykmelding))
-        text = xmlObjectWriter.writeValueAsString(syfo)
-    })
+    val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
+
+    val syfo = SyfoserviceSykmeldingKafkaMessage(
+            helseopplysninger = healthInformation,
+            tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, sykmeldingId = sykmeldingId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato),
+            metadata = KafkaMessageMetadata(sykmeldingId, "syfosmmanuell-backend"))
+
+    try {
+        syfoserviceProducer.producer.send(ProducerRecord(syfoserviceProducer.topic, sykmeldingId, syfo)).get()
+        log.info("Sendt sykmelding til syfoservice-mq-producer {} {}", sykmeldingId, loggingMeta)
+    } catch (ex: Exception) {
+        log.error("Could not send sykemelding to syfoservice kafka {} {}", sykmeldingId, loggingMeta)
+        throw ex
+    }
 }
 
 fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): ByteArray =
