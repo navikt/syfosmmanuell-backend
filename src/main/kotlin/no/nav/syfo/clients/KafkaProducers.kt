@@ -18,7 +18,7 @@ class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
     private val properties = setSecurityProtocol(env, kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class))
 
     init {
-        properties[ProducerConfig.RETRIES_CONFIG] = 30
+        properties[ProducerConfig.RETRIES_CONFIG] = 100
     }
 
     val kafkaApprecProducer = KafkaApprecProducer()
