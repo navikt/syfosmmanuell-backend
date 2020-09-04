@@ -11,11 +11,14 @@ import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
+import java.net.ProxySelector
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
+import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.oppgave.client.OppgaveClient
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 
 class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     private val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
@@ -29,12 +32,35 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
         }
         expectSuccess = false
     }
+    private val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+        config()
+        engine {
+            customizeClient {
+                setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
+            }
+        }
+    }
 
+    private val httpClientWithProxy = HttpClient(Apache, proxyConfig)
     private val httpClient = HttpClient(Apache, config)
 
     @KtorExperimentalAPI
     val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenUrl)
     @KtorExperimentalAPI
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
-    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(env.syfoTilgangsKontrollClientUrl, httpClient)
+    @KtorExperimentalAPI
+    val accessTokenClient = AccessTokenClient(
+        env.aadAccessTokenUrl,
+        vaultSecrets.syfosmmanuellBackendClientId,
+        vaultSecrets.syfosmmanuellBackendClientSecret,
+        httpClientWithProxy
+    )
+
+    @KtorExperimentalAPI
+    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
+        url = env.syfoTilgangsKontrollClientUrl,
+        httpClient = httpClient,
+        syfotilgangskontrollClientId = env.syfotilgangskontrollClientId,
+        accessTokenClient = accessTokenClient
+    )
 }

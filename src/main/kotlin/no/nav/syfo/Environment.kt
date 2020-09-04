@@ -25,7 +25,10 @@ data class Environment(
     val serviceuserUsernamePath: String = getEnvVar("SERVICE_USER_USERNAME"),
     val serviceuserPasswordPath: String = getEnvVar("SERVICE_USER_PASSWORD"),
     val oidcWellKnownUriPath: String = getEnvVar("OID_WELL_KNOWN_URI"),
+    val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
     val syfosmmanuellBackendClientIdPath: String = getEnvVar("SYFOSMMANUELL_BACKEND_CLIENT_ID"),
+    val syfosmmanuellBackendClientSecretPath: String = getEnvVar("SYFOSMMANUELL_BACKEND_CLIENT_SECRET", "/secrets/azuread/syfosmmanuell-backend/client_secret"),
+    val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
 
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean()
 ) : KafkaConfig
@@ -34,7 +37,8 @@ data class VaultSecrets(
     val serviceuserUsername: String,
     val serviceuserPassword: String,
     val oidcWellKnownUri: String,
-    val syfosmmanuellBackendClientId: String
+    val syfosmmanuellBackendClientId: String,
+    val syfosmmanuellBackendClientSecret: String
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername
     override val kafkaPassword: String = serviceuserPassword

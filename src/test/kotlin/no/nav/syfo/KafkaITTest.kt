@@ -23,7 +23,7 @@ internal class KafkaITTest {
         topicNames = listOf(topic)
     )
 
-    val credentials = VaultSecrets("", "", "", "")
+    val credentials = VaultSecrets("", "", "", "", "")
 
     val config = Environment(
             kafkaBootstrapServers = embeddedEnvironment.brokersURL,

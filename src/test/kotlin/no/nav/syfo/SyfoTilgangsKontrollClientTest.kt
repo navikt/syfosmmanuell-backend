@@ -18,12 +18,16 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.mockk.coEvery
+import io.mockk.mockk
 import java.net.ServerSocket
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import org.amshove.kluent.shouldEqual
-import org.junit.jupiter.api.Test
+import org.junit.Test
 
 internal class SyfoTilgangsKontrollClientTest {
 
@@ -39,6 +43,9 @@ internal class SyfoTilgangsKontrollClientTest {
                 }
             }
         }
+        val accessTokenClient = mockk<AccessTokenClient>()
+
+        coEvery { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) } returns "token"
 
         val mockHttpServerPort = ServerSocket(0).use { it.localPort }
         val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
@@ -50,7 +57,7 @@ internal class SyfoTilgangsKontrollClientTest {
             routing {
                 get("/api/tilgang/navident/bruker/$pasientFnr") {
                     when {
-                        call.request.headers["Authorization"] == "Bearer sdfsdfsfs" -> call.respond(
+                        call.request.headers["Authorization"] == "Bearer token" -> call.respond(
                             Tilgang(
                                 harTilgang = true,
                                 begrunnelse = null
@@ -62,11 +69,12 @@ internal class SyfoTilgangsKontrollClientTest {
             }
         }.start()
 
-        val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(mockHttpServerUrl, httpClient)
+        val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(url = mockHttpServerUrl, accessTokenClient = accessTokenClient, syfotilgangskontrollClientId = "syfo", httpClient = httpClient)
 
         runBlocking {
             val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
             tilgang?.harTilgang shouldEqual true
+            mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
         }
     }
 }
