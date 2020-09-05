@@ -16,6 +16,7 @@ import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
+import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
@@ -33,23 +34,25 @@ import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.testutil.TestDB
+import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
-import org.junit.jupiter.api.Test
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 
-internal class HenteManuellOppgaverTest {
+@KtorExperimentalAPI
+object HenteManuellOppgaverTest : Spek({
 
-    private val database = TestDB()
-    private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    private val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
-    private val oppgaveService = mockk<OppgaveService>(relaxed = true)
+    val database = TestDB()
+    val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+    val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
+    val oppgaveService = mockk<OppgaveService>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
-    private val manuelloppgaveId = "1314"
-
-    private val manuellOppgave = ManuellOppgave(
+    val manuelloppgaveId = "1314"
+    val manuellOppgave = ManuellOppgave(
         receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
         validationResult = ValidationResult(Status.OK, emptyList()),
         apprec = objectMapper.readValue(
@@ -58,18 +61,20 @@ internal class HenteManuellOppgaverTest {
             )
         )
     )
-    private val oppgaveid = 308076319
+    val oppgaveid = 308076319
 
-    @Test
-    internal fun `Skal hente ut manuell oppgaver basert, på oppgaveid`() {
+    coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+
+    afterEachTest {
+        database.connection.dropData()
+    }
+    afterGroup {
+        database.stop()
+    }
+
+    describe("Test av henting av manuelle oppgaver") {
         with(TestApplicationEngine()) {
             start()
-            coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(
-                true,
-                ""
-            )
-            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
-
             application.routing { hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient) }
             application.install(ContentNegotiation) {
                 jackson {
@@ -86,72 +91,31 @@ internal class HenteManuellOppgaverTest {
                 }
             }
 
-            with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
-                addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-            }) {
-                response.status() shouldEqual HttpStatusCode.OK
-                objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).first().oppgaveid shouldEqual oppgaveid
+            it("Skal hente ut manuell oppgave basert på oppgaveid") {
+                database.opprettManuellOppgave(manuellOppgave, oppgaveid)
+                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
+                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.OK
+                    objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).first().oppgaveid shouldEqual oppgaveid
+                }
+            }
+            it("Skal gi Bad Request når oppgaveid mangler") {
+                database.opprettManuellOppgave(manuellOppgave, oppgaveid)
+                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?feilparamanter=$oppgaveid")) {
+                    response.status() shouldEqual HttpStatusCode.BadRequest
+                    response.content shouldEqual null
+                }
+            }
+
+            it("Skal returnere ein tom liste av oppgaver når det ikkje finnes noen oppgaver med oppgitt id") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
+                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.NoContent
+                    response.content!! shouldEqual "Fant ingen uløste manuelle oppgaver med oppgaveid $oppgaveid"
+                }
             }
         }
     }
-
-    @Test
-    internal fun `Skal gi Bad Request, når oppgaveid mangler`() {
-        with(TestApplicationEngine()) {
-            start()
-
-            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
-
-            application.routing { hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient) }
-            application.install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                }
-            }
-            application.install(StatusPages) {
-                exception<Throwable> { cause ->
-                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-                    log.error("Caught exception", cause)
-                    throw cause
-                }
-            }
-
-            with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?feilparamanter=$oppgaveid")) {
-                response.status() shouldEqual HttpStatusCode.BadRequest
-                response.content shouldEqual null
-            }
-        }
-    }
-
-    @Test
-    internal fun `Skal returnere ein tom liste av oppgaver, når det ikkje finnes noen oppgaver med opggit id`() {
-        with(TestApplicationEngine()) {
-            start()
-
-            application.routing { hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient) }
-            application.install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                }
-            }
-            application.install(StatusPages) {
-                exception<Throwable> { cause ->
-                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-                    log.error("Caught exception", cause)
-                    throw cause
-                }
-            }
-
-            with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
-                addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-            }) {
-                response.status() shouldEqual HttpStatusCode.NoContent
-                response.content!! shouldEqual "Fant ingen uløste manuelle oppgaver med oppgaveid $oppgaveid"
-            }
-        }
-    }
-}
+})

@@ -39,45 +39,52 @@ import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.testutil.TestDB
+import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
-import org.junit.jupiter.api.Test
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 
 @KtorExperimentalAPI
-internal class AuthenticateTest {
+object AuthenticateTest : Spek({
+    val path = "src/test/resources/jwkset.json"
+    val uri = Paths.get(path).toUri().toURL()
+    val jwkProvider = JwkProviderBuilder(uri).build()
+    val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+    val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
+    val oppgaveService = mockk<OppgaveService>(relaxed = true)
 
-    private val path = "src/test/resources/jwkset.json"
-    private val uri = Paths.get(path).toUri().toURL()
-    private val jwkProvider = JwkProviderBuilder(uri).build()
-    private val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    private val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
-    private val oppgaveService = mockk<OppgaveService>(relaxed = true)
+    val database = TestDB()
+    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+    val manuelloppgaveId = "1314"
+    val manuellOppgave = ManuellOppgave(
+        receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
+        validationResult = ValidationResult(Status.OK, emptyList()),
+        apprec = objectMapper.readValue(
+            Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+                Charsets.UTF_8
+            )
+        )
+    )
+    val oppgaveid = 308076319
 
-    @Test
-    internal fun `Aksepterer gyldig JWT med riktig audience`() {
+    coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+
+    beforeEachTest {
+        database.opprettManuellOppgave(manuellOppgave, oppgaveid)
+    }
+    afterEachTest {
+        database.connection.dropData()
+    }
+    afterGroup {
+        database.stop()
+    }
+
+    describe("Autentiseringstest for api") {
         with(TestApplicationEngine()) {
             start()
-
-            val database = TestDB()
-
-            val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-
-            val manuelloppgaveId = "1314"
-
-            val manuellOppgave = ManuellOppgave(
-                receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-                validationResult = ValidationResult(Status.OK, emptyList()),
-                apprec = objectMapper.readValue(
-                    Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
-                        Charsets.UTF_8
-                    )
-                )
-            )
-            val oppgaveid = 308076319
-            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
-
             application.setupAuth(VaultSecrets(
                 serviceuserUsername = "username",
                 serviceuserPassword = "password",
@@ -90,7 +97,6 @@ internal class AuthenticateTest {
                     hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
                 }
             }
-
             application.install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -105,74 +111,22 @@ internal class AuthenticateTest {
                     throw cause
                 }
             }
-            coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
-
-            with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
-                addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-            }) {
-                response.status() shouldEqual HttpStatusCode.OK
-                objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).first().oppgaveid shouldEqual oppgaveid
+            it("Aksepterer gyldig JWT med riktig audience") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
+                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.OK
+                    objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).first().oppgaveid shouldEqual oppgaveid
+                }
+            }
+            it("Gyldig JWT med feil audience gir Unauthorized") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
+                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.Unauthorized
+                    response.content shouldEqual null
+                }
             }
         }
     }
-
-    @Test
-    internal fun `Gyldig JWT med feil audience gir Unauthorized`() {
-        with(TestApplicationEngine()) {
-            start()
-
-            val database = TestDB()
-
-            val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-
-            val manuelloppgaveId = "1314"
-
-            val manuellOppgave = ManuellOppgave(
-                receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-                validationResult = ValidationResult(Status.OK, emptyList()),
-                apprec = objectMapper.readValue(
-                    Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
-                        Charsets.UTF_8
-                    )
-                )
-            )
-            val oppgaveid = 308076319
-            database.opprettManuellOppgave(manuellOppgave, oppgaveid)
-
-            application.setupAuth(VaultSecrets(
-                serviceuserUsername = "username",
-                serviceuserPassword = "password",
-                oidcWellKnownUri = "https://sts.issuer.net/myid",
-                syfosmmanuellBackendClientId = "clientId",
-                syfosmmanuellBackendClientSecret = "secret"
-            ), jwkProvider, "https://sts.issuer.net/myid")
-            application.routing {
-                authenticate("jwt") {
-                    hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
-                }
-            }
-
-            application.install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                }
-            }
-            application.install(StatusPages) {
-                exception<Throwable> { cause ->
-                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-                    log.error("Caught exception", cause)
-                    throw cause
-                }
-            }
-
-            with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
-                addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")
-            }) {
-                response.status() shouldEqual HttpStatusCode.Unauthorized
-                response.content shouldEqual null
-            }
-        }
-    }
-}
+})

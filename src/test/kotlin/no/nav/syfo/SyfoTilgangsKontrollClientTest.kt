@@ -27,54 +27,58 @@ import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import org.amshove.kluent.shouldEqual
-import org.junit.Test
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 
-internal class SyfoTilgangsKontrollClientTest {
-
-    @Test
-    internal fun `Skal returnere harTilgang til true`() {
-        val httpClient = HttpClient(Apache) {
-            install(JsonFeature) {
-                serializer = JacksonSerializer {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                }
+object SyfoTilgangsKontrollClientTest : Spek({
+    val httpClient = HttpClient(Apache) {
+        install(JsonFeature) {
+            serializer = JacksonSerializer {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
-        }
-        val accessTokenClient = mockk<AccessTokenClient>()
-
-        coEvery { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) } returns "token"
-
-        val mockHttpServerPort = ServerSocket(0).use { it.localPort }
-        val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
-        val pasientFnr = "123145"
-        val mockServer = embeddedServer(Netty, mockHttpServerPort) {
-            install(ContentNegotiation) {
-                jackson {}
-            }
-            routing {
-                get("/api/tilgang/navident/bruker/$pasientFnr") {
-                    when {
-                        call.request.headers["Authorization"] == "Bearer token" -> call.respond(
-                            Tilgang(
-                                harTilgang = true,
-                                begrunnelse = null
-                            )
-                        )
-                        else -> call.respond(HttpStatusCode.InternalServerError, "Noe gikk galt")
-                    }
-                }
-            }
-        }.start()
-
-        val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(url = mockHttpServerUrl, accessTokenClient = accessTokenClient, syfotilgangskontrollClientId = "syfo", httpClient = httpClient)
-
-        runBlocking {
-            val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
-            tilgang?.harTilgang shouldEqual true
-            mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
         }
     }
-}
+    val accessTokenClient = mockk<AccessTokenClient>()
+
+    coEvery { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) } returns "token"
+
+    val mockHttpServerPort = ServerSocket(0).use { it.localPort }
+    val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
+    val pasientFnr = "123145"
+    val mockServer = embeddedServer(Netty, mockHttpServerPort) {
+        install(ContentNegotiation) {
+            jackson {}
+        }
+        routing {
+            get("/api/tilgang/navident/bruker/$pasientFnr") {
+                when {
+                    call.request.headers["Authorization"] == "Bearer token" -> call.respond(
+                        Tilgang(
+                            harTilgang = true,
+                            begrunnelse = null
+                        )
+                    )
+                    else -> call.respond(HttpStatusCode.InternalServerError, "Noe gikk galt")
+                }
+            }
+        }
+    }.start()
+
+    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(url = mockHttpServerUrl, accessTokenClient = accessTokenClient, syfotilgangskontrollClientId = "syfo", httpClient = httpClient)
+
+    afterGroup {
+        mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
+    }
+
+    describe("Tilgangskontroll-test") {
+        it("Skal returnere harTilgang = true") {
+            runBlocking {
+                val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
+                tilgang?.harTilgang shouldEqual true
+            }
+        }
+    }
+})

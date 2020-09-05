@@ -24,7 +24,7 @@ val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
 val postgresEmbeddedVersion = "0.13.3"
 val javaTimeAdapterVersion = "1.1.3"
-val junitJupiterVersion = "5.6.0"
+val spekVersion = "2.0.9"
 val nimbusdsVersion = "7.5.1"
 
 plugins {
@@ -96,12 +96,16 @@ dependencies {
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
     testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
+    }
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
     }
 }
 
@@ -127,10 +131,11 @@ tasks {
     }
 
     withType<Test> {
-        useJUnitPlatform()
-        testLogging {
-            showStandardStreams = true
+        dependsOn("lintKotlin")
+        useJUnitPlatform {
+            includeEngines("spek2")
         }
+        testLogging.showStandardStreams = true
     }
 
     "check" {
