@@ -17,6 +17,7 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
@@ -63,7 +64,10 @@ object HenteManuellOppgaverTest : Spek({
     )
     val oppgaveid = 308076319
 
-    coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+    beforeEachTest {
+        clearAllMocks()
+        coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+    }
 
     afterEachTest {
         database.connection.dropData()

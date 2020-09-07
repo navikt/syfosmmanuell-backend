@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
@@ -12,11 +14,13 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.net.ProxySelector
+import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.client.Tilgang
 import no.nav.syfo.oppgave.client.OppgaveClient
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 
@@ -56,11 +60,17 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
         httpClientWithProxy
     )
 
+    val syfoTilgangskontrollCache: Cache<Map<String, String>, Tilgang> = Caffeine.newBuilder()
+        .expireAfterWrite(1, TimeUnit.HOURS)
+        .maximumSize(100)
+        .build<Map<String, String>, Tilgang>()
+
     @KtorExperimentalAPI
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
         url = env.syfoTilgangsKontrollClientUrl,
         httpClient = httpClient,
         syfotilgangskontrollClientId = env.syfotilgangskontrollClientId,
-        accessTokenClient = accessTokenClient
+        accessTokenClient = accessTokenClient,
+        syfoTilgangskontrollCache = syfoTilgangskontrollCache
     )
 }
