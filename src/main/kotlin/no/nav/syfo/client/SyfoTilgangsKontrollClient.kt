@@ -20,6 +20,7 @@ class SyfoTilgangsKontrollClient(
 ) {
     suspend fun sjekkVeiledersTilgangTilPersonViaAzure(accessToken: String, personFnr: String): Tilgang? {
         syfoTilgangskontrollCache.getIfPresent(mapOf(Pair(accessToken, personFnr)))?.let {
+            log.info("Traff cache for syfotilgangskontroll")
             return it
         }
         val oboToken = accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(accessToken = accessToken, scope = syfotilgangskontrollClientId)

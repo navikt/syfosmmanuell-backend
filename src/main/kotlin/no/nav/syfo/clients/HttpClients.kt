@@ -52,19 +52,23 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenUrl)
     @KtorExperimentalAPI
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
+    private val aadCache: Cache<Map<String, String>, String> = Caffeine.newBuilder()
+        .expireAfterWrite(50, TimeUnit.MINUTES)
+        .maximumSize(100)
+        .build<Map<String, String>, String>()
     @KtorExperimentalAPI
     val accessTokenClient = AccessTokenClient(
         env.aadAccessTokenUrl,
         vaultSecrets.syfosmmanuellBackendClientId,
         vaultSecrets.syfosmmanuellBackendClientSecret,
-        httpClientWithProxy
+        httpClientWithProxy,
+        aadCache
     )
 
-    val syfoTilgangskontrollCache: Cache<Map<String, String>, Tilgang> = Caffeine.newBuilder()
+    private val syfoTilgangskontrollCache: Cache<Map<String, String>, Tilgang> = Caffeine.newBuilder()
         .expireAfterWrite(1, TimeUnit.HOURS)
         .maximumSize(100)
         .build<Map<String, String>, Tilgang>()
-
     @KtorExperimentalAPI
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
         url = env.syfoTilgangsKontrollClientUrl,
