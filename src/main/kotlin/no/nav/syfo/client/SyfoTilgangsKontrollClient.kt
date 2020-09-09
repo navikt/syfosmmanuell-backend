@@ -20,7 +20,7 @@ class SyfoTilgangsKontrollClient(
 ) {
     suspend fun sjekkVeiledersTilgangTilPersonViaAzure(accessToken: String, personFnr: String): Tilgang? {
         syfoTilgangskontrollCache.getIfPresent(mapOf(Pair(accessToken, personFnr)))?.let {
-            log.info("Traff cache for syfotilgangskontroll")
+            log.debug("Traff cache for syfotilgangskontroll")
             return it
         }
         val oboToken = accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(accessToken = accessToken, scope = syfotilgangskontrollClientId)
@@ -60,7 +60,7 @@ class SyfoTilgangsKontrollClient(
                 )
             }
             HttpStatusCode.OK -> {
-                log.info("syfo-tilgangskontroll svarer med httpResponse status kode: {}", httpResponse.status.value)
+                log.debug("syfo-tilgangskontroll svarer med httpResponse status kode: {}", httpResponse.status.value)
                 log.info("Sjekker tilgang for veileder på person")
                 val tilgang = httpResponse.call.response.receive<Tilgang>()
                 syfoTilgangskontrollCache.put(mapOf(Pair(accessToken, personFnr)), tilgang)

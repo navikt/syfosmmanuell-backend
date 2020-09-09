@@ -21,7 +21,7 @@ class AccessTokenClient(
 ) {
     suspend fun hentOnBehalfOfTokenForInnloggetBruker(accessToken: String, scope: String): String {
         aadCache.getIfPresent(mapOf(Pair(accessToken, scope)))?.let {
-            log.info("traff cache for AAD")
+            log.debug("traff cache for AAD")
             return it
         }
         log.info("Henter OBO-token fra Azure AD")
@@ -38,7 +38,7 @@ class AccessTokenClient(
                 append("assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
             })
         }
-        log.info("Har hentet OBO-accesstoken")
+        log.debug("Har hentet OBO-accesstoken")
         val oboToken = response.access_token
         aadCache.put(mapOf(Pair(accessToken, scope)), oboToken)
         return oboToken
