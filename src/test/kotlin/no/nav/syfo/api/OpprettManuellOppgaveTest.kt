@@ -14,47 +14,47 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
-import org.junit.jupiter.api.Test
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 
-internal class OpprettManuellOppgaveTest {
-
-    private val database = TestDB()
-
-    @Test
-    internal fun `Skal lagre manuellOppgave i databasen`() {
-        val manuelloppgaveId = "1314"
-
-        val manuellOppgave = ManuellOppgave(
-            receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-            validationResult = ValidationResult(Status.OK, emptyList()),
-            apprec = objectMapper.readValue(
-                Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
-                    Charsets.UTF_8
-                )
-            )
+object OpprettManuellOppgaveTest : Spek({
+    val database = TestDB()
+    val manuelloppgaveId = "1314"
+    val receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding())
+    val apprec: Apprec = objectMapper.readValue(
+        Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+            Charsets.UTF_8
         )
-        database.opprettManuellOppgave(manuellOppgave, 123144)
-        database.hentKomplettManuellOppgave(123144).size shouldEqual 1
+    )
+    val validationResult = ValidationResult(Status.OK, emptyList())
+    val manuellOppgave = ManuellOppgave(
+        receivedSykmelding = receivedSykmelding,
+        validationResult = validationResult,
+        apprec = apprec
+    )
 
+    afterEachTest {
         database.connection.dropData()
     }
-
-    @Test
-    internal fun `Skal ikkje lagre duplikat manuellOppgave i databasen, basert på sykmeldings id`() {
-        val manuelloppgaveId = "1314"
-
-        val manuellOppgave = ManuellOppgave(
-            receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-            validationResult = ValidationResult(Status.OK, emptyList()),
-            apprec = objectMapper.readValue(
-                Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
-                    Charsets.UTF_8
-                )
-            )
-        )
-        database.opprettManuellOppgave(manuellOppgave, 123144)
-        database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id) shouldEqual true
-
-        database.connection.dropData()
+    afterGroup {
+        database.stop()
     }
-}
+
+    describe("Test av oppretting av manuelle oppgaver") {
+        it("Skal lagre manuellOppgave i databasen og kunne hente den opp som forventet") {
+            database.opprettManuellOppgave(manuellOppgave, 123144)
+
+            val oppgaveliste = database.hentKomplettManuellOppgave(123144)
+
+            oppgaveliste.size shouldEqual 1
+            oppgaveliste[0].apprec shouldEqual apprec
+            oppgaveliste[0].receivedSykmelding shouldEqual receivedSykmelding
+            oppgaveliste[0].validationResult shouldEqual validationResult
+        }
+        it("Hvis oppgave er lagret for sykmeldingsid skal erOpprettManuellOppgave returnere true") {
+            database.opprettManuellOppgave(manuellOppgave, 123144)
+
+            database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id) shouldEqual true
+        }
+    }
+})

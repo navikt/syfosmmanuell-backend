@@ -12,9 +12,10 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
-import org.junit.jupiter.api.Test
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 
-internal class KafkaITTest {
+object KafkaITTest : Spek({
 
     val topic = "aapen-test-topic"
 
@@ -23,7 +24,7 @@ internal class KafkaITTest {
         topicNames = listOf(topic)
     )
 
-    val credentials = VaultSecrets("", "", "", "")
+    val credentials = VaultSecrets("", "", "", "", "")
 
     val config = Environment(
             kafkaBootstrapServers = embeddedEnvironment.brokersURL,
@@ -36,7 +37,9 @@ internal class KafkaITTest {
             databaseName = "",
             syfosmmanuellbackendDBURL = "url",
             syfosmmanuellUrl = "https://syfosmmanuell",
-            jwtIssuer = ""
+            jwtIssuer = "",
+            aadAccessTokenUrl = "aad",
+            syfotilgangskontrollClientId = "clientid"
     )
 
     fun Properties.overrideForTest(): Properties = apply {
@@ -54,16 +57,17 @@ internal class KafkaITTest {
         .toConsumerConfig("junit.integration-consumer", valueDeserializer = StringDeserializer::class)
     val consumer = KafkaConsumer<String, String>(consumerProperties)
 
-    @Test
-    internal fun `Can read the messages from the kafka topic`() {
-        embeddedEnvironment.start()
-        val message = "Test message"
-        producer.send(ProducerRecord(topic, message))
-        consumer.subscribe(listOf(topic))
+    describe("Kafka-test") {
+        it("Can read the messages from the kafka topic") {
+            embeddedEnvironment.start()
+            val message = "Test message"
+            producer.send(ProducerRecord(topic, message))
+            consumer.subscribe(listOf(topic))
 
-        val messages = consumer.poll(Duration.ofMillis(5000)).toList()
-        messages.size shouldEqual 1
-        messages[0].value() shouldEqual message
-        embeddedEnvironment.tearDown()
+            val messages = consumer.poll(Duration.ofMillis(5000)).toList()
+            messages.size shouldEqual 1
+            messages[0].value() shouldEqual message
+            embeddedEnvironment.tearDown()
+        }
     }
-}
+})

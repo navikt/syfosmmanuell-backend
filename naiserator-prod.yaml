@@ -64,3 +64,7 @@ spec:
       value: syfosmmanuell.nais.adeo.no
     - name: JWT_ISSUER
       value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0
+    - name: AADACCESSTOKEN_URL
+      value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
+    - name: SYFOTILGANGSKONTROLL_CLIENT_ID
+      value: dfaa2699-7390-4459-9cfc-2e8de64dfaf9

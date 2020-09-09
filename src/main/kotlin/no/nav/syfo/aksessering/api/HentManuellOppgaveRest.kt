@@ -51,7 +51,7 @@ fun Route.hentManuellOppgaver(
                     } else {
                         log.warn("Veileder har ikkje tilgang til {}",
                             StructuredArguments.keyValue("oppgaveId", oppgaveId))
-                        call.respond(HttpStatusCode.Unauthorized)
+                        call.respond(HttpStatusCode.Forbidden)
                     }
                 }
             }
