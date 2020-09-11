@@ -1,4 +1,4 @@
-package no.nav.syfo.model
+package no.nav.syfo.oppgave
 
 import java.time.LocalDate
 
@@ -19,7 +19,7 @@ data class OpprettOppgave(
     val prioritet: String
 )
 
-data class FerdigStillOppgave(
+data class FerdigstillOppgave(
     val versjon: Int,
     val id: Int,
     val status: OppgaveStatus
