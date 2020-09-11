@@ -26,7 +26,6 @@ import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.Database
 import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.model.ManuellOppgave
-import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.handleRecivedMessage
 import no.nav.syfo.service.ManuellOppgaveService
@@ -99,7 +98,7 @@ fun main() {
         env,
         kafkaConsumers,
         database,
-        httpClients.oppgaveClient
+        oppgaveService
     )
 }
 
@@ -124,7 +123,7 @@ fun launchListeners(
     env: Environment,
     kafkaConsumers: KafkaConsumers,
     database: Database,
-    oppgaveClient: OppgaveClient
+    oppgaveService: OppgaveService
 ) {
     createListener(applicationState) {
         val kafkaConsumerManuellOppgave = kafkaConsumers.kafkaConsumerManuellOppgave
@@ -134,7 +133,7 @@ fun launchListeners(
             applicationState,
             kafkaConsumerManuellOppgave,
             database,
-            oppgaveClient
+            oppgaveService
         )
     }
 }
@@ -144,7 +143,7 @@ suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
     database: Database,
-    oppgaveClient: OppgaveClient
+    oppgaveService: OppgaveService
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
@@ -160,7 +159,7 @@ suspend fun blockingApplicationLogic(
                 receivedManuellOppgave,
                 loggingMeta,
                 database,
-                oppgaveClient
+                oppgaveService
             )
         }
         delay(100)
