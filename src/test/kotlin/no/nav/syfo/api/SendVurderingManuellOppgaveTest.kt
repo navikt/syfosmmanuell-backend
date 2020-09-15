@@ -84,7 +84,7 @@ object SendVurderingManuellOppgaveTest : Spek({
     }
 
     describe("Test av api for sending av vurdering") {
-        it("Skal returnere InternalServerError når oppdatering av manuelloppgave sitt ValidationResults feilet") {
+        it("Skal returnere InternalServerError når oppdatering av manuelloppgave sitt ValidationResults feilet fordi oppgave ikke finnes") {
             with(TestApplicationEngine()) {
                 start()
 
@@ -130,7 +130,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                     setBody(objectMapper.writeValueAsString(validationResult))
                 }) {
                     response.status() shouldEqual HttpStatusCode.InternalServerError
-                    response.content shouldEqual "Veileder har ikke tilgang"
+                    response.content shouldEqual "Fant ikke oppgave med id 21314"
                 }
             }
         }

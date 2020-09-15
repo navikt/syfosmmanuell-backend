@@ -1,6 +1,5 @@
 package no.nav.syfo.service
 
-import java.io.ByteArrayOutputStream
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.kafka.model.KafkaMessageMetadata
@@ -9,7 +8,6 @@ import no.nav.syfo.log
 import no.nav.syfo.model.Tilleggsdata
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.extractSyketilfelleStartDato
-import no.nav.syfo.util.sykmeldingMarshaller
 import org.apache.kafka.clients.producer.ProducerRecord
 
 fun notifySyfoService(
@@ -36,9 +34,3 @@ fun notifySyfoService(
         throw ex
     }
 }
-
-fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): ByteArray =
-        ByteArrayOutputStream().use {
-            sykmeldingMarshaller.marshal(helseOpplysningerArbeidsuforhet, it)
-            it
-        }.toByteArray()

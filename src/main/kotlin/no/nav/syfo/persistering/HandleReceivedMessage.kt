@@ -3,7 +3,7 @@ package no.nav.syfo.persistering
 import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.db.Database
+import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
@@ -15,10 +15,10 @@ import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.wrapExceptions
 
 @KtorExperimentalAPI
-suspend fun handleRecivedMessage(
+suspend fun handleReceivedMessage(
     manuellOppgave: ManuellOppgave,
     loggingMeta: LoggingMeta,
-    database: Database,
+    database: DatabaseInterface,
     oppgaveService: OppgaveService
 ) {
     wrapExceptions(loggingMeta) {
@@ -31,14 +31,19 @@ suspend fun handleRecivedMessage(
                 manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
             )
         } else {
-            val oppgaveId = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
-            database.opprettManuellOppgave(manuellOppgave, oppgaveId)
-            log.info(
-                "Manuell oppgave lagret i databasen, for {}, {}",
-                StructuredArguments.keyValue("oppgaveId", oppgaveId),
-                fields(loggingMeta)
-            )
-            MESSAGE_STORED_IN_DB_COUNTER.inc()
+            try {
+                val oppgaveId = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
+                database.opprettManuellOppgave(manuellOppgave, oppgaveId)
+                log.info(
+                    "Manuell oppgave lagret i databasen, for {}, {}",
+                    StructuredArguments.keyValue("oppgaveId", oppgaveId),
+                    fields(loggingMeta)
+                )
+                MESSAGE_STORED_IN_DB_COUNTER.inc()
+            } catch (e: Exception) {
+                log.error("Noe gikk galt ved oppretting av oppgave: {}, {}", e.message, fields(loggingMeta))
+                throw e
+            }
         }
     }
 }
