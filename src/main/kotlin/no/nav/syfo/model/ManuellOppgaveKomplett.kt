@@ -4,5 +4,6 @@ data class ManuellOppgaveKomplett(
     val receivedSykmelding: ReceivedSykmelding,
     val validationResult: ValidationResult,
     val apprec: Apprec,
-    val oppgaveid: Int
+    val oppgaveid: Int,
+    val ferdigstilt: Boolean
 )

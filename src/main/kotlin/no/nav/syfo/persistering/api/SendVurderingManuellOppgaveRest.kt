@@ -25,19 +25,18 @@ fun Route.sendVurderingManuellOppgave(
                 "Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
                 StructuredArguments.keyValue("oppgaveId", oppgaveId)
             )
-
-            val accessToken = getAccessTokenFromAuthHeader(call.request)
-
-            val validationResult: ValidationResult = call.receive()
-
-            when (accessToken) {
+            when (val accessToken = getAccessTokenFromAuthHeader(call.request)) {
                 null -> {
                     log.info("Mangler JWT Bearer token i HTTP header")
                     call.respond(HttpStatusCode.BadRequest)
                 }
-
                 else -> {
-                    manuellOppgaveService.updateOppgave(oppgaveId, validationResult, accessToken)
+                    val validationResult: ValidationResult = call.receive()
+                    manuellOppgaveService.ferdigstillManuellBehandling(
+                        oppgaveId = oppgaveId,
+                        validationResult = validationResult,
+                        accessToken = accessToken
+                    )
                     call.respond(HttpStatusCode.NoContent)
                 }
             }
