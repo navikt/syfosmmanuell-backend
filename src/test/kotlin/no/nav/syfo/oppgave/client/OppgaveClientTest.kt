@@ -129,7 +129,7 @@ object OppgaveClientTest : Spek({
         it("Ferdigstiller oppgave") {
             var opprettOppgaveResponse: OpprettOppgaveResponse? = null
             runBlocking {
-                opprettOppgaveResponse = oppgaveClient.ferdigstillOppgave(FerdigstillOppgave(id = 2, versjon = 2, status = OppgaveStatus.FERDIGSTILT), "123")
+                opprettOppgaveResponse = oppgaveClient.ferdigstillOppgave(FerdigstillOppgave(id = 2, versjon = 2, status = OppgaveStatus.FERDIGSTILT, tildeltEnhetsnr = "1234"), "123")
             }
 
             opprettOppgaveResponse?.id shouldEqual 2
@@ -138,7 +138,7 @@ object OppgaveClientTest : Spek({
         it("Kaster feil hvis ferdigstilling feiler") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    oppgaveClient.ferdigstillOppgave(FerdigstillOppgave(id = 3, versjon = 2, status = OppgaveStatus.FERDIGSTILT), "123")
+                    oppgaveClient.ferdigstillOppgave(FerdigstillOppgave(id = 3, versjon = 2, status = OppgaveStatus.FERDIGSTILT, tildeltEnhetsnr = "1234"), "123")
                 }
             }
         }

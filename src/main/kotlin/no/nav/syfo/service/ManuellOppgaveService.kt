@@ -42,9 +42,9 @@ class ManuellOppgaveService(
     private val oppgaveService: OppgaveService
 ) {
     fun hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDTO> =
-        database.hentManuellOppgaver(oppgaveId)
+            database.hentManuellOppgaver(oppgaveId)
 
-    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, validationResult: ValidationResult, accessToken: String) {
+    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, validationResult: ValidationResult, accessToken: String) {
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken)
         val loggingMeta = LoggingMeta(
                 mottakId = manuellOppgave.receivedSykmelding.navLogId,
@@ -66,7 +66,7 @@ class ManuellOppgaveService(
 
         val oppdatertApprec = lagOppdatertApprec(manuellOppgave, validationResult)
         sendApprec(oppdatertApprec, loggingMeta)
-        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta)
+        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet)
         oppdaterValidationResultsOgApprec(oppgaveId, validationResult, oppdatertApprec)
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }
@@ -78,10 +78,10 @@ class ManuellOppgaveService(
             throw OppgaveNotFoundException("Fant ikke oppgave med id $oppgaveId")
         }
         val harTilgangTilOppgave =
-            syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                accessToken = accessToken,
-                personFnr = manuellOppgave.receivedSykmelding.personNrPasient
-            )?.harTilgang
+                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                        accessToken = accessToken,
+                        personFnr = manuellOppgave.receivedSykmelding.personNrPasient
+                )?.harTilgang
         if (harTilgangTilOppgave != true) {
             throw ForbiddenException()
         }
@@ -89,10 +89,10 @@ class ManuellOppgaveService(
     }
 
     private fun oppdaterValidationResultsOgApprec(oppgaveId: Int, validationResult: ValidationResult, apprec: Apprec): Int =
-        database.oppdaterValidationResultsOgApprec(oppgaveId, validationResult, apprec)
+            database.oppdaterValidationResultsOgApprec(oppgaveId, validationResult, apprec)
 
     private fun hentKomplettManuellOppgave(oppgaveId: Int): ManuellOppgaveKomplett? =
-        database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
+            database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
 
     private fun sendToSyfoService(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta) {
         val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller().apply {
@@ -123,18 +123,18 @@ class ManuellOppgaveService(
     }
 
     private fun lagOppdatertApprec(manuellOppgave: ManuellOppgaveKomplett, validationResult: ValidationResult): Apprec =
-        Apprec(
-            ediloggid = manuellOppgave.apprec.ediloggid,
-            msgId = manuellOppgave.apprec.msgId,
-            msgTypeVerdi = manuellOppgave.apprec.msgTypeVerdi,
-            msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
-            genDate = manuellOppgave.apprec.genDate,
-            apprecStatus = getApprecStatus(validationResult.status),
-            tekstTilSykmelder = null,
-            senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
-            mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
-            validationResult = if (validationResult.status == Status.OK) null else validationResult
-        )
+            Apprec(
+                    ediloggid = manuellOppgave.apprec.ediloggid,
+                    msgId = manuellOppgave.apprec.msgId,
+                    msgTypeVerdi = manuellOppgave.apprec.msgTypeVerdi,
+                    msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
+                    genDate = manuellOppgave.apprec.genDate,
+                    apprecStatus = getApprecStatus(validationResult.status),
+                    tekstTilSykmelder = null,
+                    senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
+                    mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
+                    validationResult = if (validationResult.status == Status.OK) null else validationResult
+            )
 
     private fun getApprecStatus(status: Status): ApprecStatus {
         return when (status) {
@@ -160,6 +160,7 @@ class ManuellOppgaveService(
             throw ex
         }
     }
+
     fun sendValidationResult(
         validationResult: ValidationResult,
         receivedSykmelding: ReceivedSykmelding,
@@ -178,10 +179,10 @@ class ManuellOppgaveService(
     }
 
     private fun getTopic(status: Status): String {
-            return when (status) {
-                Status.OK -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic
-                Status.INVALID -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic
-                else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
-            }
+        return when (status) {
+            Status.OK -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic
+            Status.INVALID -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic
+            else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
+        }
     }
 }

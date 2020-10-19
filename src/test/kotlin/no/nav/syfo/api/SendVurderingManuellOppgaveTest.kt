@@ -119,6 +119,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 with(handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
                     addHeader("Accept", "application/json")
                     addHeader("Content-Type", "application/json")
+                    addHeader("X-Nav-Enhet", "1234")
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     setBody(objectMapper.writeValueAsString(result))
                 }) {
@@ -211,6 +212,15 @@ object SendVurderingManuellOppgaveTest : Spek({
                 sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
             }
         }
+
+        it("should fail when X-Nav-Enhet header is empty") {
+            with(TestApplicationEngine()) {
+                start()
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                val result = Result(godkjent = true, avvisningstekst = null)
+                sendRequest(result, HttpStatusCode.BadRequest, oppgaveid, "")
+            }
+        }
     }
 
     describe("Får riktig ValidationResult") {
@@ -253,10 +263,11 @@ object SendVurderingManuellOppgaveTest : Spek({
     }
 })
 
-fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode, oppgaveId: Int) {
+fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode, oppgaveId: Int, navEnhet: String = "1234") {
     with(handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/$oppgaveId") {
         addHeader("Accept", "application/json")
         addHeader("Content-Type", "application/json")
+        addHeader("X-Nav-Enhet", navEnhet)
         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
         setBody(objectMapper.writeValueAsString(result))
     }) {
@@ -283,7 +294,7 @@ fun setUpTest(testApplicationEngine: TestApplicationEngine, kafkaProducers: Kafk
     coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-    coEvery { oppgaveService.ferdigstillOppgave(any(), any()) } returns Unit
+    coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any()) } returns Unit
     coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     database.opprettManuellOppgave(manuellOppgave, oppgaveid)

@@ -32,9 +32,9 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
         return oppgaveResponse.id
     }
 
-    suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta) {
+    suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String) {
         val oppgaveVersjon = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId).versjon
-        val ferdigstillOppgave = ferdigstillOppgave(manuellOppgave, oppgaveVersjon)
+        val ferdigstillOppgave = ferdigstillOppgave(manuellOppgave, oppgaveVersjon, enhet)
         val oppgaveResponse = oppgaveClient.ferdigstillOppgave(ferdigstillOppgave, manuellOppgave.receivedSykmelding.msgId)
 
         log.info(
@@ -58,10 +58,11 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
             prioritet = "HOY"
         )
 
-    private fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, oppgaveVersjon: Int) = FerdigstillOppgave(
+    private fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, oppgaveVersjon: Int, tildeltEnhetsnr: String) = FerdigstillOppgave(
         versjon = oppgaveVersjon,
         id = manuellOppgave.oppgaveid,
-        status = OppgaveStatus.FERDIGSTILT
+        status = OppgaveStatus.FERDIGSTILT,
+        tildeltEnhetsnr = tildeltEnhetsnr
     )
 
     fun omTreUkedager(idag: LocalDate): LocalDate = when (idag.dayOfWeek) {

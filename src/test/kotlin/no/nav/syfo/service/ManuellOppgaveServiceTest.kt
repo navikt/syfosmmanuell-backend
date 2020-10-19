@@ -63,14 +63,14 @@ object ManuellOppgaveServiceTest : Spek({
     describe("Test av ferdigstilling av manuell behandling") {
         it("Happy case OK") {
             runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, ValidationResult(Status.OK, emptyList()), "token")
+                manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", ValidationResult(Status.OK, emptyList()), "token")
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
             coVerify(exactly = 0) { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
-            coVerify { oppgaveService.ferdigstillOppgave(any(), any()) }
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()
@@ -80,14 +80,14 @@ object ManuellOppgaveServiceTest : Spek({
         }
         it("Happy case AVVIST") {
             runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, ValidationResult(Status.INVALID, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.INVALID))), "token")
+                manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", ValidationResult(Status.INVALID, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.INVALID))), "token")
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
             coVerify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
-            coVerify { oppgaveService.ferdigstillOppgave(any(), any()) }
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()
@@ -99,7 +99,7 @@ object ManuellOppgaveServiceTest : Spek({
         it("Feiler hvis validation result er MANUAL_PROCESSING") {
             assertFailsWith<IllegalArgumentException> {
                 runBlocking {
-                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))), "token")
+                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))), "token")
                 }
             }
         }
@@ -108,7 +108,7 @@ object ManuellOppgaveServiceTest : Spek({
 
             assertFailsWith<ForbiddenException> {
                 runBlocking {
-                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, ValidationResult(Status.OK, emptyList()), "token")
+                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", ValidationResult(Status.OK, emptyList()), "token")
                 }
             }
         }
