@@ -22,11 +22,7 @@ fun Route.sendVurderingManuellOppgave(
 ) {
     route("/api/v1") {
         post("/vurderingmanuelloppgave/{oppgaveid}") {
-            val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            log.info(
-                "Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
-                StructuredArguments.keyValue("oppgaveId", oppgaveId)
-            )
+            val oppgaveId = call.parameters["oppgaveid"]!!.toIntOrNull()
             val accessToken = getAccessTokenFromAuthHeader(call.request)
             val navEnhet = call.request.headers["X-Nav-Enhet"]
 
@@ -44,6 +40,10 @@ fun Route.sendVurderingManuellOppgave(
                     call.respond(HttpStatusCode.BadRequest, "Mangler X-Nav-Enhet i http header")
                 }
                 else -> {
+                    log.info(
+                            "Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
+                            StructuredArguments.keyValue("oppgaveId", oppgaveId)
+                    )
                     val result: Result = call.receive()
                     if (!result.godkjent && result.avvisningstekst.isNullOrEmpty()) {
                         log.warn("Sykmelding for oppgaveid $oppgaveId er avvist, men mangler begrunnelse")
