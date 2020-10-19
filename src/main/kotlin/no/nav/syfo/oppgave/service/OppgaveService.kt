@@ -5,6 +5,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.Veileder
 import no.nav.syfo.log
 import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.ManuellOppgave
@@ -25,45 +26,44 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
         val oppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
         OPPRETT_OPPGAVE_COUNTER.inc()
         log.info(
-            "Opprettet manuell sykmeldingsoppgave med {}, {}",
-            StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-            StructuredArguments.fields(loggingMeta)
+                "Opprettet manuell sykmeldingsoppgave med {}, {}",
+                StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+                StructuredArguments.fields(loggingMeta)
         )
         return oppgaveResponse.id
     }
 
-    suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String) {
+    suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String, veileder: Veileder) {
         val oppgaveVersjon = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId).versjon
-        val ferdigstillOppgave = ferdigstillOppgave(manuellOppgave, oppgaveVersjon, enhet)
+        val ferdigstillOppgave = FerdigstillOppgave(
+                versjon = oppgaveVersjon,
+                id = manuellOppgave.oppgaveid,
+                status = OppgaveStatus.FERDIGSTILT,
+                tildeltEnhetsnr = enhet,
+                tilordnetRessurs = veileder.veilederIdent
+        )
         val oppgaveResponse = oppgaveClient.ferdigstillOppgave(ferdigstillOppgave, manuellOppgave.receivedSykmelding.msgId)
 
         log.info(
-            "Ferdigstiller oppgave med {}, {}",
-            StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-            StructuredArguments.fields(loggingMeta)
+                "Ferdigstiller oppgave med {}, {}",
+                StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+                StructuredArguments.fields(loggingMeta)
         )
     }
 
     fun tilOpprettOppgave(manuellOppgave: ManuellOppgave): OpprettOppgave =
-        OpprettOppgave(
-            aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
-            opprettetAvEnhetsnr = "9999",
-            behandlesAvApplikasjon = "FS22",
-            beskrivelse = "Manuell vurdering av sykmelding for periode: ${getFomTomTekst(manuellOppgave.receivedSykmelding)}",
-            tema = "SYM",
-            oppgavetype = "BEH_EL_SYM",
-            behandlingstype = "ae0239",
-            aktivDato = LocalDate.now(),
-            fristFerdigstillelse = omTreUkedager(LocalDate.now()),
-            prioritet = "HOY"
-        )
-
-    private fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, oppgaveVersjon: Int, tildeltEnhetsnr: String) = FerdigstillOppgave(
-        versjon = oppgaveVersjon,
-        id = manuellOppgave.oppgaveid,
-        status = OppgaveStatus.FERDIGSTILT,
-        tildeltEnhetsnr = tildeltEnhetsnr
-    )
+            OpprettOppgave(
+                    aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
+                    opprettetAvEnhetsnr = "9999",
+                    behandlesAvApplikasjon = "FS22",
+                    beskrivelse = "Manuell vurdering av sykmelding for periode: ${getFomTomTekst(manuellOppgave.receivedSykmelding)}",
+                    tema = "SYM",
+                    oppgavetype = "BEH_EL_SYM",
+                    behandlingstype = "ae0239",
+                    aktivDato = LocalDate.now(),
+                    fristFerdigstillelse = omTreUkedager(LocalDate.now()),
+                    prioritet = "HOY"
+            )
 
     fun omTreUkedager(idag: LocalDate): LocalDate = when (idag.dayOfWeek) {
         DayOfWeek.SUNDAY -> idag.plusDays(4)
@@ -72,14 +72,14 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
     }
 
     private fun getFomTomTekst(receivedSykmelding: ReceivedSykmelding) =
-        "${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom)} -" +
-            " ${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate().last().tom)}"
+            "${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom)} -" +
+                    " ${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate().last().tom)}"
 
     private fun List<Periode>.sortedSykmeldingPeriodeFOMDate(): List<Periode> =
-        sortedBy { it.fom }
+            sortedBy { it.fom }
 
     private fun List<Periode>.sortedSykmeldingPeriodeTOMDate(): List<Periode> =
-        sortedBy { it.tom }
+            sortedBy { it.tom }
 
     private fun formaterDato(dato: LocalDate): String {
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")

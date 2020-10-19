@@ -28,6 +28,7 @@ import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.handleReceivedMessage
+import no.nav.syfo.service.AuthorizationService
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
@@ -70,10 +71,14 @@ fun main() {
     val kafkaConsumers = KafkaConsumers(env, vaultSecrets)
     val httpClients = HttpClients(env, vaultSecrets)
     val oppgaveService = OppgaveService(httpClients.oppgaveClient)
+    val authorizationService = AuthorizationService(httpClients.syfoTilgangsKontrollClient)
 
-    val manuellOppgaveService = ManuellOppgaveService(database,
-            httpClients.syfoTilgangsKontrollClient,
-            kafkaProducers, oppgaveService)
+    val manuellOppgaveService = ManuellOppgaveService(
+            database,
+            authorizationService,
+            kafkaProducers,
+            oppgaveService
+    )
 
     val applicationEngine = createApplicationEngine(
         env,
@@ -81,8 +86,7 @@ fun main() {
         manuellOppgaveService,
         vaultSecrets,
         jwkProvider,
-        wellKnown.issuer,
-        httpClients.syfoTilgangsKontrollClient
+        wellKnown.issuer
     )
 
     ApplicationServer(applicationEngine).start()

@@ -21,6 +21,7 @@ import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
+import no.nav.syfo.client.Veileder
 import no.nav.syfo.oppgave.client.OppgaveClient
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 
@@ -69,12 +70,18 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
         .expireAfterWrite(1, TimeUnit.HOURS)
         .maximumSize(100)
         .build<Map<String, String>, Tilgang>()
+    private val veilederCache: Cache<String, Veileder> = Caffeine.newBuilder()
+        .expireAfterWrite(1, TimeUnit.HOURS)
+        .maximumSize(100)
+        .build<String, Veileder>()
+
     @KtorExperimentalAPI
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
         url = env.syfoTilgangsKontrollClientUrl,
         httpClient = httpClient,
         syfotilgangskontrollClientId = env.syfotilgangskontrollClientId,
         accessTokenClient = accessTokenClient,
-        syfoTilgangskontrollCache = syfoTilgangskontrollCache
+        syfoTilgangskontrollCache = syfoTilgangskontrollCache,
+        veilederCache = veilederCache
     )
 }

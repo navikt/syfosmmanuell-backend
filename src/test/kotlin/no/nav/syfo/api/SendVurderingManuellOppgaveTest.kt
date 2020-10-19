@@ -26,6 +26,7 @@ import io.mockk.verify
 import java.util.concurrent.CompletableFuture
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
+import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
@@ -41,6 +42,7 @@ import no.nav.syfo.persistering.api.RuleInfoTekst
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.persistering.api.tilValidationResult
 import no.nav.syfo.persistering.db.opprettManuellOppgave
+import no.nav.syfo.service.AuthorizationService
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
@@ -70,9 +72,10 @@ val manuellOppgave = ManuellOppgave(
 object SendVurderingManuellOppgaveTest : Spek({
     val database = TestDB()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient)
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
-    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+    val manuellOppgaveService = ManuellOppgaveService(database, authorizationService, kafkaProducers, oppgaveService)
 
     beforeEachTest {
         clearAllMocks()
@@ -123,7 +126,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     setBody(objectMapper.writeValueAsString(result))
                 }) {
-                    response.status() shouldEqual HttpStatusCode.InternalServerError
+                    response.status() shouldEqual HttpStatusCode.NotFound
                     response.content shouldEqual "Fant ikke oppgave med id 21314"
                 }
             }
@@ -292,9 +295,10 @@ fun setUpTest(testApplicationEngine: TestApplicationEngine, kafkaProducers: Kafk
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic } returns sm2013InvalidHandlingTopic
     coEvery { kafkaProducers.kafkaValidationResultProducer.sm2013BehandlingsUtfallTopic } returns sm2013BehandlingsUtfallTopic
     coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+    coEvery { syfoTilgangsKontrollClient.hentVeilderIdentViaAzure(any()) } returns Veileder(veilederIdent = "4321")
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-    coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any()) } returns Unit
+    coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
     coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     database.opprettManuellOppgave(manuellOppgave, oppgaveid)

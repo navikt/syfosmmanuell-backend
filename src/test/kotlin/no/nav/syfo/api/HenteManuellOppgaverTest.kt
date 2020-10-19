@@ -33,6 +33,7 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
+import no.nav.syfo.service.AuthorizationService
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
@@ -48,9 +49,10 @@ object HenteManuellOppgaverTest : Spek({
 
     val database = TestDB()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient)
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
-    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+    val manuellOppgaveService = ManuellOppgaveService(database, authorizationService, kafkaProducers, oppgaveService)
 
     val manuelloppgaveId = "1314"
     val manuellOppgave = ManuellOppgave(
@@ -79,7 +81,7 @@ object HenteManuellOppgaverTest : Spek({
     describe("Test av henting av manuelle oppgaver") {
         with(TestApplicationEngine()) {
             start()
-            application.routing { hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient) }
+            application.routing { hentManuellOppgaver(manuellOppgaveService) }
             application.install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -112,12 +114,12 @@ object HenteManuellOppgaverTest : Spek({
                 }
             }
 
-            it("Skal returnere ein tom liste av oppgaver når det ikkje finnes noen oppgaver med oppgitt id") {
+            it("Skal returnere not found når det ikkje finnes noen oppgaver med oppgitt id") {
                 with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 }) {
-                    response.status() shouldEqual HttpStatusCode.NoContent
-                    response.content!! shouldEqual "Fant ingen uløste manuelle oppgaver med oppgaveid $oppgaveid"
+                    response.status() shouldEqual HttpStatusCode.NotFound
+                    response.content!! shouldEqual "Fant ingen uløste oppgaver med oppgaveid: $oppgaveid"
                 }
             }
         }
