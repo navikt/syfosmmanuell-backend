@@ -41,8 +41,8 @@ fun Route.sendVurderingManuellOppgave(
                 }
                 else -> {
                     log.info(
-                            "Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
-                            StructuredArguments.keyValue("oppgaveId", oppgaveId)
+                        "Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
+                        StructuredArguments.keyValue("oppgaveId", oppgaveId)
                     )
                     val result: Result = call.receive()
                     if (!result.godkjent && result.avvisningstekst.isNullOrEmpty()) {
@@ -51,10 +51,10 @@ fun Route.sendVurderingManuellOppgave(
                     }
                     val validationResult = result.tilValidationResult()
                     manuellOppgaveService.ferdigstillManuellBehandling(
-                            oppgaveId = oppgaveId,
-                            enhet = navEnhet,
-                            validationResult = validationResult,
-                            accessToken = accessToken
+                        oppgaveId = oppgaveId,
+                        enhet = navEnhet,
+                        validationResult = validationResult,
+                        accessToken = accessToken
                     )
                     call.respond(HttpStatusCode.NoContent)
                 }
