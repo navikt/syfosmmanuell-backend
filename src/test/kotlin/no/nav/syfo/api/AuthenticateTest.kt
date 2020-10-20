@@ -38,7 +38,6 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
-import no.nav.syfo.service.AuthorizationService
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
@@ -55,17 +54,11 @@ object AuthenticateTest : Spek({
     val uri = Paths.get(path).toUri().toURL()
     val jwkProvider = JwkProviderBuilder(uri).build()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient)
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
 
     val database = TestDB()
-    val manuellOppgaveService = ManuellOppgaveService(
-            database,
-            authorizationService,
-            kafkaProducers,
-            oppgaveService
-    )
+    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
     val manuelloppgaveId = "1314"
     val manuellOppgave = ManuellOppgave(
         receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
@@ -102,7 +95,7 @@ object AuthenticateTest : Spek({
             ), jwkProvider, "https://sts.issuer.net/myid")
             application.routing {
                 authenticate("jwt") {
-                    hentManuellOppgaver(manuellOppgaveService)
+                    hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
                 }
             }
             application.install(ContentNegotiation) {

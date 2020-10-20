@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
-import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -35,7 +34,6 @@ import org.spekframework.spek2.style.specification.describe
 object ManuellOppgaveServiceTest : Spek({
     val database = TestDB()
     val syfotilgangskontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val authorizationService = AuthorizationService(syfotilgangskontrollClient)
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
     val sykmeldingsId = UUID.randomUUID().toString()
@@ -47,13 +45,12 @@ object ManuellOppgaveServiceTest : Spek({
     )
     val oppgaveid = 308076319
 
-    val manuellOppgaveService = ManuellOppgaveService(database, authorizationService, kafkaProducers, oppgaveService)
+    val manuellOppgaveService = ManuellOppgaveService(database, syfotilgangskontrollClient, kafkaProducers, oppgaveService)
 
     beforeEachTest {
         database.opprettManuellOppgave(manuellOppgave, oppgaveid)
         clearAllMocks()
         coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, null)
-        coEvery { syfotilgangskontrollClient.hentVeilderIdentViaAzure(any()) } returns Veileder(veilederIdent = "4321")
     }
 
     afterEachTest {
@@ -73,7 +70,7 @@ object ManuellOppgaveServiceTest : Spek({
             coVerify(exactly = 0) { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
-            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()
@@ -90,7 +87,7 @@ object ManuellOppgaveServiceTest : Spek({
             coVerify { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
             coVerify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
-            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()

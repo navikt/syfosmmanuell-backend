@@ -11,6 +11,7 @@ import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
+import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
@@ -36,25 +37,12 @@ import org.apache.kafka.clients.producer.ProducerRecord
 @KtorExperimentalAPI
 class ManuellOppgaveService(
     private val database: DatabaseInterface,
-    private val authorizationService: AuthorizationService,
+    private val syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
     private val kafkaProducers: KafkaProducers,
     private val oppgaveService: OppgaveService
 ) {
-    // TODO: Change to return one oppgave instead of a list.
-    suspend fun hentManuelleOppgaver(oppgaveId: Int, accessToken: String): List<ManuellOppgaveDTO> {
-        val manuelleOppgaver = database.hentManuellOppgaver(oppgaveId)
-        if (manuelleOppgaver.isEmpty()) {
-            log.error("Fant ikke oppgaver med id $oppgaveId")
-            throw OppgaveNotFoundException("Fant ingen uløste oppgaver med oppgaveid: $oppgaveId")
-        } else {
-            val pasientFnr = manuelleOppgaver.first().receivedSykmelding.personNrPasient
-            if (!authorizationService.hasAccess(accessToken, pasientFnr)) {
-                log.info("Veileder har ikke til gang til oppgave med oppgaveid: $oppgaveId")
-                throw ForbiddenException()
-            }
-            return manuelleOppgaver
-        }
-    }
+    fun hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDTO> =
+            database.hentManuellOppgaver(oppgaveId)
 
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, validationResult: ValidationResult, accessToken: String) {
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken)
@@ -64,7 +52,7 @@ class ManuellOppgaveService(
                 msgId = manuellOppgave.receivedSykmelding.msgId,
                 sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
         )
-        val veilder = authorizationService.getVeileder(accessToken)
+
         validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
         RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
 
@@ -78,7 +66,7 @@ class ManuellOppgaveService(
 
         val oppdatertApprec = lagOppdatertApprec(manuellOppgave, validationResult)
         sendApprec(oppdatertApprec, loggingMeta)
-        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veilder)
+        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet)
         oppdaterValidationResultsOgApprec(oppgaveId, validationResult, oppdatertApprec)
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }
@@ -89,7 +77,12 @@ class ManuellOppgaveService(
             log.error("Fant ikke oppgave med id $oppgaveId")
             throw OppgaveNotFoundException("Fant ikke oppgave med id $oppgaveId")
         }
-        if (!authorizationService.hasAccess(accessToken, manuellOppgave.receivedSykmelding.personNrPasient)) {
+        val harTilgangTilOppgave =
+                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                        accessToken = accessToken,
+                        personFnr = manuellOppgave.receivedSykmelding.personNrPasient
+                )?.harTilgang
+        if (harTilgangTilOppgave != true) {
             throw ForbiddenException()
         }
         return manuellOppgave

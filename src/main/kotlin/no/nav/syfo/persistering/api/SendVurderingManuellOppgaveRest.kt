@@ -8,13 +8,11 @@ import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
-import javax.ws.rs.ForbiddenException
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.log
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.persistering.error.OppgaveNotFoundException
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
 
@@ -52,28 +50,13 @@ fun Route.sendVurderingManuellOppgave(
                         call.respond(HttpStatusCode.BadRequest)
                     }
                     val validationResult = result.tilValidationResult()
-
-                    try {
-                        manuellOppgaveService.ferdigstillManuellBehandling(
-                                oppgaveId = oppgaveId,
-                                enhet = navEnhet,
-                                validationResult = validationResult,
-                                accessToken = accessToken
-                        )
-                        call.respond(HttpStatusCode.NoContent)
-                    } catch (e: OppgaveNotFoundException) {
-                        // Not found
-                        call.respond(HttpStatusCode.NotFound, e.message)
-                    } catch (e: ForbiddenException) {
-                        // Unauthorized
-                        call.respond(HttpStatusCode.Unauthorized)
-                    } catch (e: IllegalArgumentException) {
-                        //
-                        call.respond(HttpStatusCode.BadRequest)
-                    } catch (e: Exception) {
-                        log.info("Unknown error", e)
-                        throw e
-                    }
+                    manuellOppgaveService.ferdigstillManuellBehandling(
+                            oppgaveId = oppgaveId,
+                            enhet = navEnhet,
+                            validationResult = validationResult,
+                            accessToken = accessToken
+                    )
+                    call.respond(HttpStatusCode.NoContent)
                 }
             }
         }

@@ -30,7 +30,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
-import no.nav.syfo.client.Veileder
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -74,19 +73,8 @@ object SyfoTilgangsKontrollClientTest : Spek({
         .expireAfterWrite(1, TimeUnit.HOURS)
         .maximumSize(100)
         .build<Map<String, String>, Tilgang>()
-    val veilederCache: Cache<String, Veileder> = Caffeine.newBuilder()
-            .expireAfterWrite(1, TimeUnit.HOURS)
-            .maximumSize(100)
-            .build<String, Veileder>()
 
-    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
-            url = mockHttpServerUrl,
-            accessTokenClient = accessTokenClient,
-            syfotilgangskontrollClientId = "syfo",
-            httpClient = httpClient,
-            syfoTilgangskontrollCache = syfoTilgangskontrollCache,
-            veilederCache = veilederCache
-    )
+    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(url = mockHttpServerUrl, accessTokenClient = accessTokenClient, syfotilgangskontrollClientId = "syfo", httpClient = httpClient, syfoTilgangskontrollCache = syfoTilgangskontrollCache)
 
     beforeEachTest {
         clearAllMocks()

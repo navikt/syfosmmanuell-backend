@@ -25,6 +25,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
+import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
@@ -37,40 +38,43 @@ fun createApplicationEngine(
     manuellOppgaveService: ManuellOppgaveService,
     vaultSecrets: VaultSecrets,
     jwkProvider: JwkProvider,
-    issuer: String
+    issuer: String,
+    syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient
 ): ApplicationEngine =
-        embeddedServer(Netty, env.applicationPort) {
-            setupAuth(vaultSecrets, jwkProvider, issuer)
-            install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                }
+    embeddedServer(Netty, env.applicationPort) {
+        setupAuth(vaultSecrets, jwkProvider, issuer)
+        install(ContentNegotiation) {
+            jackson {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
-            install(StatusPages) {
-                exception<Throwable> { cause ->
-                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-                    log.error("Caught exception", cause)
-                    throw cause
-                }
-            }
-            install(CORS) {
-                method(HttpMethod.Get)
-                method(HttpMethod.Post)
-                method(HttpMethod.Put)
-                method(HttpMethod.Options)
-                header("Content-Type")
-                host(env.syfosmmanuellUrl, schemes = listOf("https", "https"))
-                allowCredentials = true
-            }
-            routing {
-                registerNaisApi(applicationState)
-                authenticate("jwt") {
-                    hentManuellOppgaver(manuellOppgaveService)
-                    sendVurderingManuellOppgave(manuellOppgaveService)
-                }
-            }
-            intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
         }
+        install(StatusPages) {
+            exception<Throwable> { cause ->
+                call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                log.error("Caught exception", cause)
+                throw cause
+            }
+        }
+        install(CORS) {
+            method(HttpMethod.Get)
+            method(HttpMethod.Post)
+            method(HttpMethod.Put)
+            method(HttpMethod.Options)
+            header("Content-Type")
+            host(env.syfosmmanuellUrl, schemes = listOf("https", "https"))
+            allowCredentials = true
+        }
+        routing {
+            registerNaisApi(applicationState)
+            authenticate("jwt") {
+                hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
+                sendVurderingManuellOppgave(
+                    manuellOppgaveService
+                )
+            }
+        }
+        intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
+    }
