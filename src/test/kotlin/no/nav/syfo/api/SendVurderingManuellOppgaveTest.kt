@@ -24,6 +24,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.util.concurrent.CompletableFuture
+import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
@@ -70,6 +71,7 @@ val manuellOppgave = ManuellOppgave(
 object SendVurderingManuellOppgaveTest : Spek({
     val database = TestDB()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, database)
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
@@ -97,7 +99,8 @@ object SendVurderingManuellOppgaveTest : Spek({
 
                 application.routing {
                     sendVurderingManuellOppgave(
-                        manuellOppgaveService
+                        manuellOppgaveService,
+                        authorizationService
                     )
                 }
                 application.install(ContentNegotiation) {
@@ -123,8 +126,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     setBody(objectMapper.writeValueAsString(result))
                 }) {
-                    response.status() shouldEqual HttpStatusCode.InternalServerError
-                    response.content shouldEqual "Fant ikke oppgave med id 21314"
+                    response.status() shouldEqual HttpStatusCode.NotFound
                 }
             }
         }
@@ -132,7 +134,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("should fail when writing sykmelding to kafka fails with status INVALID") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
                 val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
                 every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
@@ -143,7 +145,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("should fail when writing sykmelding to kafka fails with status OK") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
                 val result = Result(godkjent = true, avvisningstekst = null)
                 every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
@@ -154,7 +156,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("should fail when writing appreck OK to kafka") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
                 val result = Result(godkjent = true, avvisningstekst = null)
                 every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val statusCode = HttpStatusCode.InternalServerError
@@ -165,7 +167,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("should fail when writing apprec INVALID to kafka") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
                 val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
                 every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val statusCode = HttpStatusCode.InternalServerError
@@ -176,7 +178,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("should fail when writing validation result INVALID to kafka") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
                 val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
                 every { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val statusCode = HttpStatusCode.InternalServerError
@@ -187,7 +189,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("noContent oppdatering av manuelloppgave med status OK") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
                 val result = Result(godkjent = true, avvisningstekst = null)
                 sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
             }
@@ -196,7 +198,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("noConten oppdatering av manuelloppgave med status INVALID") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
                 val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
                 sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
                 verify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
@@ -206,7 +208,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("should fail when writing sykmelding syfoservice kafka") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
                 every { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val result = Result(godkjent = true, avvisningstekst = null)
                 sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
@@ -216,7 +218,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("should fail when X-Nav-Enhet header is empty") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
                 val result = Result(godkjent = true, avvisningstekst = null)
                 sendRequest(result, HttpStatusCode.BadRequest, oppgaveid, "")
             }
@@ -276,7 +278,15 @@ fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode
 }
 
 @KtorExperimentalAPI
-fun setUpTest(testApplicationEngine: TestApplicationEngine, kafkaProducers: KafkaProducers, syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient, oppgaveService: OppgaveService, database: DatabaseInterface, manuellOppgaveService: ManuellOppgaveService) {
+fun setUpTest(
+    testApplicationEngine: TestApplicationEngine,
+    kafkaProducers: KafkaProducers,
+    syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
+    authorizationService: AuthorizationService,
+    oppgaveService: OppgaveService,
+    database: DatabaseInterface,
+    manuellOppgaveService: ManuellOppgaveService
+) {
     val sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic"
     val sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic"
     val sm2013BehandlingsUtfallTopic = "sm2013BehandlingsUtfallTopic"
@@ -301,7 +311,8 @@ fun setUpTest(testApplicationEngine: TestApplicationEngine, kafkaProducers: Kafk
 
     testApplicationEngine.application.routing {
         sendVurderingManuellOppgave(
-            manuellOppgaveService
+            manuellOppgaveService,
+            authorizationService
         )
     }
     testApplicationEngine.application.install(ContentNegotiation) {

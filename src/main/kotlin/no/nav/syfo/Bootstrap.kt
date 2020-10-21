@@ -20,6 +20,7 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.getWellKnown
+import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
 import no.nav.syfo.clients.KafkaProducers
@@ -74,6 +75,7 @@ fun main() {
     val manuellOppgaveService = ManuellOppgaveService(database,
             httpClients.syfoTilgangsKontrollClient,
             kafkaProducers, oppgaveService)
+    val authorizationService = AuthorizationService(httpClients.syfoTilgangsKontrollClient, database)
 
     val applicationEngine = createApplicationEngine(
         env,
@@ -82,7 +84,7 @@ fun main() {
         vaultSecrets,
         jwkProvider,
         wellKnown.issuer,
-        httpClients.syfoTilgangsKontrollClient
+        authorizationService
     )
 
     ApplicationServer(applicationEngine).start()

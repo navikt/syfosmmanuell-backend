@@ -21,11 +21,12 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
+import java.lang.NumberFormatException
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.api.registerNaisApi
-import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
@@ -39,7 +40,7 @@ fun createApplicationEngine(
     vaultSecrets: VaultSecrets,
     jwkProvider: JwkProvider,
     issuer: String,
-    syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient
+    authorizationService: AuthorizationService
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         setupAuth(vaultSecrets, jwkProvider, issuer)
@@ -52,6 +53,11 @@ fun createApplicationEngine(
             }
         }
         install(StatusPages) {
+            exception<NumberFormatException> { cause ->
+                call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
+                log.error("Caught exception", cause)
+                throw cause
+            }
             exception<Throwable> { cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                 log.error("Caught exception", cause)
@@ -70,9 +76,13 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             authenticate("jwt") {
-                hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
+                hentManuellOppgaver(
+                    manuellOppgaveService,
+                    authorizationService
+                )
                 sendVurderingManuellOppgave(
-                    manuellOppgaveService
+                    manuellOppgaveService,
+                    authorizationService
                 )
             }
         }
