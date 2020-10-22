@@ -22,17 +22,28 @@ fun Route.sendVurderingManuellOppgave(
 ) {
     route("/api/v1") {
         post("/vurderingmanuelloppgave/{oppgaveid}") {
-            val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            log.info(
-                "Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
-                StructuredArguments.keyValue("oppgaveId", oppgaveId)
-            )
-            when (val accessToken = getAccessTokenFromAuthHeader(call.request)) {
-                null -> {
-                    log.info("Mangler JWT Bearer token i HTTP header")
+            val oppgaveId = call.parameters["oppgaveid"]!!.toIntOrNull()
+            val accessToken = getAccessTokenFromAuthHeader(call.request)
+            val navEnhet = call.request.headers["X-Nav-Enhet"]
+
+            when {
+                oppgaveId == null -> {
+                    log.error("Path parameter mangler eller er feil formattert: oppgavid")
+                    call.respond(HttpStatusCode.BadRequest, "Path parameter mangler eller er feil formattert: oppgaveid")
+                }
+                accessToken == null -> {
+                    log.error("Mangler JWT Bearer token i HTTP header")
                     call.respond(HttpStatusCode.BadRequest)
                 }
+                navEnhet.isNullOrEmpty() -> {
+                    log.error("Mangler X-Nav-Enhet i http header")
+                    call.respond(HttpStatusCode.BadRequest, "Mangler X-Nav-Enhet i http header")
+                }
                 else -> {
+                    log.info(
+                        "Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
+                        StructuredArguments.keyValue("oppgaveId", oppgaveId)
+                    )
                     val result: Result = call.receive()
                     if (!result.godkjent && result.avvisningstekst.isNullOrEmpty()) {
                         log.warn("Sykmelding for oppgaveid $oppgaveId er avvist, men mangler begrunnelse")
@@ -41,6 +52,7 @@ fun Route.sendVurderingManuellOppgave(
                     val validationResult = result.tilValidationResult()
                     manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveId = oppgaveId,
+                        enhet = navEnhet,
                         validationResult = validationResult,
                         accessToken = accessToken
                     )

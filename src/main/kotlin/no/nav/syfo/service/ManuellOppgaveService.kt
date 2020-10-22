@@ -44,13 +44,13 @@ class ManuellOppgaveService(
     fun hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDTO> =
         database.hentManuellOppgaver(oppgaveId)
 
-    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, validationResult: ValidationResult, accessToken: String) {
+    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, validationResult: ValidationResult, accessToken: String) {
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken)
         val loggingMeta = LoggingMeta(
-                mottakId = manuellOppgave.receivedSykmelding.navLogId,
-                orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
-                msgId = manuellOppgave.receivedSykmelding.msgId,
-                sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
+            mottakId = manuellOppgave.receivedSykmelding.navLogId,
+            orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
+            msgId = manuellOppgave.receivedSykmelding.msgId,
+            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
         )
 
         validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
@@ -66,7 +66,7 @@ class ManuellOppgaveService(
 
         val oppdatertApprec = lagOppdatertApprec(manuellOppgave, validationResult)
         sendApprec(oppdatertApprec, loggingMeta)
-        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta)
+        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet)
         oppdaterValidationResultsOgApprec(oppgaveId, validationResult, oppdatertApprec)
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }
@@ -79,8 +79,8 @@ class ManuellOppgaveService(
         }
         val harTilgangTilOppgave =
             syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                accessToken = accessToken,
-                personFnr = manuellOppgave.receivedSykmelding.personNrPasient
+                    accessToken = accessToken,
+                    personFnr = manuellOppgave.receivedSykmelding.personNrPasient
             )?.harTilgang
         if (harTilgangTilOppgave != true) {
             throw ForbiddenException()
@@ -103,12 +103,12 @@ class ManuellOppgaveService(
                 StringReader(manuellOppgave.receivedSykmelding.fellesformat)) as XMLEIFellesformat
 
         notifySyfoService(
-                syfoserviceProducer = kafkaProducers.kafkaSyfoserviceProducer,
-                ediLoggId = manuellOppgave.receivedSykmelding.navLogId,
-                sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
-                msgId = manuellOppgave.receivedSykmelding.msgId,
-                healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat),
-                loggingMeta = loggingMeta
+            syfoserviceProducer = kafkaProducers.kafkaSyfoserviceProducer,
+            ediLoggId = manuellOppgave.receivedSykmelding.navLogId,
+            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
+            msgId = manuellOppgave.receivedSykmelding.msgId,
+            healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat),
+            loggingMeta = loggingMeta
         )
     }
 
@@ -148,11 +148,11 @@ class ManuellOppgaveService(
         val topic = getTopic(status)
         try {
             kafkaProducer.producer.send(
-                    ProducerRecord(
-                            topic,
-                            receivedSykmelding.sykmelding.id,
-                            receivedSykmelding
-                    )
+                ProducerRecord(
+                    topic,
+                    receivedSykmelding.sykmelding.id,
+                    receivedSykmelding
+                )
             ).get()
             log.info("Sendt sykmelding {} to topic {} {}", receivedSykmelding.sykmelding.id, topic, loggingMeta)
         } catch (ex: Exception) {
@@ -160,6 +160,7 @@ class ManuellOppgaveService(
             throw ex
         }
     }
+
     fun sendValidationResult(
         validationResult: ValidationResult,
         receivedSykmelding: ReceivedSykmelding,
@@ -168,7 +169,7 @@ class ManuellOppgaveService(
         val topic = kafkaProducers.kafkaValidationResultProducer.sm2013BehandlingsUtfallTopic
         try {
             kafkaProducers.kafkaValidationResultProducer.producer.send(
-                    ProducerRecord(topic, receivedSykmelding.sykmelding.id, validationResult)
+                ProducerRecord(topic, receivedSykmelding.sykmelding.id, validationResult)
             ).get()
             log.info("Valideringsreultat sendt til kafka {}, {}", topic, StructuredArguments.fields(loggingMeta))
         } catch (ex: Exception) {
@@ -178,10 +179,10 @@ class ManuellOppgaveService(
     }
 
     private fun getTopic(status: Status): String {
-            return when (status) {
-                Status.OK -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic
-                Status.INVALID -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic
-                else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
-            }
+        return when (status) {
+            Status.OK -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic
+            Status.INVALID -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic
+            else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
+        }
     }
 }
