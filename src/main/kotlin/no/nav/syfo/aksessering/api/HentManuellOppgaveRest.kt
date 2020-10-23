@@ -16,16 +16,9 @@ fun Route.hentManuellOppgaver(
     authorizationService: AuthorizationService
 ) {
     route("/api/v1") {
-        get("/hentManuellOppgave") {
-            log.info("Mottok kall til /api/v1/hentManuellOppgave")
-            val oppgaveId = call.request.queryParameters["oppgaveid"]?.toInt() // TODO: change to path param
-            // TODO: remove when changing to path param
-            if (oppgaveId == null) {
-                log.info("Mangler query parameters: oppgaveid")
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
-
+        get("/hentManuellOppgave/{oppgaveid}") {
+            val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
+            log.info("Mottok kall til /api/v1/hentManuellOppgave/$oppgaveId")
             val accessToken = getAccessTokenFromAuthHeader(call.request)
 
             val hasAccess = authorizationService.hasAccess(oppgaveId, accessToken)
