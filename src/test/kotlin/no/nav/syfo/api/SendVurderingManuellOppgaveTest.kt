@@ -27,6 +27,7 @@ import java.util.concurrent.CompletableFuture
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
+import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
@@ -302,9 +303,10 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic } returns sm2013InvalidHandlingTopic
     coEvery { kafkaProducers.kafkaValidationResultProducer.sm2013BehandlingsUtfallTopic } returns sm2013BehandlingsUtfallTopic
     coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+    coEvery { syfoTilgangsKontrollClient.hentVeilderIdentViaAzure(any()) } returns Veileder("4321")
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-    coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any()) } returns Unit
+    coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
     coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     database.opprettManuellOppgave(manuellOppgave, oppgaveid)

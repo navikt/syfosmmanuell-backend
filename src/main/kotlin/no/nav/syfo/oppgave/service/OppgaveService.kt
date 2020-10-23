@@ -5,6 +5,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.Veileder
 import no.nav.syfo.log
 import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.ManuellOppgave
@@ -32,9 +33,15 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
         return oppgaveResponse.id
     }
 
-    suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String) {
+    suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String, veileder: Veileder) {
         val oppgaveVersjon = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId).versjon
-        val ferdigstillOppgave = ferdigstillOppgave(manuellOppgave, oppgaveVersjon, enhet)
+        val ferdigstillOppgave = FerdigstillOppgave(
+                versjon = oppgaveVersjon,
+                id = manuellOppgave.oppgaveid,
+                status = OppgaveStatus.FERDIGSTILT,
+                tildeltEnhetsnr = enhet,
+                tilordnetRessurs = veileder.veilderIdent
+        )
         val oppgaveResponse = oppgaveClient.ferdigstillOppgave(ferdigstillOppgave, manuellOppgave.receivedSykmelding.msgId)
 
         log.info(
@@ -57,13 +64,6 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
             fristFerdigstillelse = omTreUkedager(LocalDate.now()),
             prioritet = "HOY"
         )
-
-    private fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, oppgaveVersjon: Int, tildeltEnhetsnr: String) = FerdigstillOppgave(
-        versjon = oppgaveVersjon,
-        id = manuellOppgave.oppgaveid,
-        status = OppgaveStatus.FERDIGSTILT,
-        tildeltEnhetsnr = tildeltEnhetsnr
-    )
 
     fun omTreUkedager(idag: LocalDate): LocalDate = when (idag.dayOfWeek) {
         DayOfWeek.SUNDAY -> idag.plusDays(4)

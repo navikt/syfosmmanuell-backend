@@ -12,6 +12,7 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
@@ -44,7 +45,7 @@ class ManuellOppgaveService(
     fun hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDTO> =
         database.hentManuellOppgaver(oppgaveId)
 
-    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, validationResult: ValidationResult, accessToken: String) {
+    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String) {
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken)
         val loggingMeta = LoggingMeta(
             mottakId = manuellOppgave.receivedSykmelding.navLogId,
@@ -66,7 +67,7 @@ class ManuellOppgaveService(
 
         val oppdatertApprec = lagOppdatertApprec(manuellOppgave, validationResult)
         sendApprec(oppdatertApprec, loggingMeta)
-        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet)
+        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
         oppdaterValidationResultsOgApprec(oppgaveId, validationResult, oppdatertApprec)
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }

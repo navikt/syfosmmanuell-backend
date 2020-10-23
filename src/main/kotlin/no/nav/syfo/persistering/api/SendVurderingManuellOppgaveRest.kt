@@ -47,9 +47,13 @@ fun Route.sendVurderingManuellOppgave(
                         call.respond(HttpStatusCode.BadRequest)
                     }
                     val validationResult = result.tilValidationResult()
+
+                    val veileder = authorizationService.getVeileder(accessToken)
+
                     manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveId = oppgaveId,
                         enhet = navEnhet,
+                        veileder = veileder,
                         validationResult = validationResult,
                         accessToken = accessToken
                     )
