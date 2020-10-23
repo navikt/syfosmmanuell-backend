@@ -8,7 +8,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
-import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
@@ -18,32 +18,29 @@ import no.nav.syfo.util.getAccessTokenFromAuthHeader
 
 @KtorExperimentalAPI
 fun Route.sendVurderingManuellOppgave(
-    manuellOppgaveService: ManuellOppgaveService
+    manuellOppgaveService: ManuellOppgaveService,
+    authorizationService: AuthorizationService
 ) {
     route("/api/v1") {
         post("/vurderingmanuelloppgave/{oppgaveid}") {
-            val oppgaveId = call.parameters["oppgaveid"]!!.toIntOrNull()
+            val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
+            log.info("Mottok eit kall til /api/v1/vurderingmanuelloppgave med $oppgaveId")
             val accessToken = getAccessTokenFromAuthHeader(call.request)
             val navEnhet = call.request.headers["X-Nav-Enhet"]
 
-            when {
-                oppgaveId == null -> {
-                    log.error("Path parameter mangler eller er feil formattert: oppgavid")
-                    call.respond(HttpStatusCode.BadRequest, "Path parameter mangler eller er feil formattert: oppgaveid")
+            val hasAccess = authorizationService.hasAccess(oppgaveId, accessToken)
+
+            if (navEnhet.isNullOrEmpty()) {
+                log.error("Mangler X-Nav-Enhet i http header")
+                call.respond(HttpStatusCode.BadRequest, "Mangler X-Nav-Enhet i http header")
+                return@post
+            }
+
+            when (hasAccess) {
+                false -> {
+                    call.respond(HttpStatusCode.NotFound)
                 }
-                accessToken == null -> {
-                    log.error("Mangler JWT Bearer token i HTTP header")
-                    call.respond(HttpStatusCode.BadRequest)
-                }
-                navEnhet.isNullOrEmpty() -> {
-                    log.error("Mangler X-Nav-Enhet i http header")
-                    call.respond(HttpStatusCode.BadRequest, "Mangler X-Nav-Enhet i http header")
-                }
-                else -> {
-                    log.info(
-                        "Mottok eit kall til /api/v1/vurderingmanuelloppgave med {}",
-                        StructuredArguments.keyValue("oppgaveId", oppgaveId)
-                    )
+                true -> {
                     val result: Result = call.receive()
                     if (!result.godkjent && result.avvisningstekst.isNullOrEmpty()) {
                         log.warn("Sykmelding for oppgaveid $oppgaveId er avvist, men mangler begrunnelse")

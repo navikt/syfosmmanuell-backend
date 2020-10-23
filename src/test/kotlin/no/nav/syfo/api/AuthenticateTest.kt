@@ -27,6 +27,7 @@ import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.setupAuth
+import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
@@ -58,6 +59,7 @@ object AuthenticateTest : Spek({
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
 
     val database = TestDB()
+    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, database)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
     val manuelloppgaveId = "1314"
     val manuellOppgave = ManuellOppgave(
@@ -95,7 +97,7 @@ object AuthenticateTest : Spek({
             ), jwkProvider, "https://sts.issuer.net/myid")
             application.routing {
                 authenticate("jwt") {
-                    hentManuellOppgaver(manuellOppgaveService, syfoTilgangsKontrollClient)
+                    hentManuellOppgaver(manuellOppgaveService, authorizationService)
                 }
             }
             application.install(ContentNegotiation) {
