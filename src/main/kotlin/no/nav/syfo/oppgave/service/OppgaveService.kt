@@ -40,7 +40,7 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
                 id = manuellOppgave.oppgaveid,
                 status = OppgaveStatus.FERDIGSTILT,
                 tildeltEnhetsnr = enhet,
-                tilordnetRessurs = veileder.veilderIdent
+                tilordnetRessurs = veileder.veilederIdent
         )
         val oppgaveResponse = oppgaveClient.ferdigstillOppgave(ferdigstillOppgave, manuellOppgave.receivedSykmelding.msgId)
 

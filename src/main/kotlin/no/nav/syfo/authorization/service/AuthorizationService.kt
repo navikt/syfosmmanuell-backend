@@ -22,12 +22,12 @@ class AuthorizationService(
     }
 
     suspend fun getVeileder(accessToken: String): Veileder {
-        val veilder = syfoTilgangsKontrollClient.hentVeilderIdentViaAzure(accessToken)
-        if (veilder == null) {
+        val veileder = syfoTilgangsKontrollClient.hentVeilederIdentViaAzure(accessToken)
+        if (veileder == null) {
             log.error("Klarte ikke hente ut veilederident fra syfo-tilgangskontroll")
             throw IdentNotFoundException("Klarte ikke hente ut veilederident fra syfo-tilgangskontroll")
         } else {
-            return veilder
+            return veileder
         }
     }
 }

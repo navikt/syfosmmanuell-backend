@@ -72,7 +72,7 @@ class SyfoTilgangsKontrollClient(
         throw IllegalStateException("Mottok ukjent responskode fra syfotilgangskontroll: ${httpResponse.status}")
     }
 
-    suspend fun hentVeilderIdentViaAzure(accessToken: String): Veileder? {
+    suspend fun hentVeilederIdentViaAzure(accessToken: String): Veileder? {
         veilederCache.getIfPresent(accessToken)?.let {
             log.debug("Traff cache for syfotilgangskontroll")
             return it
@@ -86,31 +86,31 @@ class SyfoTilgangsKontrollClient(
         }.execute()
         when (httpResponse.status) {
             HttpStatusCode.InternalServerError -> {
-                log.error("syfo-tilgangskontroll hentVeilderIdentViaAzure svarte med InternalServerError")
+                log.error("syfo-tilgangskontroll hentVeilederIdentViaAzure svarte med InternalServerError")
                 return null
             }
             HttpStatusCode.BadRequest -> {
-                log.error("syfo-tilgangskontroll hentVeilderIdentViaAzure svarer med BadRequest")
+                log.error("syfo-tilgangskontroll hentVeilederIdentViaAzure svarer med BadRequest")
                 return null
             }
             HttpStatusCode.NotFound -> {
-                log.warn("syfo-tilgangskontroll hentVeilderIdentViaAzure svarer med NotFound")
+                log.warn("syfo-tilgangskontroll hentVeilederIdentViaAzure svarer med NotFound")
                 return null
             }
             HttpStatusCode.Unauthorized -> {
-                log.warn("syfo-tilgangskontroll hentVeilderIdentViaAzure svarer med Unauthorized")
+                log.warn("syfo-tilgangskontroll hentVeilederIdentViaAzure svarer med Unauthorized")
                 return null
             }
             HttpStatusCode.OK -> {
-                log.debug("syfo-tilgangskontroll hentVeilderIdentViaAzure svarer med ok")
+                log.debug("syfo-tilgangskontroll hentVeilederIdentViaAzure svarer med ok")
                 log.info("Henter veilederident")
                 val veileder = httpResponse.call.response.receive<Veileder>()
                 veilederCache.put(accessToken, veileder)
                 return veileder
             }
         }
-        log.error("Mottok ukjent responskode fra syfotilgangskontroll, hentVeilderIdentViaAzure: ${httpResponse.status}")
-        throw IllegalStateException("Mottok ukjent responskode fra syfotilgangskontroll, hentVeilderIdentViaAzure: ${httpResponse.status}")
+        log.error("Mottok ukjent responskode fra syfotilgangskontroll, hentVeilederIdentViaAzure: ${httpResponse.status}")
+        throw IllegalStateException("Mottok ukjent responskode fra syfotilgangskontroll, hentVeilederIdentViaAzure: ${httpResponse.status}")
     }
 }
 
@@ -120,5 +120,5 @@ data class Tilgang(
 )
 
 data class Veileder(
-    val veilderIdent: String
+    val veilederIdent: String
 )
