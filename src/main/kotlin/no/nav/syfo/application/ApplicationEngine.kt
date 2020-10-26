@@ -56,7 +56,7 @@ fun createApplicationEngine(
             exception<NumberFormatException> { cause ->
                 call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
                 log.error("Caught exception", cause)
-                // throw cause
+                throw cause
             }
             exception<Throwable> { cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
