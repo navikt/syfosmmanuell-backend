@@ -24,7 +24,7 @@ fun Route.sendVurderingManuellOppgave(
     route("/api/v1") {
         post("/vurderingmanuelloppgave/{oppgaveid}") {
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            log.info("Mottok eit kall til /api/v1/vurderingmanuelloppgave med $oppgaveId")
+            log.info("Mottok kall til /api/v1/vurderingmanuelloppgave/$oppgaveId")
             val accessToken = getAccessTokenFromAuthHeader(call.request)
             val navEnhet = call.request.headers["X-Nav-Enhet"]
 

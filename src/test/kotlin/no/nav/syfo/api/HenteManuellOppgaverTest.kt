@@ -4,15 +4,12 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
-import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
@@ -20,13 +17,13 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlin.test.assertFailsWith
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
-import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.Status
@@ -89,33 +86,25 @@ object HenteManuellOppgaverTest : Spek({
                     configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 }
             }
-            application.install(StatusPages) {
-                exception<Throwable> { cause ->
-                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-                    log.error("Caught exception", cause)
-                    throw cause
-                }
-            }
 
             it("Skal hente ut manuell oppgave basert på oppgaveid") {
                 database.opprettManuellOppgave(manuellOppgave, oppgaveid)
-                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 }) {
                     response.status() shouldEqual HttpStatusCode.OK
                     objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).first().oppgaveid shouldEqual oppgaveid
                 }
             }
-            it("Skal gi Bad Request når oppgaveid mangler") {
+            it("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
                 database.opprettManuellOppgave(manuellOppgave, oppgaveid)
-                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?feilparamanter=$oppgaveid")) {
-                    response.status() shouldEqual HttpStatusCode.BadRequest
-                    response.content shouldEqual null
+                assertFailsWith<NumberFormatException> {
+                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
                 }
             }
 
             it("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/?oppgaveid=$oppgaveid") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 }) {
                     response.status() shouldEqual HttpStatusCode.NotFound
