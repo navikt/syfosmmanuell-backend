@@ -91,7 +91,7 @@ object HenteManuellOppgaverTest : Spek({
 
             it("Skal hente ut manuell oppgave basert på oppgaveid") {
                 database.opprettManuellOppgave(manuellOppgave, oppgaveid)
-                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/$oppgaveid") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 }) {
                     response.status() shouldEqual HttpStatusCode.OK
@@ -101,12 +101,12 @@ object HenteManuellOppgaverTest : Spek({
             it("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
                 database.opprettManuellOppgave(manuellOppgave, oppgaveid)
                 assertFailsWith<NumberFormatException> {
-                    handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/1h2j32k")
+                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
                 }
             }
 
             it("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/$oppgaveid") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 }) {
                     response.status() shouldEqual HttpStatusCode.NotFound

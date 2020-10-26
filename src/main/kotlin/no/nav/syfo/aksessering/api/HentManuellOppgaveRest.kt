@@ -16,9 +16,9 @@ fun Route.hentManuellOppgaver(
     authorizationService: AuthorizationService
 ) {
     route("/api/v1") {
-        get("/hentManuellOppgave/{oppgaveid}") {
+        get("/manuellOppgave/{oppgaveid}") {
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            log.info("Mottok kall til /api/v1/hentManuellOppgave/$oppgaveId")
+            log.info("Mottok kall til /api/v1/manuellOppgave/$oppgaveId")
             val accessToken = getAccessTokenFromAuthHeader(call.request)
 
             val hasAccess = authorizationService.hasAccess(oppgaveId, accessToken)

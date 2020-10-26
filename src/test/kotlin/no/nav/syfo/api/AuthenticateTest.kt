@@ -115,7 +115,7 @@ object AuthenticateTest : Spek({
                 }
             }
             it("Aksepterer gyldig JWT med riktig audience") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/$oppgaveid") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 }) {
                     response.status() shouldEqual HttpStatusCode.OK
@@ -123,7 +123,7 @@ object AuthenticateTest : Spek({
                 }
             }
             it("Gyldig JWT med feil audience gir Unauthorized") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/hentManuellOppgave/$oppgaveid") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")
                 }) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
