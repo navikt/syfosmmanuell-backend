@@ -10,6 +10,11 @@ import org.apache.kafka.common.serialization.StringDeserializer
 
 class KafkaConsumers(env: Environment, vaultSecrets: KafkaCredentials) {
     private val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets)
+
+    init {
+        kafkaBaseConfig["auto.offset.reset"] = "none"
+    }
+
     private val properties = setSecurityProtocol(env, kafkaBaseConfig.toConsumerConfig(
             "${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class))
 
