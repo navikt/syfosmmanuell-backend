@@ -29,7 +29,8 @@ data class FerdigstillOppgave(
 
 data class OpprettOppgaveResponse(
     val id: Int,
-    val versjon: Int
+    val versjon: Int,
+    val status: String? = null
 )
 
 enum class OppgaveStatus(val status: String) {
