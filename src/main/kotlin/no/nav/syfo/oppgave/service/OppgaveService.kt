@@ -34,21 +34,26 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
     }
 
     suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String, veileder: Veileder) {
-        val oppgaveVersjon = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId).versjon
-        val ferdigstillOppgave = FerdigstillOppgave(
-                versjon = oppgaveVersjon,
-                id = manuellOppgave.oppgaveid,
-                status = OppgaveStatus.FERDIGSTILT,
-                tildeltEnhetsnr = enhet,
-                tilordnetRessurs = veileder.veilederIdent
-        )
-        val oppgaveResponse = oppgaveClient.ferdigstillOppgave(ferdigstillOppgave, manuellOppgave.receivedSykmelding.msgId)
+        val oppgave = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId)
+        val oppgaveVersjon = oppgave.versjon
 
-        log.info(
-            "Ferdigstiller oppgave med {}, {}",
-            StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-            StructuredArguments.fields(loggingMeta)
-        )
+        if (oppgave.status != OppgaveStatus.FERDIGSTILT.name) {
+            val ferdigstillOppgave = FerdigstillOppgave(
+                    versjon = oppgaveVersjon,
+                    id = manuellOppgave.oppgaveid,
+                    status = OppgaveStatus.FERDIGSTILT,
+                    tildeltEnhetsnr = enhet,
+                    tilordnetRessurs = veileder.veilederIdent
+            )
+            val oppgaveResponse = oppgaveClient.ferdigstillOppgave(ferdigstillOppgave, manuellOppgave.receivedSykmelding.msgId)
+            log.info(
+                    "Ferdigstiller oppgave med {}, {}",
+                    StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+                    StructuredArguments.fields(loggingMeta)
+            )
+        } else {
+            log.info("Oppgaven er allerede ferdigstillt oppgaveId: ${oppgave.id} {}", StructuredArguments.fields(loggingMeta))
+        }
     }
 
     fun tilOpprettOppgave(manuellOppgave: ManuellOppgave): OpprettOppgave =
