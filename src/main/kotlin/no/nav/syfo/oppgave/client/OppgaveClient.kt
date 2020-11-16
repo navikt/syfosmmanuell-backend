@@ -50,7 +50,7 @@ class OppgaveClient(
             header("X-Correlation-ID", msgId)
             body = ferdigstilloppgave
         }.execute()
-        if (response.status == HttpStatusCode.OK) {
+        if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
             log.info("Ferdigstilt oppgave med id ${ferdigstilloppgave.id}")
             return response.call.response.receive<OpprettOppgaveResponse>()
         } else {
