@@ -42,7 +42,7 @@ class ManuellOppgaveService(
     private val kafkaProducers: KafkaProducers,
     private val oppgaveService: OppgaveService
 ) {
-    fun hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDTO> =
+    fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
         database.hentManuellOppgaver(oppgaveId)
 
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String) {

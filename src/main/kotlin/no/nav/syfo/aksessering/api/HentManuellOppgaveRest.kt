@@ -29,7 +29,12 @@ fun Route.hentManuellOppgaver(
                 }
                 true -> {
                     log.info("Henter ut oppgave med $oppgaveId")
-                    call.respond(manuellOppgaveService.hentManuellOppgaver(oppgaveId))
+                    val manuellOppgave = manuellOppgaveService.hentManuellOppgaver(oppgaveId)
+                    if (manuellOppgave != null) {
+                        call.respond(manuellOppgave)
+                    } else {
+                        call.respond(HttpStatusCode.NotFound)
+                    }
                 }
             }
         }

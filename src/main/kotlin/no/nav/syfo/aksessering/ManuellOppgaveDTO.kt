@@ -1,6 +1,5 @@
 package no.nav.syfo.aksessering
 
-import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Sykmelding
 import no.nav.syfo.model.ValidationResult
 

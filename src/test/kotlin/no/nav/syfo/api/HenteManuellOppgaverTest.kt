@@ -93,7 +93,7 @@ object HenteManuellOppgaverTest : Spek({
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 }) {
                     response.status() shouldEqual HttpStatusCode.OK
-                    objectMapper.readValue<List<ManuellOppgaveDTO>>(response.content!!).first().oppgaveid shouldEqual oppgaveid
+                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldEqual oppgaveid
                 }
             }
             it("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
