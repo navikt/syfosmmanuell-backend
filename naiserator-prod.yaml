@@ -68,3 +68,5 @@ spec:
       value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: dfaa2699-7390-4459-9cfc-2e8de64dfaf9
+    - name: OPPGAVEBEHANDLING_URL
+      value: https://oppgave.nais.adeo.no/api/v1/oppgaver
