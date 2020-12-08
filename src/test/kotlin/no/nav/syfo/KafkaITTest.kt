@@ -39,7 +39,8 @@ object KafkaITTest : Spek({
             syfosmmanuellUrl = "https://syfosmmanuell",
             jwtIssuer = "",
             aadAccessTokenUrl = "aad",
-            syfotilgangskontrollClientId = "clientid"
+            syfotilgangskontrollClientId = "clientid",
+            oppgavebehandlingUrl = "oppgave"
     )
 
     fun Properties.overrideForTest(): Properties = apply {
