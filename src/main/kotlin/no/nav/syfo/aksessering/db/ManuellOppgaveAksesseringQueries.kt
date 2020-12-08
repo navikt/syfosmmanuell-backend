@@ -6,9 +6,10 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
 import no.nav.syfo.model.ManuellOppgaveKomplett
+import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.objectMapper
 
-fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDTO> =
+fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
     connection.use { connection ->
         connection.prepareStatement(
             """
@@ -20,16 +21,20 @@ fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): List<ManuellOppgaveDT
         ).use {
             it.setInt(1, oppgaveId)
             it.setBoolean(2, false)
-            it.executeQuery().toList { toManuellOppgaveDTO() }
+            it.executeQuery().toList { toManuellOppgaveDTO() }.firstOrNull()
         }
     }
 
-fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO =
-    ManuellOppgaveDTO(
-        oppgaveid = getInt("oppgaveid"),
-        receivedSykmelding = objectMapper.readValue(getString("receivedsykmelding")),
-        validationResult = objectMapper.readValue(getString("validationresult"))
+fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO {
+    val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(getString("receivedsykmelding"))
+    return ManuellOppgaveDTO(
+            oppgaveid = getInt("oppgaveid"),
+            sykmelding = receivedSykmelding.sykmelding,
+            personNrPasient = receivedSykmelding.personNrPasient,
+            mottattDato = receivedSykmelding.mottattDato,
+            validationResult = objectMapper.readValue(getString("validationresult"))
     )
+}
 
 fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: Int): List<ManuellOppgaveKomplett> =
     connection.use { connection ->
