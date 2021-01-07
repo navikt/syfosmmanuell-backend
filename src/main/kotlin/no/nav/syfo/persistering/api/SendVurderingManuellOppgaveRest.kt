@@ -10,6 +10,7 @@ import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
+import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -50,12 +51,15 @@ fun Route.sendVurderingManuellOppgave(
 
                     val veileder = authorizationService.getVeileder(accessToken)
 
+                    val merknader = if (result.merknad != null) listOf(result.merknad) else null
+
                     manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveId = oppgaveId,
                         enhet = navEnhet,
                         veileder = veileder,
                         validationResult = validationResult,
-                        accessToken = accessToken
+                        accessToken = accessToken,
+                        merknader = merknader
                     )
                     call.respond(HttpStatusCode.NoContent)
                 }
@@ -88,5 +92,6 @@ enum class RuleInfoTekst(val messageForUser: String, val messageForSender: Strin
 
 data class Result(
     val godkjent: Boolean,
+    val merknad: Merknad?,
     val avvisningstekst: String?
 )

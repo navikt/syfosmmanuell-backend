@@ -40,7 +40,10 @@ object KafkaITTest : Spek({
             jwtIssuer = "",
             aadAccessTokenUrl = "aad",
             syfotilgangskontrollClientId = "clientid",
-            oppgavebehandlingUrl = "oppgave"
+            oppgavebehandlingUrl = "oppgave",
+            cluster = "cluster",
+            truststore = "",
+            truststorePassword = ""
     )
 
     fun Properties.overrideForTest(): Properties = apply {
