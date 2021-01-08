@@ -51,7 +51,7 @@ fun Route.sendVurderingManuellOppgave(
 
                     val veileder = authorizationService.getVeileder(accessToken)
 
-                    val merknader = if (result.merknad != null) listOf(result.merknad) else null
+                    val merknader = result.merknad?.let { listOf(it) }
 
                     manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveId = oppgaveId,
