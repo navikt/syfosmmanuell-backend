@@ -70,7 +70,7 @@ fun createApplicationEngine(
             method(HttpMethod.Put)
             method(HttpMethod.Options)
             header("Content-Type")
-            host(env.syfosmmanuellUrl, schemes = listOf("https", "https"))
+            host(env.syfosmmanuellUrl, schemes = listOf("http", "https"))
             allowCredentials = true
         }
         routing {
