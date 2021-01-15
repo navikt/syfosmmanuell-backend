@@ -33,18 +33,17 @@ import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
-import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
-import no.nav.syfo.persistering.api.Merknader
+import no.nav.syfo.persistering.api.MerknadType
 import no.nav.syfo.persistering.api.Result
 import no.nav.syfo.persistering.api.ResultStatus
 import no.nav.syfo.persistering.api.RuleInfoTekst
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
-import no.nav.syfo.persistering.api.tilMerknader
+import no.nav.syfo.persistering.api.tilMerknad
 import no.nav.syfo.persistering.api.tilValidationResult
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
@@ -54,6 +53,7 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldNotBe
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
@@ -268,28 +268,25 @@ object SendVurderingManuellOppgaveTest : Spek({
     describe("Merknader") {
         it("Får ikke merknad hvis sykmeldingen er godjent") {
             val result = Result(status = ResultStatus.GODKJENT)
-            val merknader = result.tilMerknader()
+            val merknader = result.tilMerknad()
 
             merknader shouldEqual null
         }
 
         it("Får merknad hvis sykmeldingen er avslått") {
             val result = Result(status = ResultStatus.UGYLDIG_TILBAKEDATERING)
-            val merknader = result.tilMerknader()
+            val merknad = result.tilMerknad()
 
-            merknader.isNullOrEmpty() shouldEqual false
-            merknader?.size shouldEqual 1
-            merknader?.first() shouldEqual Merknad(
-                Merknader.UGYLDIG_TILBAKEDATERING.type,
-                Merknader.UGYLDIG_TILBAKEDATERING.beskrivelse
-            )
+            merknad shouldNotBe null
+
+            merknad?.type shouldEqual MerknadType.UGYLDIG_TILBAKEDATERING.name
         }
 
         it("Får ikke merknad hvis sykmeldingen er avvist") {
             val result = Result(status = ResultStatus.UGYLDIG_BEGRUNNELSE)
-            val merknader = result.tilMerknader()
+            val merknad = result.tilMerknad()
 
-            merknader shouldEqual null
+            merknad shouldEqual null
         }
     }
 })

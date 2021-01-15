@@ -46,7 +46,7 @@ fun Route.sendVurderingManuellOppgave(
 
                     val validationResult = result.tilValidationResult()
 
-                    val merknader = result.tilMerknader()
+                    val merknad = result.tilMerknad()
 
                     val veileder = authorizationService.getVeileder(accessToken)
 
@@ -56,7 +56,7 @@ fun Route.sendVurderingManuellOppgave(
                         veileder = veileder,
                         validationResult = validationResult,
                         accessToken = accessToken,
-                        merknader = merknader
+                        merknader = if (merknad != null) listOf(merknad) else null
                     )
                     call.respond(HttpStatusCode.NoContent)
                 }
@@ -81,11 +81,13 @@ fun Result.tilValidationResult(): ValidationResult {
     }
 }
 
-fun Result.tilMerknader(): List<Merknad>? {
-    return if (status == ResultStatus.UGYLDIG_TILBAKEDATERING) {
-        val merknad = Merknader.UGYLDIG_TILBAKEDATERING
-        listOf(Merknad(merknad.type, merknad.beskrivelse))
-    } else null
+fun Result.tilMerknad(): Merknad? {
+    return when (status) {
+        ResultStatus.UGYLDIG_TILBAKEDATERING -> {
+            Merknad(type = MerknadType.UGYLDIG_TILBAKEDATERING.name, beskrivelse = "TODO")
+        }
+        else -> null
+    }
 }
 
 enum class RuleInfoTekst(val messageForUser: String, val messageForSender: String, val rulename: String) {
@@ -96,11 +98,8 @@ enum class RuleInfoTekst(val messageForUser: String, val messageForSender: Strin
     )
 }
 
-enum class Merknader(val type: String, val beskrivelse: String) {
-    UGYLDIG_TILBAKEDATERING(
-        "UGYLDIG_TILBAKEDATERING",
-        "beskrivelse"
-    )
+enum class MerknadType {
+    UGYLDIG_TILBAKEDATERING
 }
 
 enum class ResultStatus {
