@@ -92,7 +92,7 @@ fun Result.tilMerknad(): Merknad? {
 
 enum class RuleInfoTekst(val messageForUser: String, val messageForSender: String, val rulename: String) {
     TILBAKEDATERT_MANGLER_BEGRUNNELSE(
-        "Sykmelding gjelder som hovedregel fra den dagen du oppsøker behandler. Sykmeldingen din er tilbakedatert uten at det er gitt en god nok begrunnelse for dette. Behandleren din må skrive ut en ny sykmelding og begrunne bedre hvorfor den er tilbakedatert. Din behandler har mottatt melding fra NAV om dette.",
+        "Sykmeldingen din starter før du oppsøkte behandleren, uten at det er gitt en god nok begrunnelse for dette.",
         "Sykmelding gjelder som hovedregel fra den dagen pasienten oppsøker behandler. Sykmeldingen er tilbakedatert uten at det kommer tydelig nok fram hvorfor dette var nødvendig. Sykmeldingen er derfor avvist, og det må skrives en ny hvis det fortsatt er aktuelt med sykmelding. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
         "TILBAKEDATERT_MANGLER_BEGRUNNELSE"
     )
