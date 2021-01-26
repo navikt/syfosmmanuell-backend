@@ -84,7 +84,7 @@ fun Result.tilValidationResult(): ValidationResult {
 fun Result.tilMerknad(): Merknad? {
     return when (status) {
         ResultStatus.UGYLDIG_TILBAKEDATERING -> {
-            Merknad(type = MerknadType.UGYLDIG_TILBAKEDATERING.name, beskrivelse = "TODO")
+            Merknad(type = MerknadType.UGYLDIG_TILBAKEDATERING.name, beskrivelse = "Tilbakedateringen er vurdert som ugyldig, men brukeren får allikevel sende søknad slik at et vedtak kan fattes")
         }
         else -> null
     }
