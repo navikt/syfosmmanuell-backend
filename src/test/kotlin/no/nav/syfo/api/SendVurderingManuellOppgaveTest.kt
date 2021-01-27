@@ -38,9 +38,12 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
+import no.nav.syfo.persistering.api.MerknadType
 import no.nav.syfo.persistering.api.Result
+import no.nav.syfo.persistering.api.ResultStatus
 import no.nav.syfo.persistering.api.RuleInfoTekst
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
+import no.nav.syfo.persistering.api.tilMerknad
 import no.nav.syfo.persistering.api.tilValidationResult
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
@@ -50,6 +53,7 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldNotBe
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
@@ -118,7 +122,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                     }
                 }
 
-                val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
+                val result = Result(status = ResultStatus.UGYLDIG_BEGRUNNELSE)
 
                 with(handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
                     addHeader("Accept", "application/json")
@@ -137,7 +141,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
+                val result = Result(status = ResultStatus.UGYLDIG_BEGRUNNELSE)
                 every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
             }
@@ -148,7 +152,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(godkjent = true, avvisningstekst = null)
+                val result = Result(status = ResultStatus.GODKJENT)
                 every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
             }
@@ -158,7 +162,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             with(TestApplicationEngine()) {
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-                val result = Result(godkjent = true, avvisningstekst = null)
+                val result = Result(status = ResultStatus.GODKJENT)
                 every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val statusCode = HttpStatusCode.InternalServerError
                 sendRequest(result, statusCode, oppgaveid)
@@ -169,7 +173,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             with(TestApplicationEngine()) {
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-                val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
+                val result = Result(status = ResultStatus.UGYLDIG_BEGRUNNELSE)
                 every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val statusCode = HttpStatusCode.InternalServerError
                 sendRequest(result, statusCode, oppgaveid)
@@ -180,7 +184,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             with(TestApplicationEngine()) {
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-                val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
+                val result = Result(status = ResultStatus.UGYLDIG_BEGRUNNELSE)
                 every { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val statusCode = HttpStatusCode.InternalServerError
                 sendRequest(result, statusCode, oppgaveid)
@@ -191,7 +195,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             with(TestApplicationEngine()) {
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-                val result = Result(godkjent = true, avvisningstekst = null)
+                val result = Result(status = ResultStatus.GODKJENT)
                 sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
             }
         }
@@ -200,7 +204,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             with(TestApplicationEngine()) {
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-                val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
+                val result = Result(status = ResultStatus.UGYLDIG_BEGRUNNELSE)
                 sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
                 verify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             }
@@ -211,7 +215,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
                 every { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
-                val result = Result(godkjent = true, avvisningstekst = null)
+                val result = Result(status = ResultStatus.GODKJENT)
                 sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
             }
         }
@@ -220,23 +224,33 @@ object SendVurderingManuellOppgaveTest : Spek({
             with(TestApplicationEngine()) {
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-                val result = Result(godkjent = true, avvisningstekst = null)
+                val result = Result(status = ResultStatus.GODKJENT)
                 sendRequest(result, HttpStatusCode.BadRequest, oppgaveid, "")
             }
         }
     }
 
-    describe("Får riktig ValidationResult") {
+    describe("ValidationResult") {
         it("Riktig ValidationResult for godkjent sykmelding") {
-            val result = Result(godkjent = true, avvisningstekst = null)
+            val result = Result(status = ResultStatus.GODKJENT)
 
             val validationResult = result.tilValidationResult()
 
             validationResult.status shouldEqual Status.OK
             validationResult.ruleHits shouldEqual emptyList()
         }
+
+        it("Riktig ValidationResult for sykmelding som er avslått") {
+                val result = Result(status = ResultStatus.UGYLDIG_TILBAKEDATERING)
+
+                val validationResult = result.tilValidationResult()
+
+                validationResult.status shouldEqual Status.OK
+                validationResult.ruleHits shouldEqual emptyList()
+        }
+
         it("Riktig ValidationResult for sykmelding som er avvist pga manglende begrunnelse") {
-            val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_MANGLER_BEGRUNNELSE")
+            val result = Result(status = ResultStatus.UGYLDIG_BEGRUNNELSE)
 
             val validationResult = result.tilValidationResult()
 
@@ -249,19 +263,30 @@ object SendVurderingManuellOppgaveTest : Spek({
                 ruleStatus = Status.INVALID
             )
         }
-        it("Riktig ValidationResult for sykmelding som er avvist pga begrunnelse ikke godtatt") {
-            val result = Result(godkjent = false, avvisningstekst = "TILBAKEDATERT_IKKE_GODTATT")
+    }
 
-            val validationResult = result.tilValidationResult()
+    describe("Merknader") {
+        it("Får ikke merknad hvis sykmeldingen er godjent") {
+            val result = Result(status = ResultStatus.GODKJENT)
+            val merknader = result.tilMerknad()
 
-            validationResult.status shouldEqual Status.INVALID
-            validationResult.ruleHits.size shouldEqual 1
-            validationResult.ruleHits.first() shouldEqual RuleInfo(
-                ruleName = RuleInfoTekst.TILBAKEDATERT_IKKE_GODTATT.name,
-                messageForUser = RuleInfoTekst.TILBAKEDATERT_IKKE_GODTATT.messageForUser,
-                messageForSender = RuleInfoTekst.TILBAKEDATERT_IKKE_GODTATT.messageForSender,
-                ruleStatus = Status.INVALID
-            )
+            merknader shouldEqual null
+        }
+
+        it("Får merknad hvis sykmeldingen er avslått") {
+            val result = Result(status = ResultStatus.UGYLDIG_TILBAKEDATERING)
+            val merknad = result.tilMerknad()
+
+            merknad shouldNotBe null
+
+            merknad?.type shouldEqual MerknadType.UGYLDIG_TILBAKEDATERING.name
+        }
+
+        it("Får ikke merknad hvis sykmeldingen er avvist") {
+            val result = Result(status = ResultStatus.UGYLDIG_BEGRUNNELSE)
+            val merknad = result.tilMerknad()
+
+            merknad shouldEqual null
         }
     }
 })

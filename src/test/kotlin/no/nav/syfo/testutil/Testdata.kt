@@ -24,6 +24,7 @@ import no.nav.syfo.model.MedisinskArsak
 import no.nav.syfo.model.MedisinskArsakType
 import no.nav.syfo.model.MedisinskVurdering
 import no.nav.syfo.model.MeldingTilNAV
+import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.Periode
 import no.nav.syfo.model.Prognose
 import no.nav.syfo.model.ReceivedSykmelding
@@ -44,8 +45,8 @@ fun receivedSykmelding(id: String, sykmelding: Sykmelding = generateSykmelding()
         mottattDato = LocalDateTime.now(),
         rulesetVersion = "",
         fellesformat = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml"),
-        tssid = ""
-
+        tssid = "",
+        merknader = listOf(Merknad("merknadtype", "merkandbeskrivelse"))
 )
 
 fun generateSykmelding(

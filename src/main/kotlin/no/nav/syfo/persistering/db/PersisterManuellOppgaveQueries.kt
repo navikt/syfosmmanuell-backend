@@ -3,6 +3,7 @@ package no.nav.syfo.persistering.db
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toPGObject
 
@@ -50,19 +51,20 @@ fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
         }
     }
 
-fun DatabaseInterface.oppdaterValidationResultsOgApprec(oppgaveId: Int, validationResult: ValidationResult, apprec: Apprec): Int =
+fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, apprec: Apprec): Int =
     connection.use { connection ->
         val status = connection.prepareStatement(
             """
             UPDATE MANUELLOPPGAVE
-            SET validationResult = ?, ferdigstilt = ?, apprec = ?
+            SET validationResult = ?, ferdigstilt = ?, apprec = ?, receivedsykmelding = ?
             WHERE oppgaveid = ?;
             """
         ).use {
             it.setObject(1, validationResult.toPGObject())
             it.setBoolean(2, true)
             it.setObject(3, apprec.toPGObject())
-            it.setInt(4, oppgaveId)
+            it.setObject(4, receivedSykmelding.toPGObject())
+            it.setInt(5, oppgaveId)
             it.executeUpdate()
         }
         connection.commit()

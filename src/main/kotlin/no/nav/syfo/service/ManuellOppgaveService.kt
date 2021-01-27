@@ -22,11 +22,12 @@ import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
 import no.nav.syfo.model.ManuellOppgaveKomplett
+import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.oppgave.service.OppgaveService
-import no.nav.syfo.persistering.db.oppdaterValidationResultsOgApprec
+import no.nav.syfo.persistering.db.oppdaterManuellOppgave
 import no.nav.syfo.persistering.error.OppgaveNotFoundException
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.XMLDateAdapter
@@ -45,7 +46,7 @@ class ManuellOppgaveService(
     fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
         database.hentManuellOppgaver(oppgaveId)
 
-    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String) {
+    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String, merknader: List<Merknad>?) {
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken)
         val loggingMeta = LoggingMeta(
             mottakId = manuellOppgave.receivedSykmelding.navLogId,
@@ -53,27 +54,31 @@ class ManuellOppgaveService(
             msgId = manuellOppgave.receivedSykmelding.msgId,
             sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
         )
+        val receivedSykmeldingWithMerknad = manuellOppgave.receivedSykmelding.copy(merknader = merknader)
+        val manuellOppgaveWithMerknad = manuellOppgave.copy(receivedSykmelding = receivedSykmeldingWithMerknad)
 
         validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
         RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
 
-        sendReceivedSykmelding(kafkaProducers.kafkaRecievedSykmeldingProducer, manuellOppgave.receivedSykmelding, validationResult.status, loggingMeta)
+        sendReceivedSykmelding(kafkaProducers.kafkaRecievedSykmeldingProducer, manuellOppgaveWithMerknad.receivedSykmelding, validationResult.status, loggingMeta)
 
         when (validationResult.status) {
-            Status.OK -> sendToSyfoService(manuellOppgave, loggingMeta)
-            Status.INVALID -> sendValidationResult(validationResult, manuellOppgave.receivedSykmelding, loggingMeta)
+            Status.OK -> sendToSyfoService(manuellOppgaveWithMerknad, loggingMeta)
+            Status.INVALID -> sendValidationResult(validationResult, manuellOppgaveWithMerknad.receivedSykmelding, loggingMeta)
             else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
         }
 
-        val oppdatertApprec = lagOppdatertApprec(manuellOppgave, validationResult)
+        val oppdatertApprec = lagOppdatertApprec(manuellOppgaveWithMerknad, validationResult)
+
         sendApprec(oppdatertApprec, loggingMeta)
-        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
-        oppdaterValidationResultsOgApprec(oppgaveId, validationResult, oppdatertApprec)
+        oppgaveService.ferdigstillOppgave(manuellOppgaveWithMerknad, loggingMeta, enhet, veileder)
+        database.oppdaterManuellOppgave(oppgaveId, receivedSykmeldingWithMerknad, validationResult, oppdatertApprec)
+
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }
 
     private suspend fun hentManuellOppgave(oppgaveId: Int, accessToken: String): ManuellOppgaveKomplett {
-        val manuellOppgave = hentKomplettManuellOppgave(oppgaveId)
+        val manuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
         if (manuellOppgave == null) {
             log.error("Fant ikke oppgave med id $oppgaveId")
             throw OppgaveNotFoundException("Fant ikke oppgave med id $oppgaveId")
@@ -88,12 +93,6 @@ class ManuellOppgaveService(
         }
         return manuellOppgave
     }
-
-    private fun oppdaterValidationResultsOgApprec(oppgaveId: Int, validationResult: ValidationResult, apprec: Apprec): Int =
-        database.oppdaterValidationResultsOgApprec(oppgaveId, validationResult, apprec)
-
-    private fun hentKomplettManuellOppgave(oppgaveId: Int): ManuellOppgaveKomplett? =
-        database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
 
     private fun sendToSyfoService(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta) {
         val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller().apply {

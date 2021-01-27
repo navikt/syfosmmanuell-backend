@@ -17,6 +17,7 @@ import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -64,7 +65,13 @@ object ManuellOppgaveServiceTest : Spek({
     describe("Test av ferdigstilling av manuell behandling") {
         it("Happy case OK") {
             runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.OK, emptyList()), "token")
+                manuellOppgaveService.ferdigstillManuellBehandling(
+                        oppgaveid, "1234",
+                        Veileder("4321"),
+                        ValidationResult(Status.OK, emptyList()),
+                        "token",
+                        merknader = null
+                )
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
@@ -79,9 +86,35 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.OK, emptyList())
             oppgaveFraDb.apprec shouldEqual okApprec()
         }
+        it("Happy case OK med merknad") {
+            val merknader = listOf(Merknad("UGYLDIG_TILBAKEDATERING", "ikke godkjent"))
+            runBlocking {
+                manuellOppgaveService.ferdigstillManuellBehandling(
+                        oppgaveid,
+                        "1234",
+                        Veileder("4321"),
+                        ValidationResult(Status.OK, emptyList()),
+                        "token",
+                        merknader = merknader
+                )
+            }
+
+            coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
+            coVerify(exactly = 0) { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
+            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
+            coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
+            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
+            oppgaveliste.size shouldEqual 1
+            val oppgaveFraDb = oppgaveliste.first()
+            oppgaveFraDb.ferdigstilt shouldEqual true
+            oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.OK, emptyList())
+            oppgaveFraDb.receivedSykmelding.merknader shouldEqual merknader
+            oppgaveFraDb.apprec shouldEqual okApprec()
+        }
         it("Happy case AVVIST") {
             runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.INVALID, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.INVALID))), "token")
+                manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.INVALID, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.INVALID))), "token", merknader = null)
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
@@ -100,7 +133,7 @@ object ManuellOppgaveServiceTest : Spek({
         it("Feiler hvis validation result er MANUAL_PROCESSING") {
             assertFailsWith<IllegalArgumentException> {
                 runBlocking {
-                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))), "token")
+                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))), "token", merknader = null)
                 }
             }
         }
@@ -109,7 +142,7 @@ object ManuellOppgaveServiceTest : Spek({
 
             assertFailsWith<ForbiddenException> {
                 runBlocking {
-                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.OK, emptyList()), "token")
+                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.OK, emptyList()), "token", merknader = null)
                 }
             }
         }
