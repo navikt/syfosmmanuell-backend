@@ -92,9 +92,9 @@ fun Result.tilMerknad(): Merknad? {
 
 enum class RuleInfoTekst(val messageForUser: String, val messageForSender: String, val rulename: String) {
     TILBAKEDATERT_MANGLER_BEGRUNNELSE(
-        "Sykmeldingen din starter før du oppsøkte behandleren, uten at det er gitt en god nok begrunnelse for dette.",
-        "Sykmelding gjelder som hovedregel fra den dagen pasienten oppsøker behandler. Sykmeldingen er tilbakedatert uten at det kommer tydelig nok fram hvorfor dette var nødvendig. Sykmeldingen er derfor avvist, og det må skrives en ny hvis det fortsatt er aktuelt med sykmelding. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
-        "TILBAKEDATERT_MANGLER_BEGRUNNELSE"
+        messageForUser = "Sykmeldingen din starter før du oppsøkte behandleren, uten at det er gitt en god nok begrunnelse for dette.",
+        messageForSender = "Sykmelding gjelder som hovedregel fra den dagen pasienten oppsøker behandler. Sykmeldingen er tilbakedatert uten at det kommer tydelig nok fram hvorfor dette var nødvendig. Sykmeldingen er derfor avvist, og det må skrives en ny hvis det fortsatt er aktuelt med sykmelding. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
+        rulename = "TILBAKEDATERT_MANGLER_BEGRUNNELSE"
     )
 }
 
