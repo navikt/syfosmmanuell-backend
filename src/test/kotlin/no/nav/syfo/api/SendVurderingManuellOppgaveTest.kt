@@ -265,7 +265,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             validationResult.ruleHits.first() shouldEqual RuleInfo(
                 ruleName = "TILBAKEDATERT_MANGLER_BEGRUNNELSE",
                 messageForSender = "Sykmelding gjelder som hovedregel fra den dagen pasienten oppsøker behandler. Sykmeldingen er tilbakedatert uten at det kommer tydelig nok fram hvorfor dette var nødvendig. Sykmeldingen er derfor avvist, og det må skrives en ny hvis det fortsatt er aktuelt med sykmelding. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
-                messageForUser = "Sykmeldingen din starter før du oppsøkte behandleren, uten at det er gitt en god nok begrunnelse for dette.",
+                messageForUser = "Sykmelding gjelder som hovedregel fra den dagen du oppsøker behandler. Sykmeldingen din er tilbakedatert uten at det er gitt en god nok begrunnelse for dette. Behandleren din må skrive ut en ny sykmelding og begrunne bedre hvorfor den er tilbakedatert. Din behandler har mottatt melding fra NAV om dette.",
                 ruleStatus = Status.INVALID
             )
         }
@@ -278,9 +278,9 @@ object SendVurderingManuellOppgaveTest : Spek({
             validationResult.status shouldEqual Status.INVALID
             validationResult.ruleHits.size shouldEqual 1
             validationResult.ruleHits.first() shouldEqual RuleInfo(
-                ruleName = "TILBAKEDATERT_MANGLER_BEGRUNNELSE",
-                messageForSender = "Sykmelding gjelder som hovedregel fra den dagen pasienten oppsøker behandler. Sykmeldingen er tilbakedatert uten at det kommer tydelig nok fram hvorfor dette var nødvendig. Sykmeldingen er derfor avvist, og det må skrives en ny hvis det fortsatt er aktuelt med sykmelding. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
-                messageForUser = "Sykmeldingen din starter før du oppsøkte behandleren, uten at det er gitt en god nok begrunnelse for dette.",
+                ruleName = "UGYLDIG_BEGRUNNELSE",
+                messageForSender = "NAV kan ikke godta tilbakedateringen. Sykmeldingen er derfor avvist. Hvis sykmelding fortsatt er aktuelt, må det skrives ny sykmelding der f.o.m.-dato er dagen du var i kontakt med pasienten. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
+                messageForUser = "NAV kan ikke godta sykmeldingen din fordi den starter før dagen du tok kontakt med behandleren. Trenger du fortsatt sykmelding, må behandleren din skrive en ny som gjelder fra den dagen dere var i kontakt. Behandleren din har fått beskjed fra NAV om dette.",
                 ruleStatus = Status.INVALID
             )
         }
