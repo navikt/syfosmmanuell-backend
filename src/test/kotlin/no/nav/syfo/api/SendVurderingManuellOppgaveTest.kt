@@ -286,7 +286,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         }
 
         it("Kaster TypeCastException for status AVVIST avvisningtype NULL") {
-            assertFailsWith<TypeCastException> {
+            assertFailsWith<IllegalArgumentException> {
                 Result(status = ResultStatus.AVVIST, merknad = null, avvisningtype = null).toValidationResult()
             }
         }
@@ -328,7 +328,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         }
 
         it("Kaster TypeCastException for status GODKJENT_MED_MERKNAD merknad NULL") {
-            assertFailsWith<TypeCastException> {
+            assertFailsWith<IllegalArgumentException> {
                 Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null, avvisningtype = null).toMerknad()
             }
         }
