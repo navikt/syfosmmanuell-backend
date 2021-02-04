@@ -93,13 +93,11 @@ data class Result(
                     MerknadType.UGYLDIG_TILBAKEDATERING -> {
                         Merknad(
                             type = MerknadType.UGYLDIG_TILBAKEDATERING.name,
-                            beskrivelse = "Det er ikke oppgitt en gyldig grunn til å kunne godkjenne tilbakedateringen i henhold til vilkårene i folketrygdloven §8-7. Tilbakedateringen er derfor avslått."
                         )
                     }
                     MerknadType.KREVER_FLERE_OPPLYSNINGER -> {
                         Merknad(
                             type = MerknadType.KREVER_FLERE_OPPLYSNINGER.name,
-                            beskrivelse = "Sykmeldingen er tilbakedatert, og NAV trenger mer informasjon fra deg før den kan godkjennes. Du vil bli kontaktet i en dialogmelding."
                         )
                     }
                     else -> {
