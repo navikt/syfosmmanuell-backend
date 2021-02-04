@@ -306,7 +306,7 @@ object SendVurderingManuellOppgaveTest : Spek({
 
             merknad shouldEqual Merknad(
                 type = "UGYLDIG_TILBAKEDATERING",
-                beskrivelse = "Det er ikke oppgitt en gyldig grunn til å kunne godkjenne tilbakedateringen i henhold til vilkårene i folketrygdloven §8-7. Tilbakedateringen er derfor avslått."
+                beskrivelse = null
             )
         }
 
@@ -316,7 +316,7 @@ object SendVurderingManuellOppgaveTest : Spek({
 
             merknad shouldEqual Merknad(
                 type = "KREVER_FLERE_OPPLYSNINGER",
-                beskrivelse = "Sykmeldingen er tilbakedatert, og NAV trenger mer informasjon fra deg før den kan godkjennes. Du vil bli kontaktet i en dialogmelding."
+                beskrivelse = null
             )
         }
 

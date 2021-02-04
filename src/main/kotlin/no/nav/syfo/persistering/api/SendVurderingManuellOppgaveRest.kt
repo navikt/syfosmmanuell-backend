@@ -93,15 +93,17 @@ data class Result(
                     MerknadType.UGYLDIG_TILBAKEDATERING -> {
                         Merknad(
                             type = MerknadType.UGYLDIG_TILBAKEDATERING.name,
+                            beskrivelse = null
                         )
                     }
                     MerknadType.KREVER_FLERE_OPPLYSNINGER -> {
                         Merknad(
                             type = MerknadType.KREVER_FLERE_OPPLYSNINGER.name,
+                            beskrivelse = null
                         )
                     }
                     else -> {
-                        throw TypeCastException("Result with status GODKJENT_MED_MERKNAD missing merknad property")
+                        throw IllegalArgumentException("Result with status GODKJENT_MED_MERKNAD missing merknad property")
                     }
                 }
             }
@@ -142,7 +144,7 @@ data class Result(
                         )
                     }
                     else -> {
-                        throw TypeCastException("Result with status AVVIST missing avvisningtype property")
+                        throw IllegalArgumentException("Result with status AVVIST missing avvisningtype property")
                     }
                 }
             }
