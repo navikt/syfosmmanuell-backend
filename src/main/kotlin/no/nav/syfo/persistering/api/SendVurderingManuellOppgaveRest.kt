@@ -96,7 +96,7 @@ data class Result(
                             beskrivelse = null
                         )
                     }
-                    MerknadType.KREVER_FLERE_OPPLYSNINGER -> {
+                    MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER -> {
                         Merknad(
                             type = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER.name,
                             beskrivelse = null
