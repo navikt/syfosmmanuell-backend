@@ -310,12 +310,12 @@ object SendVurderingManuellOppgaveTest : Spek({
             )
         }
 
-        it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad KREVER_FLERE_OPPLYSNINGER") {
-            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.KREVER_FLERE_OPPLYSNINGER, avvisningtype = null)
+        it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER") {
+            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER, avvisningtype = null)
             val merknad = result.toMerknad()
 
             merknad shouldEqual Merknad(
-                type = "KREVER_FLERE_OPPLYSNINGER",
+                type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER",
                 beskrivelse = null
             )
         }
