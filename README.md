@@ -144,14 +144,5 @@ To get started:
 2. Create a local run config for syfosmmanuell-backend pointing to Bootstrap.tk
 3. Add the contents of dev-stack/dev-runtime-env as runtime environments in the run config. 
 
-## Contact us
-### Code/project related questions can be sent to
-* Joakim Kartveit, `joakim.kartveit@nav.no`
-* Andreas Nilsen, `andreas.nilsen@nav.no`
-* Sebastian Knudsen, `sebastian.knudsen@nav.no`
-* Tia Firing, `tia.firing@nav.no`
-* Jonas Henie, `jonas.henie@nav.no`
-* Mathias Hellevang, `mathias.hellevang@nav.no`
-
 ### For NAV employees
 We are available at the Slack channel #team-sykmelding
