@@ -121,7 +121,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                     }
                 }
 
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningtype = null)
+                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
 
                 with(handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
                     addHeader("Accept", "application/json")
@@ -140,7 +140,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningtype = AvvisningType.MANGLER_BEGRUNNELSE)
+                val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningType = AvvisningType.MANGLER_BEGRUNNELSE)
                 every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
             }
@@ -151,7 +151,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningtype = null)
+                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
                 every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
             }
@@ -162,7 +162,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningtype = null)
+                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
                 every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val statusCode = HttpStatusCode.InternalServerError
                 sendRequest(result, statusCode, oppgaveid)
@@ -174,7 +174,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningtype = AvvisningType.MANGLER_BEGRUNNELSE)
+                val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningType = AvvisningType.MANGLER_BEGRUNNELSE)
                 every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val statusCode = HttpStatusCode.InternalServerError
                 sendRequest(result, statusCode, oppgaveid)
@@ -186,7 +186,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningtype = AvvisningType.MANGLER_BEGRUNNELSE)
+                val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningType = AvvisningType.MANGLER_BEGRUNNELSE)
                 every { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 val statusCode = HttpStatusCode.InternalServerError
                 sendRequest(result, statusCode, oppgaveid)
@@ -198,7 +198,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningtype = null)
+                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
                 sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
             }
         }
@@ -208,7 +208,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningtype = AvvisningType.MANGLER_BEGRUNNELSE)
+                val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningType = AvvisningType.MANGLER_BEGRUNNELSE)
                 sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
                 verify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             }
@@ -220,7 +220,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
                 every { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
 
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningtype = null)
+                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
                 sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
             }
         }
@@ -230,7 +230,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningtype = null)
+                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
                 sendRequest(result, HttpStatusCode.BadRequest, oppgaveid, "")
             }
         }
@@ -238,7 +238,7 @@ object SendVurderingManuellOppgaveTest : Spek({
 
     describe("ValidationResult") {
         it("Riktig ValidationResult for status GODKJENT") {
-            val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningtype = null)
+            val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
 
             val validationResult = result.toValidationResult()
 
@@ -247,7 +247,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         }
 
         it("Riktig ValidationResult for status GODKJENT_MED_MERKNAD") {
-            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null, avvisningtype = null)
+            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null, avvisningType = null)
 
             val validationResult = result.toValidationResult()
 
@@ -256,7 +256,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         }
 
         it("Riktig ValidationResult for status AVVIST avvisningtype MANGLER_BEGRUNNELSE") {
-            val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningtype = AvvisningType.MANGLER_BEGRUNNELSE)
+            val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningType = AvvisningType.MANGLER_BEGRUNNELSE)
 
             val validationResult = result.toValidationResult()
 
@@ -271,7 +271,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         }
 
         it("Riktig ValidationResult for status AVVIST avvisningtype UGYLDIG_BEGRUNNELSE") {
-            val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningtype = AvvisningType.UGYLDIG_BEGRUNNELSE)
+            val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningType = AvvisningType.UGYLDIG_BEGRUNNELSE)
 
             val validationResult = result.toValidationResult()
 
@@ -287,21 +287,21 @@ object SendVurderingManuellOppgaveTest : Spek({
 
         it("Kaster TypeCastException for status AVVIST avvisningtype NULL") {
             assertFailsWith<IllegalArgumentException> {
-                Result(status = ResultStatus.AVVIST, merknad = null, avvisningtype = null).toValidationResult()
+                Result(status = ResultStatus.AVVIST, merknad = null, avvisningType = null).toValidationResult()
             }
         }
     }
 
     describe("Merknader") {
         it("Får ikke merknad for status GODKJENT") {
-            val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningtype = null)
+            val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
             val merknader = result.toMerknad()
 
             merknader shouldEqual null
         }
 
         it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
-            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.UGYLDIG_TILBAKEDATERING, avvisningtype = null)
+            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.UGYLDIG_TILBAKEDATERING, avvisningType = null)
             val merknad = result.toMerknad()
 
             merknad shouldEqual Merknad(
@@ -311,7 +311,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         }
 
         it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER") {
-            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER, avvisningtype = null)
+            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER, avvisningType = null)
             val merknad = result.toMerknad()
 
             merknad shouldEqual Merknad(
@@ -321,7 +321,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         }
 
         it("Får ikke merknad for status AVVIST") {
-            val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningtype = null)
+            val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningType = null)
             val merknad = result.toMerknad()
 
             merknad shouldEqual null
@@ -329,7 +329,7 @@ object SendVurderingManuellOppgaveTest : Spek({
 
         it("Kaster TypeCastException for status GODKJENT_MED_MERKNAD merknad NULL") {
             assertFailsWith<IllegalArgumentException> {
-                Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null, avvisningtype = null).toMerknad()
+                Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null, avvisningType = null).toMerknad()
             }
         }
     }

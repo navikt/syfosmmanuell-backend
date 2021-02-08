@@ -84,7 +84,7 @@ enum class ResultStatus {
 data class Result(
     val status: ResultStatus,
     val merknad: MerknadType?,
-    val avvisningtype: AvvisningType?
+    val avvisningType: AvvisningType?
 ) {
     fun toMerknad(): Merknad? {
         return when (status) {
@@ -116,7 +116,7 @@ data class Result(
             ResultStatus.GODKJENT -> ValidationResult(Status.OK, emptyList())
             ResultStatus.GODKJENT_MED_MERKNAD -> ValidationResult(Status.OK, emptyList())
             ResultStatus.AVVIST -> {
-                return when (avvisningtype) {
+                return when (avvisningType) {
                     AvvisningType.MANGLER_BEGRUNNELSE -> {
                         ValidationResult(
                             Status.INVALID,
