@@ -42,11 +42,11 @@ fun Route.sendVurderingManuellOppgave(
                     call.respond(HttpStatusCode.NotFound)
                 }
                 true -> {
-                    val result: Result = call.receive()
+                    val result = call.receive<Result>()
 
-                    val validationResult = result.tilValidationResult()
+                    val validationResult = result.toValidationResult()
 
-                    val merknad = result.tilMerknad()
+                    val merknad = result.toMerknad()
 
                     val veileder = authorizationService.getVeileder(accessToken)
 
@@ -65,49 +65,89 @@ fun Route.sendVurderingManuellOppgave(
     }
 }
 
-fun Result.tilValidationResult(): ValidationResult {
-    return when (status) {
-        ResultStatus.GODKJENT -> ValidationResult(Status.OK, emptyList())
-        ResultStatus.UGYLDIG_TILBAKEDATERING -> ValidationResult(Status.OK, emptyList())
-        ResultStatus.UGYLDIG_BEGRUNNELSE -> {
-            val regel = RuleInfoTekst.TILBAKEDATERT_MANGLER_BEGRUNNELSE
-            ValidationResult(
-                Status.INVALID,
-                listOf(
-                    RuleInfo(regel.name, regel.messageForSender, regel.messageForUser, Status.INVALID)
-                )
-            )
-        }
-    }
-}
-
-fun Result.tilMerknad(): Merknad? {
-    return when (status) {
-        ResultStatus.UGYLDIG_TILBAKEDATERING -> {
-            Merknad(type = MerknadType.UGYLDIG_TILBAKEDATERING.name, beskrivelse = "Tilbakedateringen er vurdert som ugyldig, men brukeren får allikevel sende søknad slik at et vedtak kan fattes")
-        }
-        else -> null
-    }
-}
-
-enum class RuleInfoTekst(val messageForUser: String, val messageForSender: String, val rulename: String) {
-    TILBAKEDATERT_MANGLER_BEGRUNNELSE(
-        messageForUser = "Sykmeldingen din starter før du oppsøkte behandleren, uten at det er gitt en god nok begrunnelse for dette.",
-        messageForSender = "Sykmelding gjelder som hovedregel fra den dagen pasienten oppsøker behandler. Sykmeldingen er tilbakedatert uten at det kommer tydelig nok fram hvorfor dette var nødvendig. Sykmeldingen er derfor avvist, og det må skrives en ny hvis det fortsatt er aktuelt med sykmelding. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
-        rulename = "TILBAKEDATERT_MANGLER_BEGRUNNELSE"
-    )
-}
-
 enum class MerknadType {
-    UGYLDIG_TILBAKEDATERING
+    UGYLDIG_TILBAKEDATERING,
+    TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER
+}
+
+enum class AvvisningType {
+    MANGLER_BEGRUNNELSE,
+    UGYLDIG_BEGRUNNELSE
 }
 
 enum class ResultStatus {
     GODKJENT,
-    UGYLDIG_TILBAKEDATERING,
-    UGYLDIG_BEGRUNNELSE
+    GODKJENT_MED_MERKNAD,
+    AVVIST
 }
 
 data class Result(
-    val status: ResultStatus
-)
+    val status: ResultStatus,
+    val merknad: MerknadType?,
+    val avvisningType: AvvisningType?
+) {
+    fun toMerknad(): Merknad? {
+        return when (status) {
+            ResultStatus.GODKJENT_MED_MERKNAD -> {
+                return when (merknad) {
+                    MerknadType.UGYLDIG_TILBAKEDATERING -> {
+                        Merknad(
+                            type = MerknadType.UGYLDIG_TILBAKEDATERING.name,
+                            beskrivelse = null
+                        )
+                    }
+                    MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER -> {
+                        Merknad(
+                            type = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER.name,
+                            beskrivelse = null
+                        )
+                    }
+                    else -> {
+                        throw IllegalArgumentException("Result with status GODKJENT_MED_MERKNAD missing merknad property")
+                    }
+                }
+            }
+            else -> null
+        }
+    }
+
+    fun toValidationResult(): ValidationResult {
+        return when (status) {
+            ResultStatus.GODKJENT -> ValidationResult(Status.OK, emptyList())
+            ResultStatus.GODKJENT_MED_MERKNAD -> ValidationResult(Status.OK, emptyList())
+            ResultStatus.AVVIST -> {
+                return when (avvisningType) {
+                    AvvisningType.MANGLER_BEGRUNNELSE -> {
+                        ValidationResult(
+                            Status.INVALID,
+                            listOf(
+                                RuleInfo(
+                                    ruleName = "TILBAKEDATERT_MANGLER_BEGRUNNELSE",
+                                    messageForSender = "Sykmelding gjelder som hovedregel fra den dagen pasienten oppsøker behandler. Sykmeldingen er tilbakedatert uten at det kommer tydelig nok fram hvorfor dette var nødvendig. Sykmeldingen er derfor avvist, og det må skrives en ny hvis det fortsatt er aktuelt med sykmelding. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
+                                    messageForUser = "Sykmelding gjelder som hovedregel fra den dagen du oppsøker behandler. Sykmeldingen din er tilbakedatert uten at det er gitt en god nok begrunnelse for dette. Behandleren din må skrive ut en ny sykmelding og begrunne bedre hvorfor den er tilbakedatert. Din behandler har mottatt melding fra NAV om dette.",
+                                    ruleStatus = Status.INVALID
+                                )
+                            )
+                        )
+                    }
+                    AvvisningType.UGYLDIG_BEGRUNNELSE -> {
+                        ValidationResult(
+                            Status.INVALID,
+                            listOf(
+                                RuleInfo(
+                                    ruleName = "UGYLDIG_BEGRUNNELSE",
+                                    messageForSender = "NAV kan ikke godta tilbakedateringen. Sykmeldingen er derfor avvist. Hvis sykmelding fortsatt er aktuelt, må det skrives ny sykmelding der f.o.m.-dato er dagen du var i kontakt med pasienten. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
+                                    messageForUser = "NAV kan ikke godta sykmeldingen din fordi den starter før dagen du tok kontakt med behandleren. Trenger du fortsatt sykmelding, må behandleren din skrive en ny som gjelder fra den dagen dere var i kontakt. Behandleren din har fått beskjed fra NAV om dette.",
+                                    ruleStatus = Status.INVALID
+                                )
+                            )
+                        )
+                    }
+                    else -> {
+                        throw IllegalArgumentException("Result with status AVVIST missing avvisningtype property")
+                    }
+                }
+            }
+        }
+    }
+}
