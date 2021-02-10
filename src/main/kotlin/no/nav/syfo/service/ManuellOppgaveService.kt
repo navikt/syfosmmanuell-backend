@@ -17,6 +17,7 @@ import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
 import no.nav.syfo.metrics.FERDIGSTILT_OPPGAVE_COUNTER
+import no.nav.syfo.metrics.MERKNAD_COUNTER
 import no.nav.syfo.metrics.RULE_HIT_COUNTER
 import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
 import no.nav.syfo.model.Apprec
@@ -59,6 +60,7 @@ class ManuellOppgaveService(
 
         validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
         RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
+        receivedSykmeldingWithMerknad.merknader?.onEach { MERKNAD_COUNTER.labels(it.type).inc() }
 
         sendReceivedSykmelding(kafkaProducers.kafkaRecievedSykmeldingProducer, manuellOppgaveWithMerknad.receivedSykmelding, validationResult.status, loggingMeta)
 
