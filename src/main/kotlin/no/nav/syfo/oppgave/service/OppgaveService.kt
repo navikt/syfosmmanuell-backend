@@ -71,7 +71,7 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
             OpprettOppgave(
                     aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
                     opprettetAvEnhetsnr = "9999",
-                    behandlesAvApplikasjon = "FS22",
+                    behandlesAvApplikasjon = "SMM",
                     beskrivelse = "Manuell vurdering av sykmelding for periode: ${getFomTomTekst(manuellOppgave.receivedSykmelding)}",
                     tema = "SYM",
                     oppgavetype = "BEH_EL_SYM",
