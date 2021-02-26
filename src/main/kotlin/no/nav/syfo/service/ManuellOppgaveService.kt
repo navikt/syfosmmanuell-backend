@@ -48,35 +48,49 @@ class ManuellOppgaveService(
         database.hentManuellOppgaver(oppgaveId)
 
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String, merknader: List<Merknad>?) {
-        val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken)
+        val manuellOppgave = addMerknader(hentManuellOppgave(oppgaveId, accessToken), merknader = merknader)
         val loggingMeta = LoggingMeta(
             mottakId = manuellOppgave.receivedSykmelding.navLogId,
             orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
             msgId = manuellOppgave.receivedSykmelding.msgId,
             sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
         )
-        val receivedSykmeldingWithMerknad = manuellOppgave.receivedSykmelding.copy(merknader = merknader)
-        val manuellOppgaveWithMerknad = manuellOppgave.copy(receivedSykmelding = receivedSykmeldingWithMerknad)
 
-        validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
-        RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
-        receivedSykmeldingWithMerknad.merknader?.onEach { MERKNAD_COUNTER.labels(it.type).inc() }
+        incrementCounters(validationResult, manuellOppgave)
 
-        sendReceivedSykmelding(kafkaProducers.kafkaRecievedSykmeldingProducer, manuellOppgaveWithMerknad.receivedSykmelding, validationResult.status, loggingMeta)
+        sendReceivedSykmelding(kafkaProducers.kafkaRecievedSykmeldingProducer, manuellOppgave.receivedSykmelding, validationResult.status, loggingMeta)
 
         when (validationResult.status) {
-            Status.OK -> sendToSyfoService(manuellOppgaveWithMerknad, loggingMeta)
-            Status.INVALID -> sendValidationResult(validationResult, manuellOppgaveWithMerknad.receivedSykmelding, loggingMeta)
+            Status.OK -> sendToSyfoService(manuellOppgave, loggingMeta)
+            Status.INVALID -> sendValidationResult(validationResult, manuellOppgave.receivedSykmelding, loggingMeta)
             else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
         }
 
-        val oppdatertApprec = lagOppdatertApprec(manuellOppgaveWithMerknad, validationResult)
+        val oppdatertApprec = lagOppdatertApprec(manuellOppgave, validationResult)
 
         sendApprec(oppdatertApprec, loggingMeta)
-        oppgaveService.ferdigstillOppgave(manuellOppgaveWithMerknad, loggingMeta, enhet, veileder)
-        database.oppdaterManuellOppgave(oppgaveId, receivedSykmeldingWithMerknad, validationResult, oppdatertApprec)
+        oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
+
+        if (skalOppretteOppfolgingsOppgave(manuellOppgave)) {
+            oppgaveService.opprettOppfoligingsOppgave(manuellOppgave, enhet, loggingMeta)
+        }
+
+        database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, validationResult, oppdatertApprec)
 
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
+    }
+
+    private fun skalOppretteOppfolgingsOppgave(manuellOppgave: ManuellOppgaveKomplett): Boolean {
+        return manuellOppgave.receivedSykmelding.merknader?.any {
+            it.type == "UGYLDIG_TILBAKEDATERING" ||
+                    it.type == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
+        } ?: false
+    }
+
+    private fun incrementCounters(validationResult: ValidationResult, manuellOppgaveWithMerknad: ManuellOppgaveKomplett) {
+        validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
+        RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
+        manuellOppgaveWithMerknad.receivedSykmelding.merknader?.onEach { MERKNAD_COUNTER.labels(it.type).inc() }
     }
 
     private suspend fun hentManuellOppgave(oppgaveId: Int, accessToken: String): ManuellOppgaveKomplett {
@@ -94,6 +108,12 @@ class ManuellOppgaveService(
             throw ForbiddenException()
         }
         return manuellOppgave
+    }
+
+    private fun addMerknader(manuellOppgave: ManuellOppgaveKomplett, merknader: List<Merknad>?):
+            ManuellOppgaveKomplett {
+        return manuellOppgave.copy(receivedSykmelding = manuellOppgave.receivedSykmelding
+                .copy(merknader = merknader))
     }
 
     private fun sendToSyfoService(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta) {
