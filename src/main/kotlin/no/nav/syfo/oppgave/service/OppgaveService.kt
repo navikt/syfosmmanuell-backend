@@ -87,7 +87,7 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
                     tildeltEnhetsnr = enhet,
                     opprettetAvEnhetsnr = "9999",
                     behandlesAvApplikasjon = "FS22",
-                    beskrivelse = "Oppfølingsoppgave for sykmelding registrert med merknad " +
+                    beskrivelse = "Oppfølgingsoppgave for sykmelding registrert med merknad " +
                             manuellOppgave.receivedSykmelding.merknader?.joinToString { it.type },
                     tema = "SYM",
                     oppgavetype = "BEH_EL_SYM",
