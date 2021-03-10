@@ -48,7 +48,7 @@ class ManuellOppgaveService(
         database.hentManuellOppgaver(oppgaveId)
 
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String, merknader: List<Merknad>?) {
-        val manuellOppgave = addMerknader(hentManuellOppgave(oppgaveId, accessToken), merknader = merknader)
+        val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).addMerknader(merknader)
         val loggingMeta = LoggingMeta(
             mottakId = manuellOppgave.receivedSykmelding.navLogId,
             orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
@@ -108,12 +108,6 @@ class ManuellOppgaveService(
             throw ForbiddenException()
         }
         return manuellOppgave
-    }
-
-    private fun addMerknader(manuellOppgave: ManuellOppgaveKomplett, merknader: List<Merknad>?):
-            ManuellOppgaveKomplett {
-        return manuellOppgave.copy(receivedSykmelding = manuellOppgave.receivedSykmelding
-                .copy(merknader = merknader))
     }
 
     private fun sendToSyfoService(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta) {
