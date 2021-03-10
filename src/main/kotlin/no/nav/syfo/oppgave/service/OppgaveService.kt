@@ -33,8 +33,8 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
         return oppgaveResponse.id
     }
 
-    suspend fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, loggingMeta: LoggingMeta): Int {
-        val oppfolgingsoppgave = tilOppfolgingsoppgave(manuellOppgave, enhet)
+    suspend fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder, loggingMeta: LoggingMeta): Int {
+        val oppfolgingsoppgave = tilOppfolgingsoppgave(manuellOppgave, enhet, veileder)
         val oppgaveResponse = oppgaveClient.opprettOppgave(oppfolgingsoppgave, manuellOppgave.receivedSykmelding.msgId)
         log.info(
                 "Opprettet oppfølgingsoppgave med {}, {}",
@@ -81,17 +81,17 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
                     prioritet = "HOY"
             )
 
-    fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String): OpprettOppgave =
+    fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder): OpprettOppgave =
             OpprettOppgave(
                     aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
                     tildeltEnhetsnr = enhet,
                     opprettetAvEnhetsnr = "9999",
+                    tilordnetRessurs = veileder.veilederIdent,
                     behandlesAvApplikasjon = "FS22",
                     beskrivelse = "Oppfølgingsoppgave for sykmelding registrert med merknad " +
                             manuellOppgave.receivedSykmelding.merknader?.joinToString { it.type },
                     tema = "SYM",
                     oppgavetype = "BEH_EL_SYM",
-                    behandlingstype = "ae0239",
                     aktivDato = LocalDate.now(),
                     prioritet = "HOY"
             )

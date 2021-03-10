@@ -72,7 +72,7 @@ class ManuellOppgaveService(
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
 
         if (skalOppretteOppfolgingsOppgave(manuellOppgave)) {
-            oppgaveService.opprettOppfoligingsOppgave(manuellOppgave, enhet, loggingMeta)
+            oppgaveService.opprettOppfoligingsOppgave(manuellOppgave, enhet, veileder, loggingMeta)
         }
 
         database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, validationResult, oppdatertApprec)
