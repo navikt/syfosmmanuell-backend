@@ -104,6 +104,7 @@ object ManuellOppgaveServiceTest : Spek({
             coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
+            coVerify { oppgaveService.opprettOppfoligingsOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()

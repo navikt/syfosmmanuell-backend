@@ -33,6 +33,17 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
         return oppgaveResponse.id
     }
 
+    suspend fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder, loggingMeta: LoggingMeta): Int {
+        val oppfolgingsoppgave = tilOppfolgingsoppgave(manuellOppgave, enhet, veileder)
+        val oppgaveResponse = oppgaveClient.opprettOppgave(oppfolgingsoppgave, manuellOppgave.receivedSykmelding.msgId)
+        log.info(
+                "Opprettet oppfølgingsoppgave med {}, {}",
+                StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+                StructuredArguments.fields(loggingMeta)
+        )
+        return oppgaveResponse.id
+    }
+
     suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String, veileder: Veileder) {
         val oppgave = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId)
         val oppgaveVersjon = oppgave.versjon
@@ -57,18 +68,33 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
     }
 
     fun tilOpprettOppgave(manuellOppgave: ManuellOppgave): OpprettOppgave =
-        OpprettOppgave(
-            aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
-            opprettetAvEnhetsnr = "9999",
-            behandlesAvApplikasjon = "FS22",
-            beskrivelse = "Manuell vurdering av sykmelding for periode: ${getFomTomTekst(manuellOppgave.receivedSykmelding)}",
-            tema = "SYM",
-            oppgavetype = "BEH_EL_SYM",
-            behandlingstype = "ae0239",
-            aktivDato = LocalDate.now(),
-            fristFerdigstillelse = omTreUkedager(LocalDate.now()),
-            prioritet = "HOY"
-        )
+            OpprettOppgave(
+                    aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
+                    opprettetAvEnhetsnr = "9999",
+                    behandlesAvApplikasjon = "SMM",
+                    beskrivelse = "Manuell vurdering av sykmelding for periode: ${getFomTomTekst(manuellOppgave.receivedSykmelding)}",
+                    tema = "SYM",
+                    oppgavetype = "BEH_EL_SYM",
+                    behandlingstype = "ae0239",
+                    aktivDato = LocalDate.now(),
+                    fristFerdigstillelse = omTreUkedager(LocalDate.now()),
+                    prioritet = "HOY"
+            )
+
+    fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder): OpprettOppgave =
+            OpprettOppgave(
+                    aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
+                    tildeltEnhetsnr = enhet,
+                    opprettetAvEnhetsnr = "9999",
+                    tilordnetRessurs = veileder.veilederIdent,
+                    behandlesAvApplikasjon = "FS22",
+                    beskrivelse = "Oppfølgingsoppgave for sykmelding registrert med merknad " +
+                            manuellOppgave.receivedSykmelding.merknader?.joinToString { it.type },
+                    tema = "SYM",
+                    oppgavetype = "BEH_EL_SYM",
+                    aktivDato = LocalDate.now(),
+                    prioritet = "HOY"
+            )
 
     fun omTreUkedager(idag: LocalDate): LocalDate = when (idag.dayOfWeek) {
         DayOfWeek.SUNDAY -> idag.plusDays(4)

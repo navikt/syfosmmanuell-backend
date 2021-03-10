@@ -6,4 +6,11 @@ data class ManuellOppgaveKomplett(
     val apprec: Apprec,
     val oppgaveid: Int,
     val ferdigstilt: Boolean
-)
+) {
+    fun addMerknader(merknadList: List<Merknad>?): ManuellOppgaveKomplett {
+        if (merknadList.isNullOrEmpty()) {
+            return this
+        }
+        return this.copy(receivedSykmelding = this.receivedSykmelding.copy(merknader = merknadList))
+    }
+}

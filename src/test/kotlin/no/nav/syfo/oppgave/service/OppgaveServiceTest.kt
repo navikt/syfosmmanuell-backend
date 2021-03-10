@@ -46,7 +46,7 @@ object OppgaveServiceTest : Spek({
 
             opprettOppgave.aktoerId shouldEqual "5555"
             opprettOppgave.opprettetAvEnhetsnr shouldEqual "9999"
-            opprettOppgave.behandlesAvApplikasjon shouldEqual "FS22"
+            opprettOppgave.behandlesAvApplikasjon shouldEqual "SMM"
             opprettOppgave.beskrivelse shouldEqual "Manuell vurdering av sykmelding for periode: 01.08.2020 - 15.08.2020"
             opprettOppgave.tema shouldEqual "SYM"
             opprettOppgave.oppgavetype shouldEqual "BEH_EL_SYM"
