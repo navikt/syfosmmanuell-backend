@@ -24,13 +24,16 @@ data class FerdigstillOppgave(
     val id: Int,
     val status: OppgaveStatus,
     val tildeltEnhetsnr: String,
-    val tilordnetRessurs: String
+    val tilordnetRessurs: String,
+    val mappeId: Int?
 )
 
 data class OpprettOppgaveResponse(
     val id: Int,
     val versjon: Int,
-    val status: String? = null
+    val status: String? = null,
+    val tildeltEnhetsnr: String? = null,
+    val mappeId: Int? = null
 )
 
 enum class OppgaveStatus(val status: String) {
