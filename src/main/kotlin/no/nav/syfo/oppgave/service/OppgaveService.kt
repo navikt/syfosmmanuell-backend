@@ -54,7 +54,13 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
                     id = manuellOppgave.oppgaveid,
                     status = OppgaveStatus.FERDIGSTILT,
                     tildeltEnhetsnr = enhet,
-                    tilordnetRessurs = veileder.veilederIdent
+                    tilordnetRessurs = veileder.veilederIdent,
+                    mappeId = if (oppgave.tildeltEnhetsnr == enhet) {
+                        oppgave.mappeId
+                    } else {
+                        // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke har den aktuelle mappen
+                        null
+                    }
             )
 
             log.info("Forsøker å ferdigstille oppgave {}, {}", StructuredArguments.fields(ferdigstillOppgave), StructuredArguments.fields(loggingMeta))
