@@ -56,9 +56,12 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
                     tildeltEnhetsnr = enhet,
                     tilordnetRessurs = veileder.veilederIdent
             )
+
+            log.info("Forsøker å ferdigstille oppgave {}, {}", StructuredArguments.fields(ferdigstillOppgave), StructuredArguments.fields(loggingMeta))
+
             val oppgaveResponse = oppgaveClient.ferdigstillOppgave(ferdigstillOppgave, manuellOppgave.receivedSykmelding.msgId)
             log.info(
-                    "Ferdigstiller oppgave med {}, {}",
+                    "Ferdigstilt oppgave med {}, {}",
                     StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
                     StructuredArguments.fields(loggingMeta)
             )
