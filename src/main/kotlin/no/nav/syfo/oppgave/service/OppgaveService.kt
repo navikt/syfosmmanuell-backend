@@ -102,6 +102,7 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
                     tema = "SYM",
                     oppgavetype = "BEH_EL_SYM",
                     aktivDato = LocalDate.now(),
+                    fristFerdigstillelse = LocalDate.now(),
                     prioritet = "HOY"
             )
 
