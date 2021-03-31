@@ -14,6 +14,7 @@ data class Apprec(
     val msgId: String,
     val msgTypeVerdi: String,
     val msgTypeBeskrivelse: String,
+    val msgGenDate: String?,
     val genDate: LocalDateTime,
     val apprecStatus: ApprecStatus,
     val tekstTilSykmelder: String? = null,

@@ -145,6 +145,7 @@ class ManuellOppgaveService(
             msgTypeVerdi = manuellOppgave.apprec.msgTypeVerdi,
             msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
             genDate = manuellOppgave.apprec.genDate,
+            msgGenDate = manuellOppgave.apprec.msgGenDate,
             apprecStatus = getApprecStatus(validationResult.status),
             tekstTilSykmelder = null,
             senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
