@@ -27,6 +27,8 @@ val javaTimeAdapterVersion = "1.1.3"
 val spekVersion = "2.0.12"
 val nimbusdsVersion = "7.5.1"
 val caffeineVersion = "2.8.5"
+val brukernotifikasjonAvroVersion = "1.2020.02.11-13.20-46252a031986"
+val confluentVersion = "5.3.0"
 
 plugins {
     kotlin("jvm") version "1.3.71"
@@ -92,8 +94,9 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")
-
+    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
+    implementation("no.nav:brukernotifikasjon-schemas:$brukernotifikasjonAvroVersion")
 
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")

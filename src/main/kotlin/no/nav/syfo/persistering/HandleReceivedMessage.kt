@@ -3,6 +3,7 @@ package no.nav.syfo.persistering
 import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
+import no.nav.syfo.brukernotificasjon.BrukernotifikasjonService
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
@@ -19,7 +20,8 @@ suspend fun handleReceivedMessage(
     manuellOppgave: ManuellOppgave,
     loggingMeta: LoggingMeta,
     database: DatabaseInterface,
-    oppgaveService: OppgaveService
+    oppgaveService: OppgaveService,
+    brukernotifikasjonService: BrukernotifikasjonService
 ) {
     wrapExceptions(loggingMeta) {
         log.info("Mottok ein manuell oppgave, {}", fields(loggingMeta))
@@ -39,6 +41,7 @@ suspend fun handleReceivedMessage(
                     StructuredArguments.keyValue("oppgaveId", oppgaveId),
                     fields(loggingMeta)
                 )
+                brukernotifikasjonService.sendBrukerNotifikasjon(manuellOppgave)
                 MESSAGE_STORED_IN_DB_COUNTER.inc()
             } catch (e: Exception) {
                 log.error("Noe gikk galt ved oppretting av oppgave: {}, {}", e.message, fields(loggingMeta))
