@@ -1,7 +1,5 @@
 package no.nav.syfo.brukernotificasjon
 
-import java.time.Instant
-import java.util.UUID
 import no.nav.brukernotifikasjon.schemas.Beskjed
 import no.nav.brukernotifikasjon.schemas.Nokkel
 import no.nav.syfo.brukernotificasjon.db.Brukernotifikasjon
@@ -10,6 +8,9 @@ import no.nav.syfo.brukernotificasjon.db.insertBrukernotifikasjon
 import no.nav.syfo.brukernotificasjon.kafka.BeskjedProducer
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.model.ManuellOppgave
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.util.UUID
 
 class BrukernotifikasjonService(
     private val brukernotifikasjonProducer: BeskjedProducer,
@@ -24,7 +25,7 @@ class BrukernotifikasjonService(
         val brukernotifikasjon = database.getBrukerNotifikasjon(manuellOppgaveKomplett.receivedSykmelding.sykmelding.id) ?: createAndInsertBrukernotifikasjon(manuellOppgaveKomplett)
 
         val nokkel = Nokkel(systemBruker, brukernotifikasjon.eventId)
-        val beskjed = Beskjed(brukernotifikasjon.timestamp, null, brukernotifikasjon.fnr, brukernotifikasjon.sykmeldingId, BESKJED_TEXT, "", 4)
+        val beskjed = Beskjed(brukernotifikasjon.timestamp, Instant.ofEpochMilli(brukernotifikasjon.timestamp).plus(1, ChronoUnit.MONTHS).toEpochMilli(), brukernotifikasjon.fnr, brukernotifikasjon.sykmeldingId, BESKJED_TEXT, "", 4)
 
         brukernotifikasjonProducer.sendBeskjed(nokkel, beskjed)
     }
