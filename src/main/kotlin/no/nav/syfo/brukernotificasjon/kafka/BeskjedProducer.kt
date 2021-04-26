@@ -9,7 +9,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 class BeskjedProducer(private val brukernotifikasjonProducer: KafkaProducers.BrukernotifikasjonProducer) {
 
     fun sendBeskjed(nokkel: Nokkel, beskjed: Beskjed) {
-        brukernotifikasjonProducer.producer.send(ProducerRecord(brukernotifikasjonProducer.topic, nokkel, beskjed)).get()
-        log.info("Sendt brukernotifikasjon for sykmelding som er til manuell behandling")
+        val metadata = brukernotifikasjonProducer.producer.send(ProducerRecord(brukernotifikasjonProducer.topic, nokkel, beskjed)).get()
+        log.info("Sendt brukernotifikasjon for sykmelding som er til manuell behandling, partition: ${metadata.partition()} offset: ${metadata.offset()}")
     }
 }
