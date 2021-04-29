@@ -32,7 +32,7 @@ data class Environment(
     val syfosmmanuellBackendClientIdPath: String = getEnvVar("SYFOSMMANUELL_BACKEND_CLIENT_ID"),
     val syfosmmanuellBackendClientSecretPath: String = getEnvVar("SYFOSMMANUELL_BACKEND_CLIENT_SECRET", "/secrets/azuread/syfosmmanuell-backend/client_secret"),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
-
+    val brukernotifikasjonBeskjedTopic: String = "aapen-brukernotifikasjon-nyBeskjed-v1",
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean()
 ) : KafkaConfig
 

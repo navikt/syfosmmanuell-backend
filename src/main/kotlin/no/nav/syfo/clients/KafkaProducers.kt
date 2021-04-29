@@ -1,5 +1,8 @@
 package no.nav.syfo.clients
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer
+import no.nav.brukernotifikasjon.schemas.Beskjed
+import no.nav.brukernotifikasjon.schemas.Nokkel
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.kafka.loadBaseConfig
@@ -25,6 +28,8 @@ class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
     val kafkaRecievedSykmeldingProducer = KafkaRecievedSykmeldingProducer()
     val kafkaValidationResultProducer = KafkaValidationResultProducer()
     val kafkaSyfoserviceProducer = KafkaSyfoserviceProducer()
+    val kafkaBrukernotifikasjonProducer = BrukernotifikasjonProducer()
+
     inner class KafkaApprecProducer() {
         val producer = KafkaProducer<String, Apprec>(properties)
         val sm2013ApprecTopic = env.sm2013Apprec
@@ -44,5 +49,13 @@ class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
     inner class KafkaSyfoserviceProducer() {
         val producer = KafkaProducer<String, SyfoserviceSykmeldingKafkaMessage>(properties)
         val topic = env.smSyfoserviceMqTopic
+    }
+
+    inner class BrukernotifikasjonProducer() {
+        val producer = KafkaProducer<Nokkel, Beskjed>(kafkaBaseConfig.toProducerConfig(
+            groupId = env.applicationName,
+            valueSerializer = KafkaAvroSerializer::class, keySerializer = KafkaAvroSerializer::class
+        ))
+        val topic = env.brukernotifikasjonBeskjedTopic
     }
 }

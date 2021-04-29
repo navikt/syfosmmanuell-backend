@@ -6,10 +6,12 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.verify
 import java.util.UUID
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
+import no.nav.syfo.brukernotificasjon.BrukernotifikasjonService
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.RuleInfo
@@ -31,6 +33,7 @@ import org.spekframework.spek2.style.specification.describe
 object HandleReceivedMessageTest : Spek({
     val database = TestDB()
     val oppgaveService = mockk<OppgaveService>()
+    val brukernotifikasjonService = mockk<BrukernotifikasjonService>(relaxed = true)
     val sykmeldingsId = UUID.randomUUID().toString()
     val msgId = "1314"
     val manuellOppgave = ManuellOppgave(
@@ -60,29 +63,32 @@ object HandleReceivedMessageTest : Spek({
     describe("Test av mottak av ny melding") {
         it("Happy-case") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, brukernotifikasjonService)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldEqual 1
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
+            verify(exactly = 1) { brukernotifikasjonService.sendBrukerNotifikasjon(any()) }
         }
         it("Lagrer ikke melding som allerede finnes") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService)
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, brukernotifikasjonService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, brukernotifikasjonService)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldEqual 1
             coVerify(exactly = 1) { oppgaveService.opprettOppgave(any(), any()) }
+            verify(exactly = 1) { brukernotifikasjonService.sendBrukerNotifikasjon(any()) }
         }
         it("Kaster feil hvis opprettOppgave feilet") {
             coEvery { oppgaveService.opprettOppgave(any(), any()) } throws RuntimeException("Noe gikk galt")
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService)
+                    handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, brukernotifikasjonService)
                 }
             }
             database.erOpprettManuellOppgave(sykmeldingsId) shouldEqual false
+            verify(exactly = 0) { brukernotifikasjonService.sendBrukerNotifikasjon(any()) }
         }
     }
 })

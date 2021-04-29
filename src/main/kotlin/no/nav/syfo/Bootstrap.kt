@@ -22,6 +22,8 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.authorization.service.AuthorizationService
+import no.nav.syfo.brukernotificasjon.BrukernotifikasjonService
+import no.nav.syfo.brukernotificasjon.kafka.BeskjedProducer
 import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
 import no.nav.syfo.clients.KafkaProducers
@@ -97,12 +99,14 @@ fun main() {
         RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     }
 
+    val brukernotifikasjonService = BrukernotifikasjonService(BeskjedProducer(kafkaProducers.kafkaBrukernotifikasjonProducer), database, vaultSecrets.serviceuserUsername)
     launchListeners(
         applicationState,
         env,
         kafkaConsumers,
         database,
-        oppgaveService
+        oppgaveService,
+        brukernotifikasjonService
     )
 }
 
@@ -127,7 +131,8 @@ fun launchListeners(
     env: Environment,
     kafkaConsumers: KafkaConsumers,
     database: Database,
-    oppgaveService: OppgaveService
+    oppgaveService: OppgaveService,
+    brukernotifikasjonService: BrukernotifikasjonService
 ) {
     createListener(applicationState) {
         val kafkaConsumerManuellOppgave = kafkaConsumers.kafkaConsumerManuellOppgave
@@ -137,7 +142,8 @@ fun launchListeners(
             applicationState,
             kafkaConsumerManuellOppgave,
             database,
-            oppgaveService
+            oppgaveService,
+            brukernotifikasjonService
         )
     }
 }
@@ -147,7 +153,8 @@ suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,
     database: Database,
-    oppgaveService: OppgaveService
+    oppgaveService: OppgaveService,
+    brukernotifikasjonService: BrukernotifikasjonService
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
@@ -163,7 +170,8 @@ suspend fun blockingApplicationLogic(
                 receivedManuellOppgave,
                 loggingMeta,
                 database,
-                oppgaveService
+                oppgaveService,
+                brukernotifikasjonService
             )
         }
         delay(100)

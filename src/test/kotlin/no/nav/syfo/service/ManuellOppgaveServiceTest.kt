@@ -1,6 +1,5 @@
 package no.nav.syfo.service
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -15,7 +14,6 @@ import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
-import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.RuleInfo
@@ -25,8 +23,10 @@ import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.testutil.TestDB
+import no.nav.syfo.testutil.avvistApprec
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
+import no.nav.syfo.testutil.okApprec
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
@@ -149,19 +149,3 @@ object ManuellOppgaveServiceTest : Spek({
         }
     }
 })
-
-private fun okApprec(): Apprec {
-    return objectMapper.readValue(
-        Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
-            Charsets.UTF_8
-        )
-    )
-}
-
-private fun avvistApprec(): Apprec {
-    return objectMapper.readValue(
-        Apprec::class.java.getResourceAsStream("/apprecAvvist.json").readBytes().toString(
-            Charsets.UTF_8
-        )
-    )
-}
