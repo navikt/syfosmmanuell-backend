@@ -121,7 +121,7 @@ class OppgaveService(
                 behandlingstema = "ANY"
                 oppgavetype = "BEH_EL_SYM"
                 behandlingstype = "ANY"
-                mappeId = null
+                mappeId = 1
                 aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
                 fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
                 prioritet = PrioritetType.HOY
