@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.mockk
 import java.time.LocalDate
+import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.Status
@@ -21,7 +22,8 @@ import org.spekframework.spek2.style.specification.describe
 @KtorExperimentalAPI
 object OppgaveServiceTest : Spek({
     val oppgaveClient = mockk<OppgaveClient>()
-    val oppgaveService = OppgaveService(oppgaveClient)
+    val kafkaProducer = mockk<KafkaProducers.KafkaProduceTaskProducer>()
+    val oppgaveService = OppgaveService(oppgaveClient, kafkaProducer)
     val manuelloppgaveId = "1314"
     val receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding(
         pasientAktoerId = "5555",
