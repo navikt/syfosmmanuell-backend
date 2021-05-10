@@ -74,7 +74,7 @@ fun main() {
     val kafkaProducers = KafkaProducers(env, vaultSecrets)
     val kafkaConsumers = KafkaConsumers(env, vaultSecrets)
     val httpClients = HttpClients(env, vaultSecrets)
-    val oppgaveService = OppgaveService(httpClients.oppgaveClient)
+    val oppgaveService = OppgaveService(httpClients.oppgaveClient, kafkaProducers.kafkaProduceTaskProducer)
 
     val manuellOppgaveService = ManuellOppgaveService(database,
             httpClients.syfoTilgangsKontrollClient,

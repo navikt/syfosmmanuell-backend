@@ -6,6 +6,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.Veileder
+import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log
 import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.ManuellOppgave
@@ -16,10 +17,16 @@ import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
 import no.nav.syfo.oppgave.client.OppgaveClient
+import no.nav.syfo.sak.avro.PrioritetType
+import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.LoggingMeta
+import org.apache.kafka.clients.producer.ProducerRecord
 
 @KtorExperimentalAPI
-class OppgaveService(private val oppgaveClient: OppgaveClient) {
+class OppgaveService(
+    private val oppgaveClient: OppgaveClient,
+    private val kafkaProduceTaskProducer: KafkaProducers.KafkaProduceTaskProducer
+) {
 
     suspend fun opprettOppgave(manuellOppgave: ManuellOppgave, loggingMeta: LoggingMeta): Int {
         val opprettOppgave = tilOpprettOppgave(manuellOppgave)
@@ -33,15 +40,23 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
         return oppgaveResponse.id
     }
 
-    suspend fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder, loggingMeta: LoggingMeta): Int {
-        val oppfolgingsoppgave = tilOppfolgingsoppgave(manuellOppgave, enhet, veileder)
-        val oppgaveResponse = oppgaveClient.opprettOppgave(oppfolgingsoppgave, manuellOppgave.receivedSykmelding.msgId)
+    fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder, loggingMeta: LoggingMeta) {
+        val produceTask = tilOppfolgingsoppgave(manuellOppgave, enhet, veileder)
+        val producerRecord = ProducerRecord(kafkaProduceTaskProducer.topic,
+                manuellOppgave.receivedSykmelding.sykmelding.id,
+                produceTask)
+
+        try {
+            kafkaProduceTaskProducer.producer.send(producerRecord).get()
+        } catch (e: Exception) {
+            log.error("Sending til {} feilet", kafkaProduceTaskProducer.topic)
+            throw e
+        }
+
         log.info(
-                "Opprettet oppfølgingsoppgave med {}, {}",
-                StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+                "Opprettelse av oppfølgingsoppgave forespurt for sykmelding med merknad {}",
                 StructuredArguments.fields(loggingMeta)
         )
-        return oppgaveResponse.id
     }
 
     suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String, veileder: Veileder) {
@@ -90,21 +105,27 @@ class OppgaveService(private val oppgaveClient: OppgaveClient) {
                     prioritet = "HOY"
             )
 
-    fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder): OpprettOppgave =
-            OpprettOppgave(
-                    aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
-                    tildeltEnhetsnr = enhet,
-                    opprettetAvEnhetsnr = "9999",
-                    tilordnetRessurs = veileder.veilederIdent,
-                    behandlesAvApplikasjon = "FS22",
-                    beskrivelse = "Oppfølgingsoppgave for sykmelding registrert med merknad " +
-                            manuellOppgave.receivedSykmelding.merknader?.joinToString { it.type },
-                    tema = "SYM",
-                    oppgavetype = "BEH_EL_SYM",
-                    aktivDato = LocalDate.now(),
-                    fristFerdigstillelse = LocalDate.now(),
-                    prioritet = "HOY"
-            )
+    fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder): ProduceTask =
+            ProduceTask().apply {
+                messageId = manuellOppgave.receivedSykmelding.msgId
+                aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId
+                tildeltEnhetsnr = enhet
+                opprettetAvEnhetsnr = "9999"
+                behandlesAvApplikasjon = "FS22" // Gosys
+                orgnr = manuellOppgave.receivedSykmelding.legekontorOrgNr ?: ""
+                beskrivelse = "Oppfølgingsoppgave for sykmelding registrert med merknad " +
+                        manuellOppgave.receivedSykmelding.merknader?.joinToString { it.type }
+                temagruppe = "ANY"
+                tema = "SYM"
+                behandlingstema = "ANY"
+                oppgavetype = "BEH_EL_SYM"
+                behandlingstype = "ANY"
+                mappeId = 1
+                aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
+                fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
+                prioritet = PrioritetType.HOY
+                metadata = mapOf("tilordnetRessurs" to veileder.veilederIdent)
+            }
 
     fun omTreUkedager(idag: LocalDate): LocalDate = when (idag.dayOfWeek) {
         DayOfWeek.SUNDAY -> idag.plusDays(4)

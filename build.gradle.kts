@@ -14,6 +14,7 @@ val smCommonVersion = "1.f409e4d"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
+val syfooppgaveSchemasVersion = "c8be932543e7356a34690ce7979d494c5d8516d8"
 val jacksonVersion = "2.9.7"
 val kluentVersion = "1.49"
 val kafkaEmbeddedVersion = "2.3.0"
@@ -79,6 +80,7 @@ dependencies {
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
     implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
+    implementation ("no.nav.syfo.schemas:syfosmoppgave-avro:$syfooppgaveSchemasVersion")
 
     implementation("com.migesok:jaxb-java-time-adapters:$javaTimeAdapterVersion")
 
