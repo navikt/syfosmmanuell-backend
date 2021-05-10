@@ -54,8 +54,7 @@ class OppgaveService(
         }
 
         log.info(
-                "Opprettet oppfølgingsoppgave med {}, {}",
-                StructuredArguments.keyValue("oppgaveId", manuellOppgave.oppgaveid),
+                "Opprettelse av oppfølgingsoppgave forespurt for sykmelding med merknad {}",
                 StructuredArguments.fields(loggingMeta)
         )
     }
