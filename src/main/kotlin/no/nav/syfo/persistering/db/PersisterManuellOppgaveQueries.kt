@@ -51,6 +51,20 @@ fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
         }
     }
 
+fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
+        connection.use { connection ->
+            connection.prepareStatement(
+                    """
+                SELECT *
+                FROM MANUELLOPPGAVE
+                WHERE oppgaveid=?;
+                """
+            ).use {
+                it.setInt(1, oppgaveId)
+                it.executeQuery().next()
+            }
+        }
+
 fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, apprec: Apprec): Int =
     connection.use { connection ->
         val status = connection.prepareStatement(

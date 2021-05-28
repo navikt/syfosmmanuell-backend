@@ -21,6 +21,11 @@ fun Route.hentManuellOppgaver(
             log.info("Mottok kall til /api/v1/manuellOppgave/$oppgaveId")
             val accessToken = getAccessTokenFromAuthHeader(call.request)
 
+            if (!manuellOppgaveService.finnesOppgave(oppgaveId)) {
+                call.respond(HttpStatusCode.NotFound)
+                return@get
+            }
+
             val hasAccess = authorizationService.hasAccess(oppgaveId, accessToken)
 
             when (hasAccess) {
