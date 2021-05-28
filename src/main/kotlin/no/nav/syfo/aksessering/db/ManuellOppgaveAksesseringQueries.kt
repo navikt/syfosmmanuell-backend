@@ -9,6 +9,20 @@ import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.objectMapper
 
+fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
+        connection.use { connection ->
+            connection.prepareStatement(
+                    """
+                SELECT *
+                FROM MANUELLOPPGAVE
+                WHERE oppgaveid=?;
+                """
+            ).use {
+                it.setInt(1, oppgaveId)
+                it.executeQuery().next()
+            }
+        }
+
 fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
     connection.use { connection ->
         connection.prepareStatement(

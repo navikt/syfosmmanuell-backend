@@ -9,6 +9,7 @@ import javax.xml.bind.Unmarshaller
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
+import no.nav.syfo.aksessering.db.finnesOppgave
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -46,6 +47,9 @@ class ManuellOppgaveService(
 ) {
     fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
         database.hentManuellOppgaver(oppgaveId)
+
+    fun finnesOppgave(oppgaveId: Int): Boolean =
+            database.finnesOppgave(oppgaveId)
 
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String, merknader: List<Merknad>?) {
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).addMerknader(merknader)

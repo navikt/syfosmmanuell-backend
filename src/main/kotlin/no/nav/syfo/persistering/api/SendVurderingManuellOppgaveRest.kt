@@ -29,6 +29,11 @@ fun Route.sendVurderingManuellOppgave(
             val accessToken = getAccessTokenFromAuthHeader(call.request)
             val navEnhet = call.request.headers["X-Nav-Enhet"]
 
+            if (!manuellOppgaveService.finnesOppgave(oppgaveId)) {
+                call.respond(HttpStatusCode.NotFound)
+                return@post
+            }
+
             val hasAccess = authorizationService.hasAccess(oppgaveId, accessToken)
 
             if (navEnhet.isNullOrEmpty()) {
@@ -39,7 +44,7 @@ fun Route.sendVurderingManuellOppgave(
 
             when (hasAccess) {
                 false -> {
-                    call.respond(HttpStatusCode.NotFound)
+                    call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
                 }
                 true -> {
                     val result = call.receive<Result>()
