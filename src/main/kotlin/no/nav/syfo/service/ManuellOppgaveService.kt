@@ -9,6 +9,7 @@ import javax.xml.bind.Unmarshaller
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
+import no.nav.syfo.aksessering.db.finnesOppgave
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -28,7 +29,6 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.oppgave.service.OppgaveService
-import no.nav.syfo.persistering.db.finnesOppgave
 import no.nav.syfo.persistering.db.oppdaterManuellOppgave
 import no.nav.syfo.persistering.error.OppgaveNotFoundException
 import no.nav.syfo.util.LoggingMeta
