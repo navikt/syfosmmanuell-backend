@@ -61,7 +61,7 @@ class SyfoTilgangsKontrollClient(
                 )
             }
             HttpStatusCode.Forbidden -> {
-                log.warn("syfo-tilgangskontroll svarer med Unauthorized")
+                log.warn("syfo-tilgangskontroll svarer med Forbidden")
                 return Tilgang(
                         harTilgang = false,
                         begrunnelse = "syfo-tilgangskontroll svarer med Forbidden"
