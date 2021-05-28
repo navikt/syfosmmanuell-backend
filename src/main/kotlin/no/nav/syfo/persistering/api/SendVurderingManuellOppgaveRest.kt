@@ -39,7 +39,7 @@ fun Route.sendVurderingManuellOppgave(
 
             when (hasAccess) {
                 false -> {
-                    call.respond(HttpStatusCode.NotFound)
+                    call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
                 }
                 true -> {
                     val result = call.receive<Result>()

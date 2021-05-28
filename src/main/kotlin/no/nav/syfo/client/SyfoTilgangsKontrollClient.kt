@@ -60,6 +60,13 @@ class SyfoTilgangsKontrollClient(
                     begrunnelse = "syfo-tilgangskontroll svarer med Unauthorized"
                 )
             }
+            HttpStatusCode.Forbidden -> {
+                log.warn("syfo-tilgangskontroll svarer med Unauthorized")
+                return Tilgang(
+                        harTilgang = false,
+                        begrunnelse = "syfo-tilgangskontroll svarer med Forbidden"
+                )
+            }
             HttpStatusCode.OK -> {
                 log.debug("syfo-tilgangskontroll svarer med httpResponse status kode: {}", httpResponse.status.value)
                 log.info("Sjekker tilgang for veileder på person")

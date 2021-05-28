@@ -25,7 +25,7 @@ fun Route.hentManuellOppgaver(
 
             when (hasAccess) {
                 false -> {
-                    call.respond(HttpStatusCode.NotFound)
+                    call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
                 }
                 true -> {
                     log.info("Henter ut oppgave med $oppgaveId")
