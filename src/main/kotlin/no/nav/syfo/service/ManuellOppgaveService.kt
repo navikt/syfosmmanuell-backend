@@ -79,7 +79,7 @@ class ManuellOppgaveService(
             oppgaveService.opprettOppfoligingsOppgave(manuellOppgave, enhet, veileder, loggingMeta)
         }
 
-        database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, validationResult, oppdatertApprec)
+        database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, oppdatertApprec)
 
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }

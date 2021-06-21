@@ -83,7 +83,7 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()
             oppgaveFraDb.ferdigstilt shouldEqual true
-            oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.OK, emptyList())
+            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
             oppgaveFraDb.apprec shouldEqual okApprec()
         }
         it("Happy case OK med merknad") {
@@ -109,7 +109,7 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()
             oppgaveFraDb.ferdigstilt shouldEqual true
-            oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.OK, emptyList())
+            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
             oppgaveFraDb.receivedSykmelding.merknader shouldEqual merknader
             oppgaveFraDb.apprec shouldEqual okApprec()
         }
@@ -128,7 +128,7 @@ object ManuellOppgaveServiceTest : Spek({
             val oppgaveFraDb = oppgaveliste.first()
             println(objectMapper.writeValueAsString(oppgaveFraDb.apprec))
             oppgaveFraDb.ferdigstilt shouldEqual true
-            oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.INVALID, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.INVALID)))
+            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
             oppgaveFraDb.apprec shouldEqual avvistApprec()
         }
         it("Feiler hvis validation result er MANUAL_PROCESSING") {
