@@ -6,7 +6,7 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.toPGObject
 
-fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, oppgaveId: Int) {
+fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, apprec: Apprec, oppgaveId: Int) {
     connection.use { connection ->
         connection.prepareStatement(
                 """
@@ -25,7 +25,7 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, oppg
             it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
             it.setObject(2, manuellOppgave.receivedSykmelding.toPGObject())
             it.setObject(3, manuellOppgave.validationResult.toPGObject())
-            it.setObject(4, manuellOppgave.apprec.toPGObject())
+            it.setObject(4, apprec.toPGObject())
             it.setString(5, manuellOppgave.receivedSykmelding.personNrPasient)
             it.setBoolean(6, false)
             it.setInt(7, oppgaveId)
@@ -50,21 +50,19 @@ fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
             }
         }
 
-fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding: ReceivedSykmelding, apprec: Apprec): Int =
+fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding: ReceivedSykmelding): Int =
         connection.use { connection ->
             val status = connection.prepareStatement(
                     """
             UPDATE MANUELLOPPGAVE
             SET ferdigstilt = ?,
-                apprec = ?,
                 receivedsykmelding = ?
             WHERE oppgaveid = ?;
             """
             ).use {
                 it.setBoolean(1, true)
-                it.setObject(2, apprec.toPGObject())
-                it.setObject(3, receivedSykmelding.toPGObject())
-                it.setInt(4, oppgaveId)
+                it.setObject(2, receivedSykmelding.toPGObject())
+                it.setInt(3, oppgaveId)
                 it.executeUpdate()
             }
             connection.commit()

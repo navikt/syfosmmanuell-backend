@@ -99,7 +99,7 @@ object SendVurderingManuellOppgaveTest : Spek({
 
                 coEvery { kafkaProducers.kafkaValidationResultProducer.producer } returns mockk<KafkaProducer<String, ValidationResult>>()
 
-                database.opprettManuellOppgave(manuellOppgave, oppgaveid)
+                database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
 
                 application.routing {
                     sendVurderingManuellOppgave(
@@ -154,30 +154,6 @@ object SendVurderingManuellOppgaveTest : Spek({
                 val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
                 every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
                 sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
-            }
-        }
-
-        it("should fail when writing appreck OK to kafka") {
-            with(TestApplicationEngine()) {
-                start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null, avvisningType = null)
-                every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
-                val statusCode = HttpStatusCode.InternalServerError
-                sendRequest(result, statusCode, oppgaveid)
-            }
-        }
-
-        it("should fail when writing apprec INVALID to kafka") {
-            with(TestApplicationEngine()) {
-                start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-
-                val result = Result(status = ResultStatus.AVVIST, merknad = null, avvisningType = AvvisningType.MANGLER_BEGRUNNELSE)
-                every { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
-                val statusCode = HttpStatusCode.InternalServerError
-                sendRequest(result, statusCode, oppgaveid)
             }
         }
 
@@ -378,7 +354,7 @@ fun setUpTest(
     coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
     coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-    database.opprettManuellOppgave(manuellOppgave, oppgaveid)
+    database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
 
     testApplicationEngine.application.routing {
         sendVurderingManuellOppgave(

@@ -2,9 +2,11 @@ package no.nav.syfo.persistering
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.util.KtorExperimentalAPI
+import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import java.util.UUID
@@ -20,6 +22,7 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
+import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
@@ -33,6 +36,7 @@ import org.spekframework.spek2.style.specification.describe
 object HandleReceivedMessageTest : Spek({
     val database = TestDB()
     val oppgaveService = mockk<OppgaveService>()
+    val manuellOppgaveServce = mockk<ManuellOppgaveService>()
     val brukernotifikasjonService = mockk<BrukernotifikasjonService>(relaxed = true)
     val sykmeldingsId = UUID.randomUUID().toString()
     val msgId = "1314"
@@ -51,6 +55,8 @@ object HandleReceivedMessageTest : Spek({
     beforeEachTest {
         clearAllMocks()
         coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgaveid
+        coEvery { manuellOppgaveServce.lagOppdatertApprec(manuellOppgave) } returns manuellOppgave.apprec
+        coEvery { manuellOppgaveServce.sendApprec(any(), any()) } just Runs
     }
 
     afterEachTest {
@@ -63,7 +69,7 @@ object HandleReceivedMessageTest : Spek({
     describe("Test av mottak av ny melding") {
         it("Happy-case") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, brukernotifikasjonService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveServce, brukernotifikasjonService)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldEqual 1
@@ -72,8 +78,8 @@ object HandleReceivedMessageTest : Spek({
         }
         it("Lagrer ikke melding som allerede finnes") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, brukernotifikasjonService)
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, brukernotifikasjonService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveServce, brukernotifikasjonService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveServce, brukernotifikasjonService)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldEqual 1
@@ -84,7 +90,7 @@ object HandleReceivedMessageTest : Spek({
             coEvery { oppgaveService.opprettOppgave(any(), any()) } throws RuntimeException("Noe gikk galt")
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, brukernotifikasjonService)
+                    handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveServce, brukernotifikasjonService)
                 }
             }
             database.erOpprettManuellOppgave(sykmeldingsId) shouldEqual false

@@ -12,6 +12,7 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
+import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.wrapExceptions
 
@@ -21,6 +22,7 @@ suspend fun handleReceivedMessage(
     loggingMeta: LoggingMeta,
     database: DatabaseInterface,
     oppgaveService: OppgaveService,
+    manuellOppgaveService: ManuellOppgaveService,
     brukernotifikasjonService: BrukernotifikasjonService
 ) {
     wrapExceptions(loggingMeta) {
@@ -35,12 +37,16 @@ suspend fun handleReceivedMessage(
         } else {
             try {
                 val oppgaveId = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
-                database.opprettManuellOppgave(manuellOppgave, oppgaveId)
+
+                val oppdatertApprec = manuellOppgaveService.lagOppdatertApprec(manuellOppgave)
+
+                database.opprettManuellOppgave(manuellOppgave, oppdatertApprec, oppgaveId)
                 log.info(
                     "Manuell oppgave lagret i databasen, for {}, {}",
                     StructuredArguments.keyValue("oppgaveId", oppgaveId),
                     fields(loggingMeta)
                 )
+                manuellOppgaveService.sendApprec(oppdatertApprec, loggingMeta)
                 brukernotifikasjonService.sendBrukerNotifikasjon(manuellOppgave)
                 MESSAGE_STORED_IN_DB_COUNTER.inc()
             } catch (e: Exception) {

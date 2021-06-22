@@ -23,6 +23,7 @@ import no.nav.syfo.metrics.RULE_HIT_COUNTER
 import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
+import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.ReceivedSykmelding
@@ -70,16 +71,13 @@ class ManuellOppgaveService(
             else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
         }
 
-        val oppdatertApprec = lagOppdatertApprec(manuellOppgave, validationResult)
-
-        sendApprec(oppdatertApprec, loggingMeta)
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
 
         if (skalOppretteOppfolgingsOppgave(manuellOppgave)) {
             oppgaveService.opprettOppfoligingsOppgave(manuellOppgave, enhet, veileder, loggingMeta)
         }
 
-        database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, oppdatertApprec)
+        database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding)
 
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }
@@ -132,7 +130,7 @@ class ManuellOppgaveService(
         )
     }
 
-    private fun sendApprec(apprec: Apprec, loggingMeta: LoggingMeta) {
+    fun sendApprec(apprec: Apprec, loggingMeta: LoggingMeta) {
         try {
             kafkaProducers.kafkaApprecProducer.producer.send(ProducerRecord(kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic, apprec)).get()
             log.info("Apprec kvittering sent til kafka topic {} {}", kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic, loggingMeta)
@@ -142,7 +140,7 @@ class ManuellOppgaveService(
         }
     }
 
-    private fun lagOppdatertApprec(manuellOppgave: ManuellOppgaveKomplett, validationResult: ValidationResult): Apprec =
+    fun lagOppdatertApprec(manuellOppgave: ManuellOppgave): Apprec =
         Apprec(
             ediloggid = manuellOppgave.apprec.ediloggid,
             msgId = manuellOppgave.apprec.msgId,
@@ -150,16 +148,17 @@ class ManuellOppgaveService(
             msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
             genDate = manuellOppgave.apprec.genDate,
             msgGenDate = manuellOppgave.apprec.msgGenDate,
-            apprecStatus = getApprecStatus(validationResult.status),
-            tekstTilSykmelder = null,
+            apprecStatus = getApprecStatus(manuellOppgave.validationResult.status),
+            tekstTilSykmelder = "Sykmeldingen er til manuell vurdering for tilbakedatering",
             senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
             mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
-            validationResult = if (validationResult.status == Status.OK) null else validationResult
+            validationResult = manuellOppgave.validationResult
         )
 
     private fun getApprecStatus(status: Status): ApprecStatus {
         return when (status) {
             Status.OK -> ApprecStatus.OK
+            Status.MANUAL_PROCESSING -> ApprecStatus.OK
             Status.INVALID -> ApprecStatus.AVVIST
             else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
         }

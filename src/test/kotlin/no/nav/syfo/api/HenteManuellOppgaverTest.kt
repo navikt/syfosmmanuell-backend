@@ -88,7 +88,7 @@ object HenteManuellOppgaverTest : Spek({
             }
 
             it("Skal hente ut manuell oppgave basert på oppgaveid") {
-                database.opprettManuellOppgave(manuellOppgave, oppgaveid)
+                database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
                 with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 }) {
@@ -97,7 +97,7 @@ object HenteManuellOppgaverTest : Spek({
                 }
             }
             it("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
-                database.opprettManuellOppgave(manuellOppgave, oppgaveid)
+                database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
                 assertFailsWith<NumberFormatException> {
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
                 }
