@@ -11,7 +11,6 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
 import no.nav.syfo.model.Merknad
-import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.service.ManuellOppgaveService
@@ -82,14 +81,12 @@ enum class AvvisningType {
 
 enum class ResultStatus {
     GODKJENT,
-    GODKJENT_MED_MERKNAD,
-    AVVIST
+    GODKJENT_MED_MERKNAD
 }
 
 data class Result(
     val status: ResultStatus,
-    val merknad: MerknadType?,
-    val avvisningType: AvvisningType?
+    val merknad: MerknadType?
 ) {
     fun toMerknad(): Merknad? {
         return when (status) {
@@ -120,39 +117,6 @@ data class Result(
         return when (status) {
             ResultStatus.GODKJENT -> ValidationResult(Status.OK, emptyList())
             ResultStatus.GODKJENT_MED_MERKNAD -> ValidationResult(Status.OK, emptyList())
-            ResultStatus.AVVIST -> {
-                return when (avvisningType) {
-                    AvvisningType.MANGLER_BEGRUNNELSE -> {
-                        ValidationResult(
-                            Status.INVALID,
-                            listOf(
-                                RuleInfo(
-                                    ruleName = "TILBAKEDATERT_MANGLER_BEGRUNNELSE",
-                                    messageForSender = "Sykmelding gjelder som hovedregel fra den dagen pasienten oppsøker behandler. Sykmeldingen er tilbakedatert uten at det kommer tydelig nok fram hvorfor dette var nødvendig. Sykmeldingen er derfor avvist, og det må skrives en ny hvis det fortsatt er aktuelt med sykmelding. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
-                                    messageForUser = "Sykmelding gjelder som hovedregel fra den dagen du oppsøker behandler. Sykmeldingen din er tilbakedatert uten at det er gitt en god nok begrunnelse for dette. Behandleren din må skrive ut en ny sykmelding og begrunne bedre hvorfor den er tilbakedatert. Din behandler har mottatt melding fra NAV om dette.",
-                                    ruleStatus = Status.INVALID
-                                )
-                            )
-                        )
-                    }
-                    AvvisningType.UGYLDIG_BEGRUNNELSE -> {
-                        ValidationResult(
-                            Status.INVALID,
-                            listOf(
-                                RuleInfo(
-                                    ruleName = "UGYLDIG_BEGRUNNELSE",
-                                    messageForSender = "NAV kan ikke godta tilbakedateringen. Sykmeldingen er derfor avvist. Hvis sykmelding fortsatt er aktuelt, må det skrives ny sykmelding der f.o.m.-dato er dagen du var i kontakt med pasienten. Pasienten har fått beskjed om å vente på ny sykmelding fra deg.",
-                                    messageForUser = "NAV kan ikke godta sykmeldingen din fordi den starter før dagen du tok kontakt med behandleren. Trenger du fortsatt sykmelding, må behandleren din skrive en ny som gjelder fra den dagen dere var i kontakt. Behandleren din har fått beskjed fra NAV om dette.",
-                                    ruleStatus = Status.INVALID
-                                )
-                            )
-                        )
-                    }
-                    else -> {
-                        throw IllegalArgumentException("Result with status AVVIST missing avvisningtype property")
-                    }
-                }
-            }
         }
     }
 }

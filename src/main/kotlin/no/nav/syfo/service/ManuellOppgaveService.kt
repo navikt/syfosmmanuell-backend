@@ -159,7 +159,6 @@ class ManuellOppgaveService(
         return when (status) {
             Status.OK -> ApprecStatus.OK
             Status.MANUAL_PROCESSING -> ApprecStatus.OK
-            Status.INVALID -> ApprecStatus.AVVIST
             else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
         }
     }
