@@ -1,11 +1,9 @@
 package no.nav.syfo.service
 
 import io.ktor.util.KtorExperimentalAPI
-import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
 import java.util.UUID
 import javax.ws.rs.ForbiddenException
@@ -175,6 +173,5 @@ object ManuellOppgaveServiceTest : Spek({
 
             database.erApprecSendt(oppgaveid) shouldEqual true
         }
-
     }
 })
