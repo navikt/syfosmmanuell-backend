@@ -50,6 +50,7 @@ object OpprettManuellOppgaveTest : Spek({
             oppgaveliste[0].apprec shouldEqual apprec
             oppgaveliste[0].receivedSykmelding shouldEqual receivedSykmelding
             oppgaveliste[0].validationResult shouldEqual validationResult
+            oppgaveliste[0].sendtApprec shouldEqual false
         }
         it("Hvis oppgave er lagret for sykmeldingsid skal erOpprettManuellOppgave returnere true") {
             database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)

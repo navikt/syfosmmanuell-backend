@@ -9,6 +9,7 @@ import javax.xml.bind.Unmarshaller
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
+import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.finnesOppgave
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
@@ -52,6 +53,12 @@ class ManuellOppgaveService(
     fun finnesOppgave(oppgaveId: Int): Boolean =
             database.finnesOppgave(oppgaveId)
 
+    fun erApprecSendt(oppgaveId: Int): Boolean =
+            database.erApprecSendt(oppgaveId)
+
+    fun toggleApprecSendt(oppgaveId: Int) =
+            database.oppdaterManuellOppgave(oppgaveId, true)
+
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String, merknader: List<Merknad>?) {
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).addMerknader(merknader)
         val loggingMeta = LoggingMeta(
@@ -64,6 +71,17 @@ class ManuellOppgaveService(
         incrementCounters(validationResult, manuellOppgave)
 
         sendReceivedSykmelding(kafkaProducers.kafkaRecievedSykmeldingProducer, manuellOppgave.receivedSykmelding, validationResult.status, loggingMeta)
+
+        if (!erApprecSendt(oppgaveId)) {
+            /**
+             * Fallback for å sende apprec for oppgaver hvor apprec ikke har blitt sendt
+             * Tidligere ble apprec sendt ved ferdigstilling, mens det nå blir sendt ved mottak i manuell
+             * Frem til alle gamle oppgaver er ferdigstilt er vi nødt til å sjekke
+              */
+
+            sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
+            toggleApprecSendt(oppgaveId)
+        }
 
         when (validationResult.status) {
             Status.OK -> sendToSyfoService(manuellOppgave, loggingMeta)
@@ -130,10 +148,11 @@ class ManuellOppgaveService(
         )
     }
 
-    fun sendApprec(apprec: Apprec, loggingMeta: LoggingMeta) {
+    fun sendApprec(oppgaveId: Int, apprec: Apprec, loggingMeta: LoggingMeta) {
         try {
             kafkaProducers.kafkaApprecProducer.producer.send(ProducerRecord(kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic, apprec)).get()
             log.info("Apprec kvittering sent til kafka topic {} {}", kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic, loggingMeta)
+            toggleApprecSendt(oppgaveId)
         } catch (ex: Exception) {
             log.error("Failed to send apprec {}", loggingMeta)
             throw ex

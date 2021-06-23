@@ -37,7 +37,6 @@ suspend fun handleReceivedMessage(
         } else {
             try {
                 val oppgaveId = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
-
                 val oppdatertApprec = manuellOppgaveService.lagOppdatertApprec(manuellOppgave)
 
                 database.opprettManuellOppgave(manuellOppgave, oppdatertApprec, oppgaveId)
@@ -46,7 +45,7 @@ suspend fun handleReceivedMessage(
                     StructuredArguments.keyValue("oppgaveId", oppgaveId),
                     fields(loggingMeta)
                 )
-                manuellOppgaveService.sendApprec(oppdatertApprec, loggingMeta)
+                manuellOppgaveService.sendApprec(oppgaveId, oppdatertApprec, loggingMeta)
                 brukernotifikasjonService.sendBrukerNotifikasjon(manuellOppgave)
                 MESSAGE_STORED_IN_DB_COUNTER.inc()
             } catch (e: Exception) {

@@ -11,6 +11,7 @@ import java.util.UUID
 import javax.ws.rs.ForbiddenException
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
@@ -56,7 +57,6 @@ object ManuellOppgaveServiceTest : Spek({
         clearAllMocks()
         coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, null)
         coEvery { manuellOppgaveServce.lagOppdatertApprec(manuellOppgave) } returns manuellOppgave.apprec
-        coEvery { manuellOppgaveServce.sendApprec(any(), any()) } just Runs
     }
 
     afterEachTest {
@@ -148,5 +148,33 @@ object ManuellOppgaveServiceTest : Spek({
                 }
             }
         }
+
+        it("Apprec sendes OK") {
+            runBlocking {
+                database.erApprecSendt(oppgaveid) shouldEqual false
+
+                manuellOppgaveService.ferdigstillManuellBehandling(
+                        oppgaveid, "1234",
+                        Veileder("4321"),
+                        ValidationResult(Status.OK, emptyList()),
+                        "token",
+                        merknader = null
+                )
+            }
+
+            coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
+            coVerify(exactly = 0) { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
+            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
+            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
+            oppgaveliste.size shouldEqual 1
+            val oppgaveFraDb = oppgaveliste.first()
+            oppgaveFraDb.ferdigstilt shouldEqual true
+            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
+            oppgaveFraDb.apprec shouldEqual okApprec()
+
+            database.erApprecSendt(oppgaveid) shouldEqual true
+        }
+
     }
 })

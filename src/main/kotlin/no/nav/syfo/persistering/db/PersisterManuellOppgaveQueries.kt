@@ -17,9 +17,10 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, appr
                 apprec,
                 pasientfnr,
                 ferdigstilt,
-                oppgaveid
+                oppgaveid,
+                sendt_apprec
                 )
-            VALUES  (?, ?, ?, ?, ?, ?, ?)
+            VALUES  (?, ?, ?, ?, ?, ?, ?, ?)
             """
         ).use {
             it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
@@ -29,6 +30,7 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, appr
             it.setString(5, manuellOppgave.receivedSykmelding.personNrPasient)
             it.setBoolean(6, false)
             it.setInt(7, oppgaveId)
+            it.setBoolean(8, false)
             it.executeUpdate()
         }
 
@@ -63,6 +65,23 @@ fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding:
                 it.setBoolean(1, true)
                 it.setObject(2, receivedSykmelding.toPGObject())
                 it.setInt(3, oppgaveId)
+                it.executeUpdate()
+            }
+            connection.commit()
+            return status
+        }
+
+fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, sendtApprec: Boolean): Int =
+        connection.use { connection ->
+            val status = connection.prepareStatement(
+                    """
+            UPDATE MANUELLOPPGAVE
+            SET sendt_apprec = ?
+            WHERE oppgaveid = ?;
+            """
+            ).use {
+                it.setBoolean(1, sendtApprec)
+                it.setInt(2, oppgaveId)
                 it.executeUpdate()
             }
             connection.commit()

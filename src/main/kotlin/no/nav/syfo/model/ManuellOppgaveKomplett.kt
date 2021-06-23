@@ -5,7 +5,8 @@ data class ManuellOppgaveKomplett(
     val validationResult: ValidationResult,
     val apprec: Apprec,
     val oppgaveid: Int,
-    val ferdigstilt: Boolean
+    val ferdigstilt: Boolean,
+    val sendtApprec: Boolean
 ) {
     fun addMerknader(merknadList: List<Merknad>?): ManuellOppgaveKomplett {
         if (merknadList.isNullOrEmpty()) {
