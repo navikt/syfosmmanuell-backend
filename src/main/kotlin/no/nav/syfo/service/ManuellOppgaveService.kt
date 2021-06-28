@@ -80,7 +80,6 @@ class ManuellOppgaveService(
               */
 
             sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
-            toggleApprecSendt(oppgaveId)
         }
 
         when (validationResult.status) {
@@ -167,20 +166,12 @@ class ManuellOppgaveService(
             msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
             genDate = manuellOppgave.apprec.genDate,
             msgGenDate = manuellOppgave.apprec.msgGenDate,
-            apprecStatus = getApprecStatus(manuellOppgave.validationResult.status),
+            apprecStatus = ApprecStatus.OK,
             tekstTilSykmelder = "Sykmeldingen er til manuell vurdering for tilbakedatering",
             senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
             mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
             validationResult = manuellOppgave.validationResult
         )
-
-    private fun getApprecStatus(status: Status): ApprecStatus {
-        return when (status) {
-            Status.OK -> ApprecStatus.OK
-            Status.MANUAL_PROCESSING -> ApprecStatus.OK
-            else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
-        }
-    }
 
     private fun sendReceivedSykmelding(kafkaProducer: KafkaProducers.KafkaRecievedSykmeldingProducer, receivedSykmelding: ReceivedSykmelding, status: Status, loggingMeta: LoggingMeta) {
         val topic = getTopic(status)
