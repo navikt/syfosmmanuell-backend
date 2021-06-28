@@ -106,6 +106,7 @@ fun main() {
         kafkaConsumers,
         database,
         oppgaveService,
+        manuellOppgaveService,
         brukernotifikasjonService
     )
 }
@@ -132,6 +133,7 @@ fun launchListeners(
     kafkaConsumers: KafkaConsumers,
     database: Database,
     oppgaveService: OppgaveService,
+    manuellOppgaveService: ManuellOppgaveService,
     brukernotifikasjonService: BrukernotifikasjonService
 ) {
     createListener(applicationState) {
@@ -143,6 +145,7 @@ fun launchListeners(
             kafkaConsumerManuellOppgave,
             database,
             oppgaveService,
+            manuellOppgaveService,
             brukernotifikasjonService
         )
     }
@@ -154,6 +157,7 @@ suspend fun blockingApplicationLogic(
     kafkaConsumer: KafkaConsumer<String, String>,
     database: Database,
     oppgaveService: OppgaveService,
+    manuellOppgaveService: ManuellOppgaveService,
     brukernotifikasjonService: BrukernotifikasjonService
 ) {
     while (applicationState.ready) {
@@ -171,6 +175,7 @@ suspend fun blockingApplicationLogic(
                 loggingMeta,
                 database,
                 oppgaveService,
+                manuellOppgaveService,
                 brukernotifikasjonService
             )
         }

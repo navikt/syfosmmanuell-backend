@@ -9,6 +9,7 @@ import java.util.UUID
 import javax.ws.rs.ForbiddenException
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
@@ -19,11 +20,9 @@ import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.testutil.TestDB
-import no.nav.syfo.testutil.avvistApprec
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.okApprec
@@ -38,6 +37,7 @@ object ManuellOppgaveServiceTest : Spek({
     val syfotilgangskontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
+    val manuellOppgaveServce = mockk<ManuellOppgaveService>(relaxed = true)
     val sykmeldingsId = UUID.randomUUID().toString()
     val msgId = "1314"
     val manuellOppgave = ManuellOppgave(
@@ -50,9 +50,10 @@ object ManuellOppgaveServiceTest : Spek({
     val manuellOppgaveService = ManuellOppgaveService(database, syfotilgangskontrollClient, kafkaProducers, oppgaveService)
 
     beforeEachTest {
-        database.opprettManuellOppgave(manuellOppgave, oppgaveid)
+        database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
         clearAllMocks()
         coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, null)
+        coEvery { manuellOppgaveServce.lagOppdatertApprec(manuellOppgave) } returns manuellOppgave.apprec
     }
 
     afterEachTest {
@@ -75,9 +76,7 @@ object ManuellOppgaveServiceTest : Spek({
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify(exactly = 0) { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
             oppgaveliste.size shouldEqual 1
@@ -100,9 +99,7 @@ object ManuellOppgaveServiceTest : Spek({
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify(exactly = 0) { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             coVerify { oppgaveService.opprettOppfoligingsOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
@@ -112,24 +109,6 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
             oppgaveFraDb.receivedSykmelding.merknader shouldEqual merknader
             oppgaveFraDb.apprec shouldEqual okApprec()
-        }
-        it("Happy case AVVIST") {
-            runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.INVALID, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.INVALID))), "token", merknader = null)
-            }
-
-            coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
-            coVerify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
-            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
-            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-            oppgaveliste.size shouldEqual 1
-            val oppgaveFraDb = oppgaveliste.first()
-            println(objectMapper.writeValueAsString(oppgaveFraDb.apprec))
-            oppgaveFraDb.ferdigstilt shouldEqual true
-            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
-            oppgaveFraDb.apprec shouldEqual avvistApprec()
         }
         it("Feiler hvis validation result er MANUAL_PROCESSING") {
             assertFailsWith<IllegalArgumentException> {
@@ -146,6 +125,32 @@ object ManuellOppgaveServiceTest : Spek({
                     manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.OK, emptyList()), "token", merknader = null)
                 }
             }
+        }
+
+        it("Apprec sendes OK") {
+            runBlocking {
+                database.erApprecSendt(oppgaveid) shouldEqual false
+
+                manuellOppgaveService.ferdigstillManuellBehandling(
+                        oppgaveid, "1234",
+                        Veileder("4321"),
+                        ValidationResult(Status.OK, emptyList()),
+                        "token",
+                        merknader = null
+                )
+            }
+
+            coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
+            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
+            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
+            oppgaveliste.size shouldEqual 1
+            val oppgaveFraDb = oppgaveliste.first()
+            oppgaveFraDb.ferdigstilt shouldEqual true
+            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
+            oppgaveFraDb.apprec shouldEqual okApprec()
+
+            database.erApprecSendt(oppgaveid) shouldEqual true
         }
     }
 })

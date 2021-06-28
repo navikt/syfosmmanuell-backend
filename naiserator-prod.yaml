@@ -70,3 +70,5 @@ spec:
       value: dfaa2699-7390-4459-9cfc-2e8de64dfaf9
     - name: OPPGAVEBEHANDLING_URL
       value: https://oppgave.nais.adeo.no/api/v1/oppgaver
+    - name: SYFOTILGANGSKONTROLL_URL
+      value: https://syfo-tilgangskontroll.nais.adeo.no/syfo-tilgangskontroll

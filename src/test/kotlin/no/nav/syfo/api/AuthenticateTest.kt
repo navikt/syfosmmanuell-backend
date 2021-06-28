@@ -75,7 +75,7 @@ object AuthenticateTest : Spek({
 
     beforeEachTest {
         clearAllMocks()
-        database.opprettManuellOppgave(manuellOppgave, oppgaveid)
+        database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
         coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
     }
     afterEachTest {

@@ -6,9 +6,9 @@ import io.ktor.util.KtorExperimentalAPI
 import java.io.StringReader
 import javax.ws.rs.ForbiddenException
 import javax.xml.bind.Unmarshaller
-import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
+import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.finnesOppgave
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
@@ -23,12 +23,14 @@ import no.nav.syfo.metrics.RULE_HIT_COUNTER
 import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
+import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.oppgave.service.OppgaveService
+import no.nav.syfo.persistering.db.oppdaterApprecStatus
 import no.nav.syfo.persistering.db.oppdaterManuellOppgave
 import no.nav.syfo.persistering.error.OppgaveNotFoundException
 import no.nav.syfo.util.LoggingMeta
@@ -51,6 +53,12 @@ class ManuellOppgaveService(
     fun finnesOppgave(oppgaveId: Int): Boolean =
             database.finnesOppgave(oppgaveId)
 
+    fun erApprecSendt(oppgaveId: Int): Boolean =
+            database.erApprecSendt(oppgaveId)
+
+    fun toggleApprecSendt(oppgaveId: Int) =
+            database.oppdaterApprecStatus(oppgaveId, true)
+
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String, merknader: List<Merknad>?) {
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).addMerknader(merknader)
         val loggingMeta = LoggingMeta(
@@ -64,22 +72,28 @@ class ManuellOppgaveService(
 
         sendReceivedSykmelding(kafkaProducers.kafkaRecievedSykmeldingProducer, manuellOppgave.receivedSykmelding, validationResult.status, loggingMeta)
 
-        when (validationResult.status) {
-            Status.OK -> sendToSyfoService(manuellOppgave, loggingMeta)
-            Status.INVALID -> sendValidationResult(validationResult, manuellOppgave.receivedSykmelding, loggingMeta)
-            else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
+        if (!erApprecSendt(oppgaveId)) {
+            /**
+             * Fallback for å sende apprec for oppgaver hvor apprec ikke har blitt sendt
+             * Tidligere ble apprec sendt ved ferdigstilling, mens det nå blir sendt ved mottak i manuell
+             * Frem til alle gamle oppgaver er ferdigstilt er vi nødt til å sjekke
+              */
+
+            sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
         }
 
-        val oppdatertApprec = lagOppdatertApprec(manuellOppgave, validationResult)
+        when (validationResult.status) {
+            Status.OK -> sendToSyfoService(manuellOppgave, loggingMeta)
+            else -> throw IllegalArgumentException("Validation result must be OK")
+        }
 
-        sendApprec(oppdatertApprec, loggingMeta)
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
 
         if (skalOppretteOppfolgingsOppgave(manuellOppgave)) {
             oppgaveService.opprettOppfoligingsOppgave(manuellOppgave, enhet, veileder, loggingMeta)
         }
 
-        database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, oppdatertApprec)
+        database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding)
 
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }
@@ -132,17 +146,18 @@ class ManuellOppgaveService(
         )
     }
 
-    private fun sendApprec(apprec: Apprec, loggingMeta: LoggingMeta) {
+    fun sendApprec(oppgaveId: Int, apprec: Apprec, loggingMeta: LoggingMeta) {
         try {
             kafkaProducers.kafkaApprecProducer.producer.send(ProducerRecord(kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic, apprec)).get()
             log.info("Apprec kvittering sent til kafka topic {} {}", kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic, loggingMeta)
+            toggleApprecSendt(oppgaveId)
         } catch (ex: Exception) {
             log.error("Failed to send apprec {}", loggingMeta)
             throw ex
         }
     }
 
-    private fun lagOppdatertApprec(manuellOppgave: ManuellOppgaveKomplett, validationResult: ValidationResult): Apprec =
+    fun lagOppdatertApprec(manuellOppgave: ManuellOppgave): Apprec =
         Apprec(
             ediloggid = manuellOppgave.apprec.ediloggid,
             msgId = manuellOppgave.apprec.msgId,
@@ -150,20 +165,12 @@ class ManuellOppgaveService(
             msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
             genDate = manuellOppgave.apprec.genDate,
             msgGenDate = manuellOppgave.apprec.msgGenDate,
-            apprecStatus = getApprecStatus(validationResult.status),
-            tekstTilSykmelder = null,
+            apprecStatus = ApprecStatus.OK,
+            tekstTilSykmelder = "Sykmeldingen er til manuell vurdering for tilbakedatering",
             senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
             mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
-            validationResult = if (validationResult.status == Status.OK) null else validationResult
+            validationResult = manuellOppgave.validationResult
         )
-
-    private fun getApprecStatus(status: Status): ApprecStatus {
-        return when (status) {
-            Status.OK -> ApprecStatus.OK
-            Status.INVALID -> ApprecStatus.AVVIST
-            else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
-        }
-    }
 
     private fun sendReceivedSykmelding(kafkaProducer: KafkaProducers.KafkaRecievedSykmeldingProducer, receivedSykmelding: ReceivedSykmelding, status: Status, loggingMeta: LoggingMeta) {
         val topic = getTopic(status)
@@ -182,28 +189,10 @@ class ManuellOppgaveService(
         }
     }
 
-    fun sendValidationResult(
-        validationResult: ValidationResult,
-        receivedSykmelding: ReceivedSykmelding,
-        loggingMeta: LoggingMeta
-    ) {
-        val topic = kafkaProducers.kafkaValidationResultProducer.sm2013BehandlingsUtfallTopic
-        try {
-            kafkaProducers.kafkaValidationResultProducer.producer.send(
-                ProducerRecord(topic, receivedSykmelding.sykmelding.id, validationResult)
-            ).get()
-            log.info("Valideringsreultat sendt til kafka {}, {}", topic, StructuredArguments.fields(loggingMeta))
-        } catch (ex: Exception) {
-            log.error("Failed to send validation result for sykmelding {} to topic {} {}", receivedSykmelding.sykmelding.id, topic, loggingMeta)
-            throw ex
-        }
-    }
-
     private fun getTopic(status: Status): String {
         return when (status) {
             Status.OK -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic
-            Status.INVALID -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic
-            else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
+            else -> throw IllegalArgumentException("Validation result must be OK")
         }
     }
 }

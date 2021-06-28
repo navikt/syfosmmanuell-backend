@@ -1,0 +1,1 @@
+ALTER TABLE manuelloppgave ADD COLUMN sendt_apprec boolean;

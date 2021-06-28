@@ -23,6 +23,22 @@ fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
             }
         }
 
+fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
+        connection.use { connection ->
+            connection.prepareStatement(
+                    """
+                SELECT *
+                FROM MANUELLOPPGAVE
+                WHERE oppgaveid=?
+                AND sendt_apprec=?;
+                """
+            ).use {
+                it.setInt(1, oppgaveId)
+                it.setBoolean(2, true)
+                it.executeQuery().next()
+            }
+        }
+
 fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
     connection.use { connection ->
         connection.prepareStatement(
@@ -54,7 +70,7 @@ fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: Int): List<ManuellOp
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt
+                SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec
                 FROM MANUELLOPPGAVE  
                 WHERE oppgaveid=?;
                 """
@@ -70,5 +86,6 @@ fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
         validationResult = objectMapper.readValue(getString("validationresult")),
         apprec = objectMapper.readValue(getString("apprec")),
         oppgaveid = getInt("oppgaveid"),
-        ferdigstilt = getBoolean("ferdigstilt")
+        ferdigstilt = getBoolean("ferdigstilt"),
+        sendtApprec = getBoolean("sendt_apprec")
     )

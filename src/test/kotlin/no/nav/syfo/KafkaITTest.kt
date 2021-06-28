@@ -43,7 +43,8 @@ object KafkaITTest : Spek({
             oppgavebehandlingUrl = "oppgave",
             cluster = "cluster",
             truststore = "",
-            truststorePassword = ""
+            truststorePassword = "",
+            syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll"
     )
 
     fun Properties.overrideForTest(): Properties = apply {

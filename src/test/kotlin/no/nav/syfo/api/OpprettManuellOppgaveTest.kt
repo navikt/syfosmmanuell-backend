@@ -42,7 +42,7 @@ object OpprettManuellOppgaveTest : Spek({
 
     describe("Test av oppretting av manuelle oppgaver") {
         it("Skal lagre manuellOppgave i databasen og kunne hente den opp som forventet") {
-            database.opprettManuellOppgave(manuellOppgave, 123144)
+            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)
 
             val oppgaveliste = database.hentKomplettManuellOppgave(123144)
 
@@ -50,9 +50,10 @@ object OpprettManuellOppgaveTest : Spek({
             oppgaveliste[0].apprec shouldEqual apprec
             oppgaveliste[0].receivedSykmelding shouldEqual receivedSykmelding
             oppgaveliste[0].validationResult shouldEqual validationResult
+            oppgaveliste[0].sendtApprec shouldEqual false
         }
         it("Hvis oppgave er lagret for sykmeldingsid skal erOpprettManuellOppgave returnere true") {
-            database.opprettManuellOppgave(manuellOppgave, 123144)
+            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)
 
             database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id) shouldEqual true
         }
