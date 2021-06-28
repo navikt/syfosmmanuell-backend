@@ -10,7 +10,6 @@ import no.nav.syfo.kafka.model.SyfoserviceSykmeldingKafkaMessage
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.setSecurityProtocol
@@ -27,7 +26,6 @@ class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
 
     val kafkaApprecProducer = KafkaApprecProducer()
     val kafkaRecievedSykmeldingProducer = KafkaRecievedSykmeldingProducer()
-    val kafkaValidationResultProducer = KafkaValidationResultProducer()
     val kafkaSyfoserviceProducer = KafkaSyfoserviceProducer()
     val kafkaBrukernotifikasjonProducer = BrukernotifikasjonProducer()
     val kafkaProduceTaskProducer = KafkaProduceTaskProducer()
@@ -40,12 +38,6 @@ class KafkaProducers(private val env: Environment, vaultSecrets: VaultSecrets) {
     inner class KafkaRecievedSykmeldingProducer() {
         val producer = KafkaProducer<String, ReceivedSykmelding>(properties)
         val sm2013AutomaticHandlingTopic = env.sm2013AutomaticHandlingTopic
-        val sm2013InvalidHandlingTopic = env.sm2013InvalidHandlingTopic
-    }
-
-    inner class KafkaValidationResultProducer() {
-        val producer = KafkaProducer<String, ValidationResult>(properties)
-        val sm2013BehandlingsUtfallTopic = env.sm2013BehandlingsUtfallTopic
     }
 
     inner class KafkaSyfoserviceProducer() {

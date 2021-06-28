@@ -20,7 +20,6 @@ import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.testutil.TestDB
@@ -77,7 +76,6 @@ object ManuellOppgaveServiceTest : Spek({
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify(exactly = 0) { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
@@ -101,7 +99,6 @@ object ManuellOppgaveServiceTest : Spek({
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify(exactly = 0) { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             coVerify { oppgaveService.opprettOppfoligingsOppgave(any(), any(), any(), any()) }
@@ -111,23 +108,6 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.ferdigstilt shouldEqual true
             oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
             oppgaveFraDb.receivedSykmelding.merknader shouldEqual merknader
-            oppgaveFraDb.apprec shouldEqual okApprec()
-        }
-        it("Happy case AVVIST") {
-            runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.INVALID, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.INVALID))), "token", merknader = null)
-            }
-
-            coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
-            coVerify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
-            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
-            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-            oppgaveliste.size shouldEqual 1
-            val oppgaveFraDb = oppgaveliste.first()
-            println(objectMapper.writeValueAsString(oppgaveFraDb.apprec))
-            oppgaveFraDb.ferdigstilt shouldEqual true
-            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
             oppgaveFraDb.apprec shouldEqual okApprec()
         }
         it("Feiler hvis validation result er MANUAL_PROCESSING") {
@@ -161,7 +141,6 @@ object ManuellOppgaveServiceTest : Spek({
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify(exactly = 0) { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)

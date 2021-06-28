@@ -6,7 +6,6 @@ import io.ktor.util.KtorExperimentalAPI
 import java.io.StringReader
 import javax.ws.rs.ForbiddenException
 import javax.xml.bind.Unmarshaller
-import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.db.erApprecSendt
@@ -85,8 +84,7 @@ class ManuellOppgaveService(
 
         when (validationResult.status) {
             Status.OK -> sendToSyfoService(manuellOppgave, loggingMeta)
-            Status.INVALID -> sendValidationResult(validationResult, manuellOppgave.receivedSykmelding, loggingMeta)
-            else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
+            else -> throw IllegalArgumentException("Validation result must be OK")
         }
 
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
@@ -191,28 +189,10 @@ class ManuellOppgaveService(
         }
     }
 
-    fun sendValidationResult(
-        validationResult: ValidationResult,
-        receivedSykmelding: ReceivedSykmelding,
-        loggingMeta: LoggingMeta
-    ) {
-        val topic = kafkaProducers.kafkaValidationResultProducer.sm2013BehandlingsUtfallTopic
-        try {
-            kafkaProducers.kafkaValidationResultProducer.producer.send(
-                ProducerRecord(topic, receivedSykmelding.sykmelding.id, validationResult)
-            ).get()
-            log.info("Valideringsreultat sendt til kafka {}, {}", topic, StructuredArguments.fields(loggingMeta))
-        } catch (ex: Exception) {
-            log.error("Failed to send validation result for sykmelding {} to topic {} {}", receivedSykmelding.sykmelding.id, topic, loggingMeta)
-            throw ex
-        }
-    }
-
     private fun getTopic(status: Status): String {
         return when (status) {
             Status.OK -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic
-            Status.INVALID -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic
-            else -> throw IllegalArgumentException("Validation result must be OK or INVALID")
+            else -> throw IllegalArgumentException("Validation result must be OK")
         }
     }
 }

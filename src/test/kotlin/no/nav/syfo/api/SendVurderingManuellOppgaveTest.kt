@@ -50,7 +50,6 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -93,8 +92,6 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("Skal returnere InternalServerError når oppdatering av manuelloppgave sitt ValidationResults feilet fordi oppgave ikke finnes") {
             with(TestApplicationEngine()) {
                 start()
-
-                coEvery { kafkaProducers.kafkaValidationResultProducer.producer } returns mockk<KafkaProducer<String, ValidationResult>>()
 
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
 
@@ -261,19 +258,14 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
     coEvery { kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic } returns sm2013ApprecTopicName
 
-    coEvery { kafkaProducers.kafkaValidationResultProducer.producer } returns mockk()
-
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer } returns mockk()
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic } returns sm2013AutomaticHandlingTopic
-    coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013InvalidHandlingTopic } returns sm2013InvalidHandlingTopic
-    coEvery { kafkaProducers.kafkaValidationResultProducer.sm2013BehandlingsUtfallTopic } returns sm2013BehandlingsUtfallTopic
     coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
     coEvery { syfoTilgangsKontrollClient.hentVeilederIdentViaAzure(any()) } returns Veileder("4321")
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
     coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-    coEvery { kafkaProducers.kafkaValidationResultProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
 
     testApplicationEngine.application.routing {
