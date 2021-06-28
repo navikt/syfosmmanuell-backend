@@ -71,7 +71,7 @@ fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding:
             return status
         }
 
-fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, sendtApprec: Boolean): Int =
+fun DatabaseInterface.oppdaterApprecStatus(oppgaveId: Int, sendtApprec: Boolean): Int =
         connection.use { connection ->
             val status = connection.prepareStatement(
                     """

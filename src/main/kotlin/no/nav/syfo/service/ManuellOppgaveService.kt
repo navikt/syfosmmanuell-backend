@@ -31,6 +31,7 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.oppgave.service.OppgaveService
+import no.nav.syfo.persistering.db.oppdaterApprecStatus
 import no.nav.syfo.persistering.db.oppdaterManuellOppgave
 import no.nav.syfo.persistering.error.OppgaveNotFoundException
 import no.nav.syfo.util.LoggingMeta
@@ -57,7 +58,7 @@ class ManuellOppgaveService(
             database.erApprecSendt(oppgaveId)
 
     fun toggleApprecSendt(oppgaveId: Int) =
-            database.oppdaterManuellOppgave(oppgaveId, true)
+            database.oppdaterApprecStatus(oppgaveId, true)
 
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String, merknader: List<Merknad>?) {
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).addMerknader(merknader)
