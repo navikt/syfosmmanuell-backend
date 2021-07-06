@@ -2,6 +2,7 @@ package no.nav.syfo
 
 import no.nav.syfo.kafka.KafkaConfig
 import no.nav.syfo.kafka.KafkaCredentials
+import no.nav.syfo.util.getFileAsString
 
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
@@ -23,25 +24,20 @@ data class Environment(
     val syfoTilgangsKontrollClientUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
     val jwkKeysUrl: String = getEnvVar("JWKKEYS_URL", "https://login.microsoftonline.com/common/discovery/keys"),
     val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
-    val securityTokenUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service/rest/v1/sts/token"),
+    val securityTokenUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val smSyfoserviceMqTopic: String = "privat-syfo-syfoservice-mq",
-    val serviceuserUsernamePath: String = getEnvVar("SERVICE_USER_USERNAME"),
-    val serviceuserPasswordPath: String = getEnvVar("SERVICE_USER_PASSWORD"),
-    val oidcWellKnownUriPath: String = getEnvVar("OID_WELL_KNOWN_URI"),
     val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
-    val syfosmmanuellBackendClientIdPath: String = getEnvVar("SYFOSMMANUELL_BACKEND_CLIENT_ID"),
-    val syfosmmanuellBackendClientSecretPath: String = getEnvVar("SYFOSMMANUELL_BACKEND_CLIENT_SECRET", "/secrets/azuread/syfosmmanuell-backend/client_secret"),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
     val brukernotifikasjonBeskjedTopic: String = "aapen-brukernotifikasjon-nyBeskjed-v1",
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean()
 ) : KafkaConfig
 
 data class VaultSecrets(
-    val serviceuserUsername: String,
-    val serviceuserPassword: String,
-    val oidcWellKnownUri: String,
-    val syfosmmanuellBackendClientId: String,
-    val syfosmmanuellBackendClientSecret: String
+    val serviceuserUsername: String = getFileAsString("/secrets/serviceuser/username"),
+    val serviceuserPassword: String = getFileAsString("/secrets/serviceuser/password"),
+    val oidcWellKnownUri: String = getFileAsString("/secrets/default/oidcWellKnownUri"),
+    val syfosmmanuellBackendClientId: String = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_id"),
+    val syfosmmanuellBackendClientSecret: String = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_secret")
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername
     override val kafkaPassword: String = serviceuserPassword
