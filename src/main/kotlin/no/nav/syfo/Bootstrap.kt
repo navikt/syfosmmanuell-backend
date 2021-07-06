@@ -35,7 +35,6 @@ import no.nav.syfo.persistering.handleReceivedMessage
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
-import no.nav.syfo.util.getFileAsString
 import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
@@ -52,13 +51,7 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 @KtorExperimentalAPI
 fun main() {
     val env = Environment()
-    val vaultSecrets = VaultSecrets(
-            serviceuserUsername = getFileAsString(env.serviceuserUsernamePath),
-            serviceuserPassword = getFileAsString(env.serviceuserPasswordPath),
-            oidcWellKnownUri = getFileAsString(env.oidcWellKnownUriPath),
-            syfosmmanuellBackendClientId = getFileAsString(env.syfosmmanuellBackendClientIdPath),
-            syfosmmanuellBackendClientSecret = getFileAsString(env.syfosmmanuellBackendClientSecretPath)
-    )
+    val vaultSecrets = VaultSecrets()
 
     val wellKnown = getWellKnown(vaultSecrets.oidcWellKnownUri)
     val jwkProvider = JwkProviderBuilder(URL(wellKnown.jwks_uri))
@@ -91,7 +84,7 @@ fun main() {
         authorizationService
     )
 
-    ApplicationServer(applicationEngine).start()
+    ApplicationServer(applicationEngine, applicationState).start()
 
     applicationState.ready = true
 

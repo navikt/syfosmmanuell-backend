@@ -28,11 +28,6 @@ object KafkaITTest : Spek({
 
     val config = Environment(
             kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-            applicationName = "syfosminfotrygd",
-            serviceuserUsernamePath = "/secrets/serviceuser/username",
-            serviceuserPasswordPath = "/secrets/serviceuser/password",
-            oidcWellKnownUriPath = "baz",
-            syfosmmanuellBackendClientIdPath = "",
             mountPathVault = "",
             databaseName = "",
             syfosmmanuellbackendDBURL = "url",
