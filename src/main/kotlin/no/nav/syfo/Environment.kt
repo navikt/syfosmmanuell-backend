@@ -35,9 +35,9 @@ data class Environment(
 data class VaultSecrets(
     val serviceuserUsername: String = getFileAsString("/secrets/serviceuser/username"),
     val serviceuserPassword: String = getFileAsString("/secrets/serviceuser/password"),
-    val oidcWellKnownUri: String = getFileAsString("/secrets/default/oidcWellKnownUri"),
-    val syfosmmanuellBackendClientId: String = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_id"),
-    val syfosmmanuellBackendClientSecret: String = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_secret")
+    val oidcWellKnownUri: String = getEnvVar("AZURE_APP_WELL_KNOWN_URL"),
+    val syfosmmanuellBackendClientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
+    val syfosmmanuellBackendClientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET")
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername
     override val kafkaPassword: String = serviceuserPassword
