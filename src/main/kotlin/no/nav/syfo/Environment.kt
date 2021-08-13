@@ -26,7 +26,7 @@ data class Environment(
     val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
     val securityTokenUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val smSyfoserviceMqTopic: String = "privat-syfo-syfoservice-mq",
-    val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
+    val aadAccessTokenUrl: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
     val brukernotifikasjonBeskjedTopic: String = "aapen-brukernotifikasjon-nyBeskjed-v1",
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean()
