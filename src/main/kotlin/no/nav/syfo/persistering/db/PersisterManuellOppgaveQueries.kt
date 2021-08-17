@@ -4,6 +4,7 @@ import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toPGObject
 
 fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, apprec: Apprec, oppgaveId: Int) {
@@ -18,9 +19,10 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, appr
                 pasientfnr,
                 ferdigstilt,
                 oppgaveid,
-                sendt_apprec
+                sendt_apprec,
+                opprinnelig_validationresult
                 )
-            VALUES  (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
         ).use {
             it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
@@ -31,6 +33,7 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, appr
             it.setBoolean(6, false)
             it.setInt(7, oppgaveId)
             it.setBoolean(8, false)
+            it.setObject(9, manuellOppgave.validationResult.toPGObject())
             it.executeUpdate()
         }
 
@@ -52,19 +55,21 @@ fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
             }
         }
 
-fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding: ReceivedSykmelding): Int =
+fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult): Int =
         connection.use { connection ->
             val status = connection.prepareStatement(
                     """
             UPDATE MANUELLOPPGAVE
             SET ferdigstilt = ?,
-                receivedsykmelding = ?
+                receivedsykmelding = ?,
+                validationresult = ?
             WHERE oppgaveid = ?;
             """
             ).use {
                 it.setBoolean(1, true)
                 it.setObject(2, receivedSykmelding.toPGObject())
-                it.setInt(3, oppgaveId)
+                it.setObject(3, validationResult.toPGObject())
+                it.setInt(4, oppgaveId)
                 it.executeUpdate()
             }
             connection.commit()

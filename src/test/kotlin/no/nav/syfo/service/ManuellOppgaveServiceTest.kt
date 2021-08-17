@@ -82,7 +82,8 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()
             oppgaveFraDb.ferdigstilt shouldEqual true
-            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
+            oppgaveFraDb.opprinneligValidationResult shouldEqual manuellOppgave.validationResult
+            oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.OK, emptyList())
             oppgaveFraDb.apprec shouldEqual okApprec()
         }
         it("Happy case OK med merknad") {
@@ -106,7 +107,8 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()
             oppgaveFraDb.ferdigstilt shouldEqual true
-            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
+            oppgaveFraDb.opprinneligValidationResult shouldEqual manuellOppgave.validationResult
+            oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.OK, emptyList())
             oppgaveFraDb.receivedSykmelding.merknader shouldEqual merknader
             oppgaveFraDb.apprec shouldEqual okApprec()
         }
@@ -147,7 +149,8 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveliste.size shouldEqual 1
             val oppgaveFraDb = oppgaveliste.first()
             oppgaveFraDb.ferdigstilt shouldEqual true
-            oppgaveFraDb.validationResult shouldEqual manuellOppgave.validationResult
+            oppgaveFraDb.opprinneligValidationResult shouldEqual manuellOppgave.validationResult
+            oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.OK, emptyList())
             oppgaveFraDb.apprec shouldEqual okApprec()
 
             database.erApprecSendt(oppgaveid) shouldEqual true
