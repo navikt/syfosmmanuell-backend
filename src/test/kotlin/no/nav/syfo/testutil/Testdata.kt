@@ -49,7 +49,8 @@ fun receivedSykmelding(id: String, sykmelding: Sykmelding = generateSykmelding()
         rulesetVersion = "",
         fellesformat = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml"),
         tssid = "",
-        merknader = listOf(Merknad("merknadtype", "merkandbeskrivelse"))
+        merknader = listOf(Merknad("merknadtype", "merkandbeskrivelse")),
+        partnerreferanse = null
 )
 
 fun generateSykmelding(
