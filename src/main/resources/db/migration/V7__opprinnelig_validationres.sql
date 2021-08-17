@@ -1,0 +1,1 @@
+ALTER TABLE manuelloppgave ADD COLUMN opprinnelig_validationresult jsonb;
