@@ -16,6 +16,7 @@ import no.nav.syfo.client.Tilgang
 import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
@@ -26,6 +27,7 @@ import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.okApprec
+import no.nav.syfo.testutil.opprettManuellOppgaveUtenOpprinneligValidationResult
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
@@ -128,7 +130,6 @@ object ManuellOppgaveServiceTest : Spek({
                 }
             }
         }
-
         it("Apprec sendes OK") {
             runBlocking {
                 database.erApprecSendt(oppgaveid) shouldEqual false
@@ -154,6 +155,41 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.apprec shouldEqual okApprec()
 
             database.erApprecSendt(oppgaveid) shouldEqual true
+        }
+        it("Setter opprinnelig validation result hvis det mangler ved ferdigstilling") {
+            val oppgaveId2 = 998765
+            database.connection.opprettManuellOppgaveUtenOpprinneligValidationResult(
+                ManuellOppgaveKomplett(
+                    receivedSykmelding = receivedSykmelding(msgId, generateSykmelding(id = UUID.randomUUID().toString())),
+                    validationResult = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))),
+                    apprec = okApprec(),
+                    oppgaveid = oppgaveId2,
+                    ferdigstilt = false,
+                    sendtApprec = true,
+                    opprinneligValidationResult = null
+                )
+            )
+            runBlocking {
+                manuellOppgaveService.ferdigstillManuellBehandling(
+                    oppgaveId2, "1234",
+                    Veileder("4321"),
+                    ValidationResult(Status.OK, emptyList()),
+                    "token",
+                    merknader = null
+                )
+            }
+
+            coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
+            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
+            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveId2)
+            oppgaveliste.size shouldEqual 1
+            val oppgaveFraDb = oppgaveliste.first()
+            oppgaveFraDb.ferdigstilt shouldEqual true
+            oppgaveFraDb.opprinneligValidationResult shouldEqual manuellOppgave.validationResult
+            oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.OK, emptyList())
+            oppgaveFraDb.apprec shouldEqual okApprec()
+            database.erApprecSendt(oppgaveId2) shouldEqual true
         }
     }
 })

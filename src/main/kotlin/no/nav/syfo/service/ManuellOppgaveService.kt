@@ -32,6 +32,7 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.oppdaterApprecStatus
 import no.nav.syfo.persistering.db.oppdaterManuellOppgave
+import no.nav.syfo.persistering.db.oppdaterManuellOppgaveUtenOpprinneligValidationResult
 import no.nav.syfo.persistering.error.OppgaveNotFoundException
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.XMLDateAdapter
@@ -93,7 +94,17 @@ class ManuellOppgaveService(
             oppgaveService.opprettOppfoligingsOppgave(manuellOppgave, enhet, veileder, loggingMeta)
         }
 
-        database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, validationResult)
+        if (manuellOppgave.opprinneligValidationResult == null) {
+            log.info("Mangler opprinnelig validation result, oppdaterer ved ferdigstilling av oppgaveId $oppgaveId")
+            database.oppdaterManuellOppgaveUtenOpprinneligValidationResult(
+                oppgaveId = oppgaveId,
+                receivedSykmelding = manuellOppgave.receivedSykmelding,
+                validationResult = validationResult,
+                opprinneligValidationResult = manuellOppgave.validationResult
+            )
+        } else {
+            database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, validationResult)
+        }
 
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }

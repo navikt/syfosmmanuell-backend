@@ -76,6 +76,34 @@ fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding:
             return status
         }
 
+fun DatabaseInterface.oppdaterManuellOppgaveUtenOpprinneligValidationResult(
+    oppgaveId: Int,
+    receivedSykmelding: ReceivedSykmelding,
+    validationResult: ValidationResult,
+    opprinneligValidationResult: ValidationResult
+): Int =
+    connection.use { connection ->
+        val status = connection.prepareStatement(
+            """
+            UPDATE MANUELLOPPGAVE
+            SET ferdigstilt = ?,
+                receivedsykmelding = ?,
+                validationresult = ?,
+                opprinnelig_validationresult = ?
+            WHERE oppgaveid = ?;
+            """
+        ).use {
+            it.setBoolean(1, true)
+            it.setObject(2, receivedSykmelding.toPGObject())
+            it.setObject(3, validationResult.toPGObject())
+            it.setObject(4, opprinneligValidationResult.toPGObject())
+            it.setInt(5, oppgaveId)
+            it.executeUpdate()
+        }
+        connection.commit()
+        return status
+    }
+
 fun DatabaseInterface.oppdaterApprecStatus(oppgaveId: Int, sendtApprec: Boolean): Int =
         connection.use { connection ->
             val status = connection.prepareStatement(
