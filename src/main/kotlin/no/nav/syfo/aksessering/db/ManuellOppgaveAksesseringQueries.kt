@@ -7,6 +7,7 @@ import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 
 fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
@@ -70,7 +71,7 @@ fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: Int): List<ManuellOp
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec
+                SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec,opprinnelig_validationresult
                 FROM MANUELLOPPGAVE  
                 WHERE oppgaveid=?;
                 """
@@ -87,5 +88,6 @@ fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
         apprec = objectMapper.readValue(getString("apprec")),
         oppgaveid = getInt("oppgaveid"),
         ferdigstilt = getBoolean("ferdigstilt"),
-        sendtApprec = getBoolean("sendt_apprec")
+        sendtApprec = getBoolean("sendt_apprec"),
+        opprinneligValidationResult = getString("opprinnelig_validationresult")?.let { objectMapper.readValue<ValidationResult>(it) }
     )

@@ -39,8 +39,8 @@ import org.spekframework.spek2.style.specification.describe
 object HandleReceivedMessageTest : Spek({
     val database = TestDB()
     val oppgaveService = mockk<OppgaveService>()
-    val syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val kafkaProducers: KafkaProducers = mockk<KafkaProducers>()
+    val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+    val kafkaProducers = mockk<KafkaProducers>()
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
     val brukernotifikasjonService = mockk<BrukernotifikasjonService>(relaxed = true)
     val sykmeldingsId = UUID.randomUUID().toString()
@@ -97,6 +97,15 @@ object HandleReceivedMessageTest : Spek({
 
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
             verify(exactly = 1) { brukernotifikasjonService.sendBrukerNotifikasjon(any()) }
+        }
+
+        it("Lagrer opprinnelig validation result") {
+            runBlocking {
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService, brukernotifikasjonService)
+            }
+
+            val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
+            komplettManuellOppgave.opprinneligValidationResult shouldEqual komplettManuellOppgave.validationResult
         }
 
         it("Lagrer ikke melding som allerede finnes") {
