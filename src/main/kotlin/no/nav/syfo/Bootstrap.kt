@@ -22,8 +22,6 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.brukernotificasjon.BrukernotifikasjonService
-import no.nav.syfo.brukernotificasjon.kafka.BeskjedProducer
 import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
 import no.nav.syfo.clients.KafkaProducers
@@ -93,7 +91,6 @@ fun main() {
         RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     }
 
-    val brukernotifikasjonService = BrukernotifikasjonService(BeskjedProducer(kafkaProducers.kafkaBrukernotifikasjonProducer), database, vaultSecrets.serviceuserUsername)
     launchListeners(
         applicationState,
         env,
