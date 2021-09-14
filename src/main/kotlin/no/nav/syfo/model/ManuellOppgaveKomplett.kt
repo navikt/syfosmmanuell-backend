@@ -9,10 +9,7 @@ data class ManuellOppgaveKomplett(
     val sendtApprec: Boolean,
     val opprinneligValidationResult: ValidationResult?
 ) {
-    fun addMerknader(merknadList: List<Merknad>?): ManuellOppgaveKomplett {
-        if (merknadList.isNullOrEmpty()) {
-            return this
-        }
+    fun updateMerknader(merknadList: List<Merknad>?): ManuellOppgaveKomplett {
         return this.copy(receivedSykmelding = this.receivedSykmelding.copy(merknader = merknadList))
     }
 }

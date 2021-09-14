@@ -60,8 +60,9 @@ class ManuellOppgaveService(
     fun toggleApprecSendt(oppgaveId: Int) =
             database.oppdaterApprecStatus(oppgaveId, true)
 
-    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, validationResult: ValidationResult, accessToken: String, merknader: List<Merknad>?) {
-        val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).addMerknader(merknader)
+    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, accessToken: String, merknader: List<Merknad>?) {
+        val validationResult = ValidationResult(Status.OK, emptyList())
+        val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).updateMerknader(merknader)
         val loggingMeta = LoggingMeta(
             mottakId = manuellOppgave.receivedSykmelding.navLogId,
             orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
@@ -71,7 +72,7 @@ class ManuellOppgaveService(
 
         incrementCounters(validationResult, manuellOppgave)
 
-        sendReceivedSykmelding(kafkaProducers.kafkaRecievedSykmeldingProducer, manuellOppgave.receivedSykmelding, validationResult.status, loggingMeta)
+        sendReceivedSykmelding(manuellOppgave.receivedSykmelding, loggingMeta)
 
         if (!erApprecSendt(oppgaveId)) {
             /**
@@ -81,11 +82,6 @@ class ManuellOppgaveService(
               */
 
             sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
-        }
-
-        when (validationResult.status) {
-            Status.OK -> sendToSyfoService(manuellOppgave, loggingMeta)
-            else -> throw IllegalArgumentException("Validation result must be OK")
         }
 
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
@@ -105,7 +101,6 @@ class ManuellOppgaveService(
         } else {
             database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, validationResult)
         }
-
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }
 
@@ -139,19 +134,19 @@ class ManuellOppgaveService(
         return manuellOppgave
     }
 
-    private fun sendToSyfoService(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta) {
+    fun sendToSyfoService(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
         val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller().apply {
             setAdapter(LocalDateTimeXmlAdapter::class.java, XMLDateTimeAdapter())
             setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
         }
         val fellesformat = fellesformatUnmarshaller.unmarshal(
-                StringReader(manuellOppgave.receivedSykmelding.fellesformat)) as XMLEIFellesformat
+                StringReader(receivedSykmelding.fellesformat)) as XMLEIFellesformat
 
         notifySyfoService(
             syfoserviceProducer = kafkaProducers.kafkaSyfoserviceProducer,
-            ediLoggId = manuellOppgave.receivedSykmelding.navLogId,
-            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
-            msgId = manuellOppgave.receivedSykmelding.msgId,
+            ediLoggId = receivedSykmelding.navLogId,
+            sykmeldingId = receivedSykmelding.sykmelding.id,
+            msgId = receivedSykmelding.msgId,
             healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat),
             loggingMeta = loggingMeta
         )
@@ -183,10 +178,10 @@ class ManuellOppgaveService(
             validationResult = manuellOppgave.validationResult
         )
 
-    private fun sendReceivedSykmelding(kafkaProducer: KafkaProducers.KafkaRecievedSykmeldingProducer, receivedSykmelding: ReceivedSykmelding, status: Status, loggingMeta: LoggingMeta) {
-        val topic = getTopic(status)
+    fun sendReceivedSykmelding(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
+        val topic = kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic
         try {
-            kafkaProducer.producer.send(
+            kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(
                 ProducerRecord(
                     topic,
                     receivedSykmelding.sykmelding.id,
@@ -197,13 +192,6 @@ class ManuellOppgaveService(
         } catch (ex: Exception) {
             log.error("Failed to send sykmelding {} to topic {} {}", receivedSykmelding.sykmelding.id, topic, loggingMeta)
             throw ex
-        }
-    }
-
-    private fun getTopic(status: Status): String {
-        return when (status) {
-            Status.OK -> kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic
-            else -> throw IllegalArgumentException("Validation result must be OK")
         }
     }
 }
