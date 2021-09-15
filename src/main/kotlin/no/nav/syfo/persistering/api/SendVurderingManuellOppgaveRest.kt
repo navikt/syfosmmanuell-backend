@@ -11,8 +11,6 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
 import no.nav.syfo.model.Merknad
-import no.nav.syfo.model.Status
-import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
 
@@ -47,9 +45,6 @@ fun Route.sendVurderingManuellOppgave(
                 }
                 true -> {
                     val result = call.receive<Result>()
-
-                    val validationResult = result.toValidationResult()
-
                     val merknad = result.toMerknad()
 
                     val veileder = authorizationService.getVeileder(accessToken)
@@ -58,7 +53,6 @@ fun Route.sendVurderingManuellOppgave(
                         oppgaveId = oppgaveId,
                         enhet = navEnhet,
                         veileder = veileder,
-                        validationResult = validationResult,
                         accessToken = accessToken,
                         merknader = if (merknad != null) listOf(merknad) else null
                     )
@@ -72,11 +66,6 @@ fun Route.sendVurderingManuellOppgave(
 enum class MerknadType {
     UGYLDIG_TILBAKEDATERING,
     TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER
-}
-
-enum class AvvisningType {
-    MANGLER_BEGRUNNELSE,
-    UGYLDIG_BEGRUNNELSE
 }
 
 enum class ResultStatus {
@@ -110,13 +99,6 @@ data class Result(
                 }
             }
             else -> null
-        }
-    }
-
-    fun toValidationResult(): ValidationResult {
-        return when (status) {
-            ResultStatus.GODKJENT -> ValidationResult(Status.OK, emptyList())
-            ResultStatus.GODKJENT_MED_MERKNAD -> ValidationResult(Status.OK, emptyList())
         }
     }
 }

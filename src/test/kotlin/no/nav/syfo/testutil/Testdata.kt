@@ -34,7 +34,11 @@ import no.nav.syfo.model.SporsmalSvar
 import no.nav.syfo.model.Sykmelding
 import no.nav.syfo.objectMapper
 
-fun receivedSykmelding(id: String, sykmelding: Sykmelding = generateSykmelding()) = ReceivedSykmelding(
+fun receivedSykmelding(
+    id: String,
+    sykmelding: Sykmelding = generateSykmelding(),
+    merknader: List<Merknad> = listOf(Merknad(type = "UNDER_BEHANDLING", beskrivelse = "Sykmeldingen er til manuell behandling"))
+) = ReceivedSykmelding(
         sykmelding = sykmelding,
         personNrPasient = "123124",
         tlfPasient = "12314",
@@ -49,7 +53,7 @@ fun receivedSykmelding(id: String, sykmelding: Sykmelding = generateSykmelding()
         rulesetVersion = "",
         fellesformat = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml"),
         tssid = "",
-        merknader = listOf(Merknad("merknadtype", "merkandbeskrivelse")),
+        merknader = merknader,
         partnerreferanse = null
 )
 

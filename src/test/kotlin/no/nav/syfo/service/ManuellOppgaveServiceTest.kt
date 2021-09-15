@@ -71,14 +71,12 @@ object ManuellOppgaveServiceTest : Spek({
                 manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveid, "1234",
                         Veileder("4321"),
-                        ValidationResult(Status.OK, emptyList()),
                         "token",
                         merknader = null
                 )
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
             oppgaveliste.size shouldEqual 1
@@ -95,14 +93,12 @@ object ManuellOppgaveServiceTest : Spek({
                         oppgaveid,
                         "1234",
                         Veileder("4321"),
-                        ValidationResult(Status.OK, emptyList()),
                         "token",
                         merknader = merknader
                 )
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             coVerify { oppgaveService.opprettOppfoligingsOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
@@ -114,47 +110,14 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.receivedSykmelding.merknader shouldEqual merknader
             oppgaveFraDb.apprec shouldEqual okApprec()
         }
-        it("Feiler hvis validation result er MANUAL_PROCESSING") {
-            assertFailsWith<IllegalArgumentException> {
-                runBlocking {
-                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))), "token", merknader = null)
-                }
-            }
-        }
         it("Feiler hvis veileder ikke har tilgang til oppgave") {
             coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(false, null)
 
             assertFailsWith<ForbiddenException> {
                 runBlocking {
-                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), ValidationResult(Status.OK, emptyList()), "token", merknader = null)
+                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), "token", merknader = null)
                 }
             }
-        }
-        it("Apprec sendes OK") {
-            runBlocking {
-                database.erApprecSendt(oppgaveid) shouldEqual false
-
-                manuellOppgaveService.ferdigstillManuellBehandling(
-                        oppgaveid, "1234",
-                        Veileder("4321"),
-                        ValidationResult(Status.OK, emptyList()),
-                        "token",
-                        merknader = null
-                )
-            }
-
-            coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
-            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
-            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-            oppgaveliste.size shouldEqual 1
-            val oppgaveFraDb = oppgaveliste.first()
-            oppgaveFraDb.ferdigstilt shouldEqual true
-            oppgaveFraDb.opprinneligValidationResult shouldEqual manuellOppgave.validationResult
-            oppgaveFraDb.validationResult shouldEqual ValidationResult(Status.OK, emptyList())
-            oppgaveFraDb.apprec shouldEqual okApprec()
-
-            database.erApprecSendt(oppgaveid) shouldEqual true
         }
         it("Setter opprinnelig validation result hvis det mangler ved ferdigstilling") {
             val oppgaveId2 = 998765
@@ -173,14 +136,12 @@ object ManuellOppgaveServiceTest : Spek({
                 manuellOppgaveService.ferdigstillManuellBehandling(
                     oppgaveId2, "1234",
                     Veileder("4321"),
-                    ValidationResult(Status.OK, emptyList()),
                     "token",
                     merknader = null
                 )
             }
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveId2)
             oppgaveliste.size shouldEqual 1

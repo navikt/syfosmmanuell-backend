@@ -6,14 +6,12 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
-import no.nav.syfo.brukernotificasjon.BrukernotifikasjonService
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
@@ -40,9 +38,8 @@ object HandleReceivedMessageTest : Spek({
     val database = TestDB()
     val oppgaveService = mockk<OppgaveService>()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val kafkaProducers = mockk<KafkaProducers>()
+    val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-    val brukernotifikasjonService = mockk<BrukernotifikasjonService>(relaxed = true)
     val sykmeldingsId = UUID.randomUUID().toString()
     val msgId = "1314"
     val manuellOppgave = ManuellOppgave(
@@ -76,19 +73,21 @@ object HandleReceivedMessageTest : Spek({
     describe("Test av mottak av ny melding") {
         it("Happy-case") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService, brukernotifikasjonService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldEqual 1
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
-            verify(exactly = 1) { brukernotifikasjonService.sendBrukerNotifikasjon(any()) }
+            coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
+            coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
+            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
         }
 
         it("Apprec oppdateres") {
             database.erApprecSendt(oppgaveid) shouldEqual false
 
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService, brukernotifikasjonService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
             val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
@@ -96,12 +95,11 @@ object HandleReceivedMessageTest : Spek({
             database.erApprecSendt(oppgaveid) shouldEqual true
 
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
-            verify(exactly = 1) { brukernotifikasjonService.sendBrukerNotifikasjon(any()) }
         }
 
         it("Lagrer opprinnelig validation result") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService, brukernotifikasjonService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
             val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
@@ -110,23 +108,23 @@ object HandleReceivedMessageTest : Spek({
 
         it("Lagrer ikke melding som allerede finnes") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService, brukernotifikasjonService)
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService, brukernotifikasjonService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldEqual 1
             coVerify(exactly = 1) { oppgaveService.opprettOppgave(any(), any()) }
-            verify(exactly = 1) { brukernotifikasjonService.sendBrukerNotifikasjon(any()) }
         }
         it("Kaster feil hvis opprettOppgave feilet") {
             coEvery { oppgaveService.opprettOppgave(any(), any()) } throws RuntimeException("Noe gikk galt")
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService, brukernotifikasjonService)
+                    handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
                 }
             }
             database.erOpprettManuellOppgave(sykmeldingsId) shouldEqual false
-            verify(exactly = 0) { brukernotifikasjonService.sendBrukerNotifikasjon(any()) }
+            coVerify(exactly = 0) { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
+            coVerify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
         }
     }
 })

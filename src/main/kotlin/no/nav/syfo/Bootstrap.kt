@@ -22,14 +22,13 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.brukernotificasjon.BrukernotifikasjonService
-import no.nav.syfo.brukernotificasjon.kafka.BeskjedProducer
 import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.Database
 import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.Merknad
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.handleReceivedMessage
 import no.nav.syfo.service.ManuellOppgaveService
@@ -92,15 +91,13 @@ fun main() {
         RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     }
 
-    val brukernotifikasjonService = BrukernotifikasjonService(BeskjedProducer(kafkaProducers.kafkaBrukernotifikasjonProducer), database, vaultSecrets.serviceuserUsername)
     launchListeners(
         applicationState,
         env,
         kafkaConsumers,
         database,
         oppgaveService,
-        manuellOppgaveService,
-        brukernotifikasjonService
+        manuellOppgaveService
     )
 }
 
@@ -126,8 +123,7 @@ fun launchListeners(
     kafkaConsumers: KafkaConsumers,
     database: Database,
     oppgaveService: OppgaveService,
-    manuellOppgaveService: ManuellOppgaveService,
-    brukernotifikasjonService: BrukernotifikasjonService
+    manuellOppgaveService: ManuellOppgaveService
 ) {
     createListener(applicationState) {
         val kafkaConsumerManuellOppgave = kafkaConsumers.kafkaConsumerManuellOppgave
@@ -138,8 +134,7 @@ fun launchListeners(
             kafkaConsumerManuellOppgave,
             database,
             oppgaveService,
-            manuellOppgaveService,
-            brukernotifikasjonService
+            manuellOppgaveService
         )
     }
 }
@@ -150,8 +145,7 @@ suspend fun blockingApplicationLogic(
     kafkaConsumer: KafkaConsumer<String, String>,
     database: Database,
     oppgaveService: OppgaveService,
-    manuellOppgaveService: ManuellOppgaveService,
-    brukernotifikasjonService: BrukernotifikasjonService
+    manuellOppgaveService: ManuellOppgaveService
 ) {
     while (applicationState.ready) {
         kafkaConsumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
@@ -162,14 +156,20 @@ suspend fun blockingApplicationLogic(
                 msgId = receivedManuellOppgave.receivedSykmelding.msgId,
                 sykmeldingId = receivedManuellOppgave.receivedSykmelding.sykmelding.id
             )
+            val receivedManuellOppgaveMedMerknad = receivedManuellOppgave.copy(
+                receivedSykmelding = receivedManuellOppgave.receivedSykmelding.copy(
+                    merknader = listOf(
+                        Merknad(type = "UNDER_BEHANDLING", beskrivelse = "Sykmeldingen er til manuell behandling")
+                    )
+                )
+            )
 
             handleReceivedMessage(
-                receivedManuellOppgave,
+                receivedManuellOppgaveMedMerknad,
                 loggingMeta,
                 database,
                 oppgaveService,
-                manuellOppgaveService,
-                brukernotifikasjonService
+                manuellOppgaveService
             )
         }
         delay(100)

@@ -150,17 +150,6 @@ object SendVurderingManuellOppgaveTest : Spek({
             }
         }
 
-        it("should fail when writing sykmelding syfoservice kafka") {
-            with(TestApplicationEngine()) {
-                start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-                every { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
-
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null)
-                sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
-            }
-        }
-
         it("should fail when X-Nav-Enhet header is empty") {
             with(TestApplicationEngine()) {
                 start()
@@ -169,26 +158,6 @@ object SendVurderingManuellOppgaveTest : Spek({
                 val result = Result(status = ResultStatus.GODKJENT, merknad = null)
                 sendRequest(result, HttpStatusCode.BadRequest, oppgaveid, "")
             }
-        }
-    }
-
-    describe("ValidationResult") {
-        it("Riktig ValidationResult for status GODKJENT") {
-            val result = Result(status = ResultStatus.GODKJENT, merknad = null)
-
-            val validationResult = result.toValidationResult()
-
-            validationResult.status shouldEqual Status.OK
-            validationResult.ruleHits shouldEqual emptyList()
-        }
-
-        it("Riktig ValidationResult for status GODKJENT_MED_MERKNAD") {
-            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null)
-
-            val validationResult = result.toValidationResult()
-
-            validationResult.status shouldEqual Status.OK
-            validationResult.ruleHits shouldEqual emptyList()
         }
     }
 
@@ -251,8 +220,6 @@ fun setUpTest(
     manuellOppgaveService: ManuellOppgaveService
 ) {
     val sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic"
-    val sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic"
-    val sm2013BehandlingsUtfallTopic = "sm2013BehandlingsUtfallTopic"
     val sm2013ApprecTopicName = "sm2013ApprecTopicName"
 
     coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
