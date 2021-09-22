@@ -21,6 +21,7 @@ import kotlin.test.assertFailsWith
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.authorization.service.AuthorizationService
+import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
@@ -46,7 +47,8 @@ object HenteManuellOppgaverTest : Spek({
 
     val database = TestDB()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, database)
+    val msGraphClient = mockk<MSGraphClient>()
+    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)

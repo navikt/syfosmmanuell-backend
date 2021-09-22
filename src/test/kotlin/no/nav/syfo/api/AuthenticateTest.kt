@@ -28,6 +28,7 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.authorization.service.AuthorizationService
+import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
@@ -55,11 +56,12 @@ object AuthenticateTest : Spek({
     val uri = Paths.get(path).toUri().toURL()
     val jwkProvider = JwkProviderBuilder(uri).build()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+    val msGraphClient = mockk<MSGraphClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
 
     val database = TestDB()
-    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, database)
+    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
     val manuelloppgaveId = "1314"
     val manuellOppgave = ManuellOppgave(

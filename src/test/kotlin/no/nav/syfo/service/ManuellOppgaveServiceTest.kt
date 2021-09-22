@@ -13,7 +13,6 @@ import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
-import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
@@ -70,7 +69,7 @@ object ManuellOppgaveServiceTest : Spek({
             runBlocking {
                 manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveid, "1234",
-                        Veileder("4321"),
+                        "4321",
                         "token",
                         merknader = null
                 )
@@ -92,7 +91,7 @@ object ManuellOppgaveServiceTest : Spek({
                 manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveid,
                         "1234",
-                        Veileder("4321"),
+                        "4321",
                         "token",
                         merknader = merknader
                 )
@@ -115,7 +114,7 @@ object ManuellOppgaveServiceTest : Spek({
 
             assertFailsWith<ForbiddenException> {
                 runBlocking {
-                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", Veileder("4321"), "token", merknader = null)
+                    manuellOppgaveService.ferdigstillManuellBehandling(oppgaveid, "1234", "4321", "token", merknader = null)
                 }
             }
         }
@@ -135,7 +134,7 @@ object ManuellOppgaveServiceTest : Spek({
             runBlocking {
                 manuellOppgaveService.ferdigstillManuellBehandling(
                     oppgaveId2, "1234",
-                    Veileder("4321"),
+                    "4321",
                     "token",
                     merknader = null
                 )

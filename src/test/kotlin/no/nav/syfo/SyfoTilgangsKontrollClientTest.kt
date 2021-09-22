@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.github.benmanes.caffeine.cache.Cache
-import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
@@ -30,7 +28,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
-import no.nav.syfo.client.Veileder
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -70,27 +67,16 @@ object SyfoTilgangsKontrollClientTest : Spek({
         }
     }.start()
 
-    val syfoTilgangskontrollCache: Cache<Map<String, String>, Tilgang> = Caffeine.newBuilder()
-        .expireAfterWrite(1, TimeUnit.HOURS)
-        .maximumSize(100)
-        .build<Map<String, String>, Tilgang>()
-    val veilederCache: Cache<String, Veileder> = Caffeine.newBuilder()
-        .expireAfterWrite(1, TimeUnit.HOURS)
-        .maximumSize(100)
-        .build<String, Veileder>()
-
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
             url = mockHttpServerUrl,
             accessTokenClient = accessTokenClient,
             syfotilgangskontrollClientId = "syfo",
-            httpClient = httpClient,
-            syfoTilgangskontrollCache = syfoTilgangskontrollCache,
-            veilederCache = veilederCache
+            httpClient = httpClient
     )
 
     beforeEachTest {
         clearAllMocks()
-        syfoTilgangskontrollCache.invalidateAll()
+        syfoTilgangsKontrollClient.syfoTilgangskontrollCache.invalidateAll()
         coEvery { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) } returns "token"
     }
 

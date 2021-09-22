@@ -25,9 +25,9 @@ import io.mockk.mockk
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 import no.nav.syfo.authorization.service.AuthorizationService
+import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
-import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
@@ -71,7 +71,8 @@ val manuellOppgave = ManuellOppgave(
 object SendVurderingManuellOppgaveTest : Spek({
     val database = TestDB()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, database)
+    val msGraphClient = mockk<MSGraphClient>()
+    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
@@ -132,7 +133,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("should fail when writing sykmelding to kafka fails with status OK") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, msGraphClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
                 val result = Result(status = ResultStatus.GODKJENT, merknad = null)
                 every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
@@ -143,7 +144,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("noContent oppdatering av manuelloppgave med status OK") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, msGraphClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
                 val result = Result(status = ResultStatus.GODKJENT, merknad = null)
                 sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
@@ -153,7 +154,7 @@ object SendVurderingManuellOppgaveTest : Spek({
         it("should fail when X-Nav-Enhet header is empty") {
             with(TestApplicationEngine()) {
                 start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, authorizationService, oppgaveService, database, manuellOppgaveService)
+                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, msGraphClient, authorizationService, oppgaveService, database, manuellOppgaveService)
 
                 val result = Result(status = ResultStatus.GODKJENT, merknad = null)
                 sendRequest(result, HttpStatusCode.BadRequest, oppgaveid, "")
@@ -214,6 +215,7 @@ fun setUpTest(
     testApplicationEngine: TestApplicationEngine,
     kafkaProducers: KafkaProducers,
     syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
+    msGraphClient: MSGraphClient,
     authorizationService: AuthorizationService,
     oppgaveService: OppgaveService,
     database: DatabaseInterface,
@@ -228,7 +230,7 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer } returns mockk()
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic } returns sm2013AutomaticHandlingTopic
     coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
-    coEvery { syfoTilgangsKontrollClient.hentVeilederIdentViaAzure(any()) } returns Veileder("4321")
+    coEvery { msGraphClient.getSubjectFromMsGraph(any()) } returns "4321"
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
