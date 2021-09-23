@@ -47,7 +47,7 @@ fun Route.sendVurderingManuellOppgave(
                     val result = call.receive<Result>()
                     val merknad = result.toMerknad()
 
-                    val veileder = authorizationService.getVeileder(accessToken)
+                    val veileder = authorizationService.getVeileder(oppgaveId, accessToken)
 
                     manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveId = oppgaveId,

@@ -22,8 +22,8 @@ class AuthorizationService(
                 ?: false
     }
 
-    suspend fun getVeileder(accessToken: String): String {
-        val veileder = msGraphClient.getSubjectFromMsGraph(accessToken)
+    suspend fun getVeileder(oppgaveId: Int, accessToken: String): String {
+        val veileder = msGraphClient.getSubjectFromMsGraph(oppgaveId, accessToken)
         if (veileder == null) {
             log.error("Klarte ikke hente ut veilederident fra syfo-tilgangskontroll")
             throw IdentNotFoundException("Klarte ikke hente ut veilederident fra syfo-tilgangskontroll")

@@ -26,9 +26,7 @@ class MSGraphClient(
             .maximumSize(100)
             .build<String, String>()
 
-    suspend fun getSubjectFromMsGraph(accessToken: String): String {
-
-        log.info("Querying MS Graph for user ident")
+    suspend fun getSubjectFromMsGraph(oppgaveId: Int, accessToken: String): String {
 
         subjectCache.getIfPresent(accessToken)?.let {
             log.debug("Traff subject cache for MSGraph")
@@ -37,7 +35,7 @@ class MSGraphClient(
 
         return try {
             val oboToken = accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(accessToken = accessToken, scope = scope)
-            val subject = callMsGraphApi(oboToken)
+            val subject = callMsGraphApi(oppgaveId, oboToken)
             subjectCache.put(accessToken, subject)
             subject
         } catch (e: Exception) {
@@ -45,7 +43,10 @@ class MSGraphClient(
         }
     }
 
-    private suspend fun callMsGraphApi(oboToken: String): String {
+    private suspend fun callMsGraphApi(oppgaveId: Int, oboToken: String): String {
+
+        log.info("Querying MS Graph for oppgaveId $oppgaveId")
+
         val response = httpClient.get<HttpStatement>(graphApiAccountNameQuery) {
             accept(ContentType.Application.Json)
             headers {
