@@ -48,7 +48,6 @@ class MSGraphClient(
         log.info("Querying MS Graph for oppgaveId $oppgaveId")
 
         val response = httpClient.get<HttpStatement>(graphApiAccountNameQuery) {
-            accept(ContentType.Application.Json)
             headers {
                 append("Authorization", "Bearer $oboToken")
             }
