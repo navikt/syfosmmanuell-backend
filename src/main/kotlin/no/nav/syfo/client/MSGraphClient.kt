@@ -39,7 +39,7 @@ class MSGraphClient(
             subjectCache.put(accessToken, subject)
             subject
         } catch (e: Exception) {
-            throw RuntimeException("Klarte ikke hente veileder-ident fra MSGraph: ${e.message}")
+            throw RuntimeException("Klarte ikke hente veileder-ident fra MSGraph: ", e)
         }
     }
 
@@ -57,7 +57,7 @@ class MSGraphClient(
         if (response.status == HttpStatusCode.OK) {
             return response.call.receive<GraphResponse>().onPremisesSamAccountName
         } else {
-            throw RuntimeException("Noe gikk galt ved henting av veilderIdent fra Ms Graph ${response.status}")
+            throw RuntimeException("Noe gikk galt ved henting av veilderIdent fra Ms Graph ${response.status} ${response.call.receive<String>()}")
         }
     }
 }
