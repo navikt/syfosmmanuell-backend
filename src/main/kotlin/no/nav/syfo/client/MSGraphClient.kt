@@ -34,7 +34,7 @@ class MSGraphClient(
         }
 
         return try {
-            val oboToken = accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(accessToken = accessToken, scope = scope)
+            val oboToken = accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker2(accessToken = accessToken, scope = scope)
             val subject = callMsGraphApi(oppgaveId, oboToken)
             subjectCache.put(accessToken, subject)
             subject
@@ -57,7 +57,7 @@ class MSGraphClient(
         if (response.status == HttpStatusCode.OK) {
             return response.call.receive<GraphResponse>().onPremisesSamAccountName
         } else {
-            throw java.lang.RuntimeException("Noe gikk galt ved henting av veilderIdent fra Ms Graph ${response.status}")
+            throw RuntimeException("Noe gikk galt ved henting av veilderIdent fra Ms Graph ${response.status}")
         }
     }
 }

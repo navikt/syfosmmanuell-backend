@@ -27,6 +27,7 @@ data class Environment(
     val smSyfoserviceMqTopic: String = "privat-syfo-syfoservice-mq",
     val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
+    val msGraphApiScope: String = getEnvVar("MS_GRAPH_API_SCOPE"),
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean()
 ) : KafkaConfig
 

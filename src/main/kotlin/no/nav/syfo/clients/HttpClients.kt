@@ -56,22 +56,31 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
         .expireAfterWrite(50, TimeUnit.MINUTES)
         .maximumSize(100)
         .build<Map<String, String>, String>()
-    @KtorExperimentalAPI
-    val accessTokenClient = AccessTokenClient(
-        env.aadAccessTokenUrl,
-        vaultSecrets.syfosmmanuellBackendClientId,
-        vaultSecrets.syfosmmanuellBackendClientSecret,
-        httpClientWithProxy,
-        aadCache
-    )
 
     @KtorExperimentalAPI
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
         url = env.syfoTilgangsKontrollClientUrl,
         httpClient = httpClient,
         syfotilgangskontrollClientId = env.syfotilgangskontrollClientId,
-        accessTokenClient = accessTokenClient
+        accessTokenClient = AccessTokenClient(
+                env.aadAccessTokenUrl,
+                vaultSecrets.syfosmmanuellBackendClientId,
+                vaultSecrets.syfosmmanuellBackendClientSecret,
+                httpClientWithProxy,
+                aadCache
+        )
     )
 
-    val msGraphClient = MSGraphClient(vaultSecrets.syfosmmanuellBackendClientId, httpClientWithProxy, accessTokenClient)
+    @KtorExperimentalAPI
+    val msGraphClient = MSGraphClient(
+            scope = env.msGraphApiScope,
+            httpClient = httpClientWithProxy,
+            accessTokenClient = AccessTokenClient(
+                    "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token",
+                    vaultSecrets.syfosmmanuellBackendClientId,
+                    vaultSecrets.syfosmmanuellBackendClientSecret,
+                    httpClientWithProxy,
+                    aadCache
+            )
+    )
 }
