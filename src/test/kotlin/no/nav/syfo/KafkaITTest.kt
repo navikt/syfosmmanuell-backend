@@ -40,7 +40,8 @@ object KafkaITTest : Spek({
             truststore = "",
             truststorePassword = "",
             syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
-            msGraphApiScope = "http://ms.graph.fo/"
+            msGraphApiScope = "http://ms.graph.fo/",
+            msGraphAadAccessTokenUrl = "http://foo"
     )
 
     fun Properties.overrideForTest(): Properties = apply {

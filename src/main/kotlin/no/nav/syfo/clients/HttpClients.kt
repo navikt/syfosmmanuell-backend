@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.github.benmanes.caffeine.cache.Cache
-import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
@@ -14,10 +12,8 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import java.net.ProxySelector
-import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
-import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -52,35 +48,18 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenUrl)
     @KtorExperimentalAPI
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
-    private val aadCache: Cache<Map<String, String>, String> = Caffeine.newBuilder()
-        .expireAfterWrite(50, TimeUnit.MINUTES)
-        .maximumSize(100)
-        .build<Map<String, String>, String>()
 
     @KtorExperimentalAPI
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
-        url = env.syfoTilgangsKontrollClientUrl,
-        httpClient = httpClient,
-        syfotilgangskontrollClientId = env.syfotilgangskontrollClientId,
-        accessTokenClient = AccessTokenClient(
-                env.aadAccessTokenUrl,
-                vaultSecrets.syfosmmanuellBackendClientId,
-                vaultSecrets.syfosmmanuellBackendClientSecret,
-                httpClientWithProxy,
-                aadCache
-        )
+            environment = env,
+            vault = vaultSecrets,
+            httpClient = httpClientWithProxy
     )
 
     @KtorExperimentalAPI
     val msGraphClient = MSGraphClient(
-            scope = env.msGraphApiScope,
-            httpClient = httpClientWithProxy,
-            accessTokenClient = AccessTokenClient(
-                    "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token",
-                    vaultSecrets.syfosmmanuellBackendClientId,
-                    vaultSecrets.syfosmmanuellBackendClientSecret,
-                    httpClientWithProxy,
-                    aadCache
-            )
+            environment = env,
+            vault = vaultSecrets,
+            httpClient = httpClientWithProxy
     )
 }
