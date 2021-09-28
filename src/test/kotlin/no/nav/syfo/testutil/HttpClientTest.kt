@@ -32,8 +32,8 @@ class HttpClientTest {
                 if (request.url.host == "obo") {
                     respond(responseDataOboToken!!.content, responseDataOboToken!!.httpStatusCode, responseDataOboToken!!.headers)
                 } else {
-                respond(responseData!!.content, responseData!!.httpStatusCode, responseData!!.headers)
-            }
+                    respond(responseData!!.content, responseData!!.httpStatusCode, responseData!!.headers)
+                }
             }
         }
     }

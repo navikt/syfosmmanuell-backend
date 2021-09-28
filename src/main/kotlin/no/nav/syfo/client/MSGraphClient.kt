@@ -32,12 +32,12 @@ class MSGraphClient(
 
     private val graphApiAccountNameQuery = "https://graph.microsoft.com/v1.0/me/?\$select=onPremisesSamAccountName"
 
-    private val subjectCache: Cache<String, String> = Caffeine.newBuilder()
+    val subjectCache: Cache<String, String> = Caffeine.newBuilder()
             .expireAfterWrite(1, TimeUnit.HOURS)
             .maximumSize(100)
             .build<String, String>()
 
-    suspend fun getSubjectFromMsGraph(oppgaveId: Int, accessToken: String): String {
+    suspend fun getSubjectFromMsGraph(accessToken: String): String {
 
         subjectCache.getIfPresent(accessToken)?.let {
             log.debug("Traff subject cache for MSGraph")
@@ -46,7 +46,7 @@ class MSGraphClient(
 
         return try {
             val oboToken = exchangeAccessTokenForOnBehalfOfToken(accessToken)
-            val subject = callMsGraphApi(oppgaveId, oboToken)
+            val subject = callMsGraphApi(oboToken)
             subjectCache.put(accessToken, subject)
             subject
         } catch (e: Exception) {
@@ -54,9 +54,7 @@ class MSGraphClient(
         }
     }
 
-    private suspend fun callMsGraphApi(oppgaveId: Int, oboToken: String): String {
-
-        log.info("Querying MS Graph for oppgaveId $oppgaveId")
+    private suspend fun callMsGraphApi(oboToken: String): String {
 
         val response = httpClient.get<HttpStatement>(graphApiAccountNameQuery) {
             headers {
@@ -71,7 +69,7 @@ class MSGraphClient(
         }
     }
 
-    private suspend fun exchangeAccessTokenForOnBehalfOfToken(accessToken: String): String {
+    suspend fun exchangeAccessTokenForOnBehalfOfToken(accessToken: String): String {
         log.info("Henter OBO-token for MS Graph")
         val response: GraphOboToken = httpClient.post(aadAccessTokenUrl) {
             accept(ContentType.Application.Json)

@@ -34,7 +34,6 @@ object SyfoTilgangsKontrollClientTest : Spek({
     val vault = mockk<VaultSecrets>()
 
     val mockHttpServerPort = ServerSocket(0).use { it.localPort }
-    val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
     val pasientFnr = "123145"
     val mockServer = embeddedServer(Netty, mockHttpServerPort) {
         install(ContentNegotiation) {
@@ -89,7 +88,6 @@ object SyfoTilgangsKontrollClientTest : Spek({
         it("Skal returnere harTilgang = false hvis syfotilgangskontroll svarer med feilmelding") {
             httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AadAccessToken("token")))
             httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(false, "har ikke tilgang")))
-//            coEvery { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) } returns "annetToken"
             runBlocking {
                 val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
                 tilgang?.harTilgang shouldEqual false

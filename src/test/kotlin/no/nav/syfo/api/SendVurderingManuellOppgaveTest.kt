@@ -230,7 +230,7 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer } returns mockk()
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic } returns sm2013AutomaticHandlingTopic
     coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
-    coEvery { msGraphClient.getSubjectFromMsGraph(any(), any()) } returns "4321"
+    coEvery { msGraphClient.getSubjectFromMsGraph(any()) } returns "4321"
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
