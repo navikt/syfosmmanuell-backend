@@ -15,8 +15,10 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
+import java.lang.RuntimeException
 import java.net.ServerSocket
 import java.util.concurrent.TimeUnit
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.GraphOboToken
 import no.nav.syfo.client.GraphResponse
@@ -27,9 +29,6 @@ import no.nav.syfo.testutil.ResponseData
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.lang.RuntimeException
-import javax.ws.rs.ForbiddenException
-import kotlin.test.assertFailsWith
 
 object MSGraphClientTest : Spek({
 
@@ -133,6 +132,6 @@ object MSGraphClientTest : Spek({
                 msGraphClient.getSubjectFromMsGraph("usertoken2")
             }
 
-            coVerify(exactly = 2) { msGraphClient.exchangeAccessTokenForOnBehalfOfToken(any()) }        }
+            coVerify(exactly = 2) { msGraphClient.exchangeAccessTokenForOnBehalfOfToken(any()) } }
     }
 })
