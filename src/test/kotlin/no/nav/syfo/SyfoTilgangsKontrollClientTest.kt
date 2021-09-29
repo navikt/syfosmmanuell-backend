@@ -1,22 +1,12 @@
 package no.nav.syfo
 
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.ContentNegotiation
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
-import io.ktor.response.respond
 import io.ktor.routing.get
-import io.ktor.routing.routing
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
-import java.net.ServerSocket
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.AadAccessToken
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -33,26 +23,7 @@ object SyfoTilgangsKontrollClientTest : Spek({
     val environment = mockk<Environment>()
     val vault = mockk<VaultSecrets>()
 
-    val mockHttpServerPort = ServerSocket(0).use { it.localPort }
     val pasientFnr = "123145"
-    val mockServer = embeddedServer(Netty, mockHttpServerPort) {
-        install(ContentNegotiation) {
-            jackson {}
-        }
-        routing {
-            get("/api/tilgang/navident/bruker/$pasientFnr") {
-                when {
-                    call.request.headers["Authorization"] == "Bearer token" -> call.respond(
-                        Tilgang(
-                            harTilgang = true,
-                            begrunnelse = null
-                        )
-                    )
-                    else -> call.respond(HttpStatusCode.InternalServerError, "Noe gikk galt")
-                }
-            }
-        }
-    }.start()
 
     coEvery { environment.syfoTilgangsKontrollClientUrl } returns "http://foo"
     coEvery { environment.aadAccessTokenUrl } returns "http://obo"
@@ -69,10 +40,6 @@ object SyfoTilgangsKontrollClientTest : Spek({
     beforeEachTest {
         clearAllMocks()
         syfoTilgangsKontrollClient.syfoTilgangskontrollCache.invalidateAll()
-    }
-
-    afterGroup {
-        mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
     }
 
     describe("Tilgangskontroll-test") {
