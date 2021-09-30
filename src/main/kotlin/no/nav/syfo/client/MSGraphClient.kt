@@ -25,12 +25,13 @@ class MSGraphClient(
     vault: VaultSecrets,
     private val httpClient: HttpClient,
     private val aadAccessTokenUrl: String = environment.msGraphAadAccessTokenUrl,
-    private val oboTokenScope: String = environment.msGraphApiScope,
+    private val oboScope: String = environment.msGraphApiScope,
+    msGraphApiUrl: String = environment.msGraphApiUrl,
     private val clientId: String = vault.syfosmmanuellBackendClientId,
     private val clientSecret: String = vault.syfosmmanuellBackendClientSecret
 ) {
 
-    private val graphApiAccountNameQuery = "https://graph.microsoft.com/v1.0/me/?\$select=onPremisesSamAccountName"
+    private val msGraphApiAccountNameQuery = "$msGraphApiUrl/me/?\$select=onPremisesSamAccountName"
 
     val subjectCache: Cache<String, String> = Caffeine.newBuilder()
             .expireAfterWrite(1, TimeUnit.HOURS)
@@ -56,7 +57,7 @@ class MSGraphClient(
 
     private suspend fun callMsGraphApi(oboToken: String): String {
 
-        val response = httpClient.get<HttpStatement>(graphApiAccountNameQuery) {
+        val response = httpClient.get<HttpStatement>(msGraphApiAccountNameQuery) {
             headers {
                 append("Authorization", "Bearer $oboToken")
             }
@@ -77,7 +78,7 @@ class MSGraphClient(
             body = FormDataContent(Parameters.build {
                 append("client_id", clientId)
                 append("client_secret", clientSecret)
-                append("scope", oboTokenScope)
+                append("scope", oboScope)
                 append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
                 append("requested_token_use", "on_behalf_of")
                 append("assertion", accessToken)

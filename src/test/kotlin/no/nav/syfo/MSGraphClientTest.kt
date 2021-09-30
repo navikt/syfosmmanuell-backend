@@ -26,6 +26,7 @@ object MSGraphClientTest : Spek({
 
     coEvery { environment.msGraphAadAccessTokenUrl } returns "http://obo"
     coEvery { environment.msGraphApiScope } returns "scope.ms"
+    coEvery { environment.msGraphApiUrl } returns "http://msgraphfoo"
     coEvery { vault.syfosmmanuellBackendClientId } returns "1234"
     coEvery { vault.syfosmmanuellBackendClientSecret } returns "secret"
 

@@ -28,6 +28,7 @@ data class Environment(
     val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
     val msGraphApiScope: String = getEnvVar("MS_GRAPH_API_SCOPE"),
+    val msGraphApiUrl: String = getEnvVar("MS_GRAPH_API_URL"),
     val msGraphAadAccessTokenUrl: String = getEnvVar("MS_GRAPH_AADACCESSTOKEN_URL"),
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean()
 ) : KafkaConfig

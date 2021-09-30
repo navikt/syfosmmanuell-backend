@@ -68,6 +68,8 @@ spec:
       value: https://oppgave.nais.adeo.no/api/v1/oppgaver
     - name: SYFOTILGANGSKONTROLL_URL
       value: https://syfo-tilgangskontroll.nais.adeo.no/syfo-tilgangskontroll
+    - name: MS_GRAPH_API_URL
+      value: https://graph.microsoft.com/v1.0
     - name: MS_GRAPH_API_SCOPE
       value: https://graph.microsoft.com/.default
     - name: MS_GRAPH_AADACCESSTOKEN_URL
