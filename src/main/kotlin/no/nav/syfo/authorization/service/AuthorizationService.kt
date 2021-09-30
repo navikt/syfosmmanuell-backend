@@ -23,12 +23,11 @@ class AuthorizationService(
     }
 
     suspend fun getVeileder(oppgaveId: Int, accessToken: String): String {
-        val veileder = msGraphClient.getSubjectFromMsGraph(accessToken)
-        if (veileder == null) {
-            log.error("Klarte ikke hente ut veilederident fra syfo-tilgangskontroll")
-            throw IdentNotFoundException("Klarte ikke hente ut veilederident fra syfo-tilgangskontroll")
-        } else {
-            return veileder
+        try {
+            return msGraphClient.getSubjectFromMsGraph(accessToken)
+        } catch (e: Exception) {
+            log.error("Klarte ikke hente ut veilederident fra MS Graph API for oppgaveId $oppgaveId}")
+            throw IdentNotFoundException("Klarte ikke hente ut MS Graph API fra syfo-tilgangskontroll for oppgaveId $oppgaveId, $e.message")
         }
     }
 }
