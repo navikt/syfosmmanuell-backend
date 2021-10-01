@@ -14,6 +14,7 @@ import io.ktor.util.KtorExperimentalAPI
 import java.net.ProxySelector
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
+import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -49,6 +50,12 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     @KtorExperimentalAPI
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
 
+    private val azureAdV2Client = AzureAdV2Client(azureAppClientId = vaultSecrets.syfosmmanuellBackendClientId,
+            azureAppClientSecret = vaultSecrets.syfosmmanuellBackendClientSecret,
+            azureTokenEndpoint = env.azureTokenEndpoint,
+            httpClient = httpClientWithProxy
+    )
+
     @KtorExperimentalAPI
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
             environment = env,
@@ -59,7 +66,7 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     @KtorExperimentalAPI
     val msGraphClient = MSGraphClient(
             environment = env,
-            vault = vaultSecrets,
+            azureAdV2Client = azureAdV2Client,
             httpClient = httpClientWithProxy
     )
 }

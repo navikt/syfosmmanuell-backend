@@ -9,6 +9,8 @@ import io.mockk.spyk
 import java.lang.RuntimeException
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.azuread.v2.AzureAdV2Client
+import no.nav.syfo.azuread.v2.AzureAdV2TokenResponse
 import no.nav.syfo.client.GraphOboToken
 import no.nav.syfo.client.GraphResponse
 import no.nav.syfo.client.MSGraphClient
@@ -23,6 +25,7 @@ object MSGraphClientTest : Spek({
     val httpClient = HttpClientTest()
     val environment = mockk<Environment>()
     val vault = mockk<VaultSecrets>()
+    val azureAdV2Client = spyk(AzureAdV2Client("foo", "bar", "http://obo", httpClient.httpClient))
 
     coEvery { environment.msGraphAadAccessTokenUrl } returns "http://obo"
     coEvery { environment.msGraphApiScope } returns "scope.ms"
@@ -32,7 +35,7 @@ object MSGraphClientTest : Spek({
 
     val msGraphClient = spyk(MSGraphClient(
             environment = environment,
-            vault = vault,
+            azureAdV2Client = azureAdV2Client,
             httpClient = httpClient.httpClient
     ))
 
@@ -46,7 +49,7 @@ object MSGraphClientTest : Spek({
     describe("Get subect test") {
 
         it("Skal returnere subject") {
-            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphOboToken("token")))
+            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
             httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphResponse(accountName)))
             runBlocking {
                 val subjectFromMsGraph = msGraphClient.getSubjectFromMsGraph("usertoken")
@@ -54,7 +57,7 @@ object MSGraphClientTest : Spek({
             }
         }
         it("Skal kaste RuntimeException hvis MS Graph API returnerer noe annet enn et gyldig GraphResponse") {
-            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphOboToken("token")))
+            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
             httpClient.responseData = ResponseData(HttpStatusCode.OK, "")
 
             assertFailsWith<RuntimeException> {
@@ -64,7 +67,7 @@ object MSGraphClientTest : Spek({
             }
         }
         it("Skal kaste RuntimeException hvis MS Graph API returnerer statuskode != 200 OK") {
-            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphOboToken("token")))
+            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
             httpClient.responseData = ResponseData(HttpStatusCode.Forbidden, objectMapper.writeValueAsString(GraphOboToken("token")))
 
             assertFailsWith<RuntimeException> {
@@ -76,7 +79,7 @@ object MSGraphClientTest : Spek({
     }
     describe("Test av cache") {
         it("Henter fra cache hvis kallet er cachet") {
-            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphOboToken("token")))
+            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
             httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphResponse(accountName)))
 
             runBlocking {
@@ -84,11 +87,11 @@ object MSGraphClientTest : Spek({
                 msGraphClient.getSubjectFromMsGraph("usertoken")
             }
 
-            coVerify(exactly = 1) { msGraphClient.exchangeAccessTokenForOnBehalfOfToken(any()) }
+            coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken(any(), any()) }
         }
 
         it("Henter ikke fra cache hvis ulikt accesstoken") {
-            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphOboToken("token")))
+            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
             httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphResponse(accountName)))
 
             runBlocking {
@@ -96,6 +99,7 @@ object MSGraphClientTest : Spek({
                 msGraphClient.getSubjectFromMsGraph("usertoken2")
             }
 
-            coVerify(exactly = 2) { msGraphClient.exchangeAccessTokenForOnBehalfOfToken(any()) } }
+            coVerify(exactly = 2) { azureAdV2Client.getOnBehalfOfToken(any(), any()) }
+        }
     }
 })
