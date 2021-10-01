@@ -32,7 +32,7 @@ object KafkaITTest : Spek({
             databaseName = "",
             syfosmmanuellbackendDBURL = "url",
             syfosmmanuellUrl = "https://syfosmmanuell",
-            jwtIssuer = "",
+            jwtIssuerV2 = "",
             aadAccessTokenUrl = "aad",
             syfotilgangskontrollClientId = "clientid",
             oppgavebehandlingUrl = "oppgave",
