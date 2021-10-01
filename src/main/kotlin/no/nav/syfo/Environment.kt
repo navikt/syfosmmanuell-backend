@@ -25,7 +25,7 @@ data class Environment(
     val securityTokenUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val smSyfoserviceMqTopic: String = "privat-syfo-syfoservice-mq",
     val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
-    val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
+    val syfotilgangskontrollScope: String = getEnvVar("SYFOTILGANGSKONTROLL_SCOPE"),
     val msGraphApiScope: String = getEnvVar("MS_GRAPH_API_SCOPE"),
     val msGraphApiUrl: String = getEnvVar("MS_GRAPH_API_URL"),
     val msGraphAadAccessTokenUrl: String = getEnvVar("MS_GRAPH_AADACCESSTOKEN_URL"),

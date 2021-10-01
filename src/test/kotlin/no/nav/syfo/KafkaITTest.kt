@@ -34,7 +34,7 @@ object KafkaITTest : Spek({
             syfosmmanuellUrl = "https://syfosmmanuell",
             jwtIssuerV2 = "",
             aadAccessTokenUrl = "aad",
-            syfotilgangskontrollClientId = "clientid",
+            syfotilgangskontrollScope = "scope",
             oppgavebehandlingUrl = "oppgave",
             cluster = "cluster",
             truststore = "",

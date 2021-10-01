@@ -59,7 +59,6 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     @KtorExperimentalAPI
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
             environment = env,
-            vault = vaultSecrets,
             azureAdV2Client = azureAdV2Client,
             httpClient = httpClientWithProxy
     )

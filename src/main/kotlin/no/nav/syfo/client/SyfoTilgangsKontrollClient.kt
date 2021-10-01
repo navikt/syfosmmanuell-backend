@@ -12,20 +12,15 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
-import no.nav.syfo.VaultSecrets
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.log
 
 class SyfoTilgangsKontrollClient(
     environment: Environment,
-    vault: VaultSecrets,
     private val azureAdV2Client: AzureAdV2Client,
     private val httpClient: HttpClient,
     private val syfoTilgangsKontrollClientUrl: String = environment.syfoTilgangsKontrollClientUrl,
-    private val aadAccessTokenUrl: String = environment.aadAccessTokenUrl,
-    private val scope: String = environment.syfotilgangskontrollClientId,
-    private val clientId: String = vault.syfosmmanuellBackendClientId,
-    private val clientSecret: String = vault.syfosmmanuellBackendClientSecret
+    private val scope: String = environment.syfotilgangskontrollScope
 ) {
     val syfoTilgangskontrollCache: Cache<Map<String, String>, Tilgang> = Caffeine.newBuilder()
             .expireAfterWrite(1, TimeUnit.HOURS)
@@ -63,28 +58,7 @@ class SyfoTilgangsKontrollClient(
             }
         }
     }
-
-//    suspend fun exchangeOboToken(accessToken: String): String {
-//        log.info("Henter OBO-token fra Azure AD")
-//        val response: AadAccessToken = httpClient.post(aadAccessTokenUrl) {
-//            accept(ContentType.Application.Json)
-//            method = HttpMethod.Post
-//            body = FormDataContent(Parameters.build {
-//                append("client_id", clientId)
-//                append("client_secret", clientSecret)
-//                append("resource", oboTokenScope)
-//                append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
-//                append("requested_token_use", "on_behalf_of")
-//                append("assertion", accessToken)
-//                append("assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-//            })
-//        }
-//        log.debug("Har hentet OBO-accesstoken")
-//        return response.access_token
-//    }
 }
-
-data class AadAccessToken(val access_token: String)
 
 data class Tilgang(
     val harTilgang: Boolean,
