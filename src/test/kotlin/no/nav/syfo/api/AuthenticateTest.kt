@@ -24,6 +24,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import java.nio.file.Paths
 import no.nav.syfo.Environment
+import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.authorization.service.AuthorizationService
@@ -93,7 +94,7 @@ object AuthenticateTest : Spek({
                 databaseName = "",
                 syfosmmanuellbackendDBURL = "url",
                 syfosmmanuellUrl = "https://syfosmmanuell",
-                jwtIssuerV2 = "",
+                jwtIssuerV2 = "https://sts.issuer.net/myid",
                 aadAccessTokenUrl = "aad",
                 syfotilgangskontrollScope = "scope",
                 oppgavebehandlingUrl = "oppgave",
@@ -105,8 +106,8 @@ object AuthenticateTest : Spek({
                 msGraphAadAccessTokenUrl = "http://foo",
                 msGraphApiUrl = "http://ms.graph.fo.ton/",
                 azureTokenEndpoint = "http://ms.token/",
-                azureAppClientSecret = "hush",
-                azureAppClientId = "me"
+                azureAppClientSecret = "secret",
+                azureAppClientId = "clientId"
         )
         with(TestApplicationEngine()) {
             start()
@@ -133,12 +134,12 @@ object AuthenticateTest : Spek({
             it("Aksepterer gyldig JWT med riktig audience") {
 
                 // TODO
-//                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-//                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-//                }) {
-//                    response.status() shouldEqual HttpStatusCode.OK
-//                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldEqual oppgaveid
-//                }
+                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
+                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.OK
+                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldEqual oppgaveid
+                }
             }
             it("Gyldig JWT med feil audience gir Unauthorized") {
                 with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
