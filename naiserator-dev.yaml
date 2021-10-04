@@ -66,8 +66,6 @@ spec:
       value: syfosmmanuell.dev.adeo.no
     - name: JWT_ISSUER
       value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0
-    - name: AADACCESSTOKEN_URL
-      value: https://login.microsoftonline.com/navq.onmicrosoft.com/oauth2/token
     - name: SYFOTILGANGSKONTROLL_SCOPE
       value: api://dev-fss.teamsykefravr.syfo-tilgangskontroll/.default
     - name: OPPGAVEBEHANDLING_URL
@@ -78,5 +76,3 @@ spec:
       value: https://graph.microsoft.com/.default
     - name: MS_GRAPH_API_URL
       value: https://graph.microsoft.com/v1.0
-    - name: MS_GRAPH_AADACCESSTOKEN_URL
-      value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token

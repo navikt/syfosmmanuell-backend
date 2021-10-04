@@ -27,7 +27,6 @@ object MSGraphClientTest : Spek({
     val vault = mockk<VaultSecrets>()
     val azureAdV2Client = spyk(AzureAdV2Client("foo", "bar", "http://obo", httpClient.httpClient))
 
-    coEvery { environment.msGraphAadAccessTokenUrl } returns "http://obo"
     coEvery { environment.msGraphApiScope } returns "scope.ms"
     coEvery { environment.msGraphApiUrl } returns "http://msgraphfoo"
     coEvery { vault.syfosmmanuellBackendClientId } returns "1234"
