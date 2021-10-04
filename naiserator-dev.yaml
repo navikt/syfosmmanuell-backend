@@ -64,8 +64,6 @@ spec:
       value: /postgresql/preprod-fss
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.dev.adeo.no
-    - name: JWT_ISSUER
-      value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0
     - name: SYFOTILGANGSKONTROLL_SCOPE
       value: api://dev-fss.teamsykefravr.syfo-tilgangskontroll/.default
     - name: OPPGAVEBEHANDLING_URL

@@ -64,8 +64,6 @@ spec:
       value: /postgresql/prod-fss
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.nais.adeo.no
-    - name: JWT_ISSUER
-      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0
     - name: SYFOTILGANGSKONTROLL_SCOPE
       value: api://prod-fss.teamsykefravr.syfo-tilgangskontroll/.default
     - name: OPPGAVEBEHANDLING_URL
