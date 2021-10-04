@@ -37,6 +37,12 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
+  accessPolicy:
+    inbound:
+      rules:
+        - application: syfosmmanuell
+          namespace: teamsykmelding
+          cluster: dev-fss
   vault:
     enabled: true
     paths:
