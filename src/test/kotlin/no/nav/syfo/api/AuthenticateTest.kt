@@ -133,7 +133,6 @@ object AuthenticateTest : Spek({
             }
             it("Aksepterer gyldig JWT med riktig audience") {
 
-                // TODO
                 with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                 }) {
