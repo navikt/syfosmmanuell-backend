@@ -31,6 +31,8 @@ data class Environment(
     val msGraphAadAccessTokenUrl: String = getEnvVar("MS_GRAPH_AADACCESSTOKEN_URL"),
     val jwtIssuerV2: String = getEnvVar("AZURE_OPENID_CONFIG_ISSUER"),
     val azureTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+    val azureAppClientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
+    val azureAppClientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean()
 ) : KafkaConfig
 

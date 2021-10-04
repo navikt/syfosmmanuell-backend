@@ -50,8 +50,14 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     @KtorExperimentalAPI
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
 
-    private val azureAdV2Client = AzureAdV2Client(azureAppClientId = vaultSecrets.syfosmmanuellBackendClientId,
-            azureAppClientSecret = vaultSecrets.syfosmmanuellBackendClientSecret,
+//    private val azureAdV2Client = AzureAdV2Client(azureAppClientId = vaultSecrets.syfosmmanuellBackendClientId,
+//            azureAppClientSecret = vaultSecrets.syfosmmanuellBackendClientSecret,
+//            azureTokenEndpoint = env.azureTokenEndpoint,
+//            httpClient = httpClientWithProxy
+//    )
+
+    private val azureAdV2Client = AzureAdV2Client(azureAppClientId = env.azureAppClientId,
+            azureAppClientSecret = env.azureAppClientSecret,
             azureTokenEndpoint = env.azureTokenEndpoint,
             httpClient = httpClientWithProxy
     )

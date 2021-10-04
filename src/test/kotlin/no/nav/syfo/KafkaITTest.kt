@@ -43,7 +43,9 @@ object KafkaITTest : Spek({
             msGraphApiScope = "http://ms.graph.fo/",
             msGraphAadAccessTokenUrl = "http://foo",
             msGraphApiUrl = "http://ms.graph.fo.ton/",
-            azureTokenEndpoint = "http://ms.token/"
+            azureTokenEndpoint = "http://ms.token/",
+            azureAppClientSecret = "hush",
+            azureAppClientId = "me"
     )
 
     fun Properties.overrideForTest(): Properties = apply {
