@@ -23,7 +23,7 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.nio.file.Paths
-import no.nav.syfo.VaultSecrets
+import no.nav.syfo.Environment
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.setupAuth
@@ -88,15 +88,30 @@ object AuthenticateTest : Spek({
     }
 
     describe("Autentiseringstest for api") {
+        val config = Environment(
+                kafkaBootstrapServers = "http://foo",
+                mountPathVault = "",
+                databaseName = "",
+                syfosmmanuellbackendDBURL = "url",
+                syfosmmanuellUrl = "https://syfosmmanuell",
+                jwtIssuerV2 = "",
+                aadAccessTokenUrl = "aad",
+                syfotilgangskontrollScope = "scope",
+                oppgavebehandlingUrl = "oppgave",
+                cluster = "cluster",
+                truststore = "",
+                truststorePassword = "",
+                syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
+                msGraphApiScope = "http://ms.graph.fo/",
+                msGraphAadAccessTokenUrl = "http://foo",
+                msGraphApiUrl = "http://ms.graph.fo.ton/",
+                azureTokenEndpoint = "http://ms.token/",
+                azureAppClientSecret = "hush",
+                azureAppClientId = "me"
+        )
         with(TestApplicationEngine()) {
             start()
-            application.setupAuth(VaultSecrets(
-                serviceuserUsername = "username",
-                serviceuserPassword = "password",
-                oidcWellKnownUri = "https://sts.issuer.net/myid",
-                syfosmmanuellBackendClientId = "clientId",
-                syfosmmanuellBackendClientSecret = "secret"
-            ), jwkProvider, "https://sts.issuer.net/myid")
+            application.setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
             application.routing {
                 authenticate("jwt") {
                     hentManuellOppgaver(manuellOppgaveService, authorizationService)

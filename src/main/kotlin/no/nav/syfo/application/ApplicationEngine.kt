@@ -43,7 +43,7 @@ fun createApplicationEngine(
     authorizationService: AuthorizationService
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
-        setupAuth(vaultSecrets, jwkProvider, issuer)
+        setupAuth(env, jwkProvider, issuer)
         install(ContentNegotiation) {
             jackson {
                 registerKotlinModule()
