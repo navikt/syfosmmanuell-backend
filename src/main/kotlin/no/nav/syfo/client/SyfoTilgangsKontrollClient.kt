@@ -10,6 +10,7 @@ import io.ktor.client.request.headers
 import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import java.lang.RuntimeException
 import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
@@ -32,13 +33,13 @@ class SyfoTilgangsKontrollClient(
             log.debug("Traff cache for syfotilgangskontroll")
             return it
         }
-        val oboToken = azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = scope)
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = scope)?.accessToken
+                ?: throw RuntimeException("Klarte ikke hente nytt accessToken for veileder ved tilgangssjekk")
 
-        val url = syfoTilgangsKontrollClientUrl
-        val httpResponse = httpClient.get<HttpStatement>("$url/api/tilgang/navident/bruker/$personFnr") {
+        val httpResponse = httpClient.get<HttpStatement>("$syfoTilgangsKontrollClientUrl/api/tilgang/navident/bruker/$personFnr") {
             accept(ContentType.Application.Json)
             headers {
-                append("Authorization", "Bearer ${oboToken?.accessToken}")
+                append("Authorization", "Bearer $oboToken")
             }
         }.execute()
         when (httpResponse.status) {
