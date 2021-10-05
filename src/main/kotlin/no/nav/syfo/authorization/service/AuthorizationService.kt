@@ -27,9 +27,9 @@ class AuthorizationService(
             return msGraphClient.getSubjectFromMsGraph(accessToken)
         } catch (e: Exception) {
             log.error("Klarte ikke hente ut veilederident fra MS Graph API for oppgaveId $oppgaveId}")
-            throw IdentNotFoundException("Klarte ikke hente ut MS Graph API fra syfo-tilgangskontroll for oppgaveId $oppgaveId, $e.message")
+            throw IdentNotFoundException("Klarte ikke hente ut MS Graph API fra syfo-tilgangskontroll for oppgaveId $oppgaveId", e)
         }
     }
 }
 
-class IdentNotFoundException(override val message: String) : Exception(message)
+class IdentNotFoundException(override val message: String, cause: Throwable) : Exception(message, cause)
