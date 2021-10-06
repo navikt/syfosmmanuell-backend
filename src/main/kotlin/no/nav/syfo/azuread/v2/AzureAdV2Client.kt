@@ -24,9 +24,9 @@ class AzureAdV2Client(
         token: String,
         scope: String
     ): AzureAdV2Token? {
-        return azureAdV2Cache.getOboToken(token)
+        return azureAdV2Cache.getOboToken(token, scope)
             ?: getAccessToken(token, scope)?.let {
-                azureAdV2Cache.putValue(token, it)
+                azureAdV2Cache.putValue(token, scope, it)
             }
     }
 

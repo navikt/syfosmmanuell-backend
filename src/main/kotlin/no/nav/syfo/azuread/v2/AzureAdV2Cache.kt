@@ -17,8 +17,8 @@ class AzureAdV2Cache {
         .maximumSize(500)
         .build<String, AzureAdV2Token>()
 
-    fun getOboToken(token: String): AzureAdV2Token? {
-        val key = getSha256Key(token)
+    fun getOboToken(token: String, scope: String): AzureAdV2Token? {
+        val key = getSha256Key(token + scope)
         return cache.getIfPresent(key)?.let {
             when (it.expires.isBefore(OffsetDateTime.now(ZoneOffset.UTC))) {
                 true -> cache.invalidate(key).let {
@@ -30,13 +30,13 @@ class AzureAdV2Cache {
         }
     }
 
-    fun putValue(token: String, azureAdV2Token: AzureAdV2Token): AzureAdV2Token {
-        cache.put(getSha256Key(token), azureAdV2Token)
+    fun putValue(token: String, scope: String, azureAdV2Token: AzureAdV2Token): AzureAdV2Token {
+        cache.put(getSha256Key(token + scope), azureAdV2Token)
         return azureAdV2Token
     }
 
-    private fun getSha256Key(token: String): String =
+    private fun getSha256Key(input: String): String =
         MessageDigest.getInstance("SHA-256")
-            .digest(token.toByteArray())
+            .digest(input.toByteArray())
             .fold("") { str, it -> str + "%02x".format(it) }
 }
