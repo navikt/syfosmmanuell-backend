@@ -1,112 +1,57 @@
 package no.nav.syfo
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.github.benmanes.caffeine.cache.Cache
-import com.github.benmanes.caffeine.cache.Caffeine
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.features.ContentNegotiation
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
-import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.routing
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.net.ServerSocket
-import java.util.concurrent.TimeUnit
+import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.AccessTokenClient
+import no.nav.syfo.azuread.v2.AzureAdV2Client
+import no.nav.syfo.azuread.v2.AzureAdV2TokenResponse
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
-import no.nav.syfo.client.Veileder
+import no.nav.syfo.testutil.HttpClientTest
+import no.nav.syfo.testutil.ResponseData
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
 object SyfoTilgangsKontrollClientTest : Spek({
-    val httpClient = HttpClient(Apache) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-    }
-    val accessTokenClient = mockk<AccessTokenClient>()
 
-    val mockHttpServerPort = ServerSocket(0).use { it.localPort }
-    val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
+    val httpClient = HttpClientTest()
+    val environment = mockk<Environment>()
+    val azureAdV2Client = spyk(AzureAdV2Client("foo", "bar", "http://obo", httpClient.httpClient))
+
     val pasientFnr = "123145"
-    val mockServer = embeddedServer(Netty, mockHttpServerPort) {
-        install(ContentNegotiation) {
-            jackson {}
-        }
-        routing {
-            get("/api/tilgang/navident/bruker/$pasientFnr") {
-                when {
-                    call.request.headers["Authorization"] == "Bearer token" -> call.respond(
-                        Tilgang(
-                            harTilgang = true,
-                            begrunnelse = null
-                        )
-                    )
-                    else -> call.respond(HttpStatusCode.InternalServerError, "Noe gikk galt")
-                }
-            }
-        }
-    }.start()
 
-    val syfoTilgangskontrollCache: Cache<Map<String, String>, Tilgang> = Caffeine.newBuilder()
-        .expireAfterWrite(1, TimeUnit.HOURS)
-        .maximumSize(100)
-        .build<Map<String, String>, Tilgang>()
-    val veilederCache: Cache<String, Veileder> = Caffeine.newBuilder()
-        .expireAfterWrite(1, TimeUnit.HOURS)
-        .maximumSize(100)
-        .build<String, Veileder>()
+    coEvery { environment.syfoTilgangsKontrollClientUrl } returns "http://foo"
+    coEvery { environment.syfotilgangskontrollScope } returns "scope"
 
-    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
-            url = mockHttpServerUrl,
-            accessTokenClient = accessTokenClient,
-            syfotilgangskontrollClientId = "syfo",
-            httpClient = httpClient,
-            syfoTilgangskontrollCache = syfoTilgangskontrollCache,
-            veilederCache = veilederCache
-    )
+    val syfoTilgangsKontrollClient = spyk(SyfoTilgangsKontrollClient(
+            environment = environment,
+            httpClient = httpClient.httpClient,
+            azureAdV2Client = azureAdV2Client
+    ))
 
     beforeEachTest {
         clearAllMocks()
-        syfoTilgangskontrollCache.invalidateAll()
-        coEvery { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) } returns "token"
-    }
-
-    afterGroup {
-        mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
+        syfoTilgangsKontrollClient.syfoTilgangskontrollCache.invalidateAll()
     }
 
     describe("Tilgangskontroll-test") {
+
         it("Skal returnere harTilgang = true") {
             runBlocking {
+                httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
+                httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(true, "")))
                 val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
                 tilgang?.harTilgang shouldEqual true
             }
         }
         it("Skal returnere harTilgang = false hvis syfotilgangskontroll svarer med feilmelding") {
-            coEvery { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) } returns "annetToken"
+            httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
+            httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(false, "har ikke tilgang")))
             runBlocking {
                 val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
                 tilgang?.harTilgang shouldEqual false
@@ -120,7 +65,7 @@ object SyfoTilgangsKontrollClientTest : Spek({
                 syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
             }
 
-            coVerify(exactly = 1) { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) }
+            coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken(any(), any()) }
         }
         it("Henter ikke fra cache hvis samme accesstoken men ulikt fnr") {
             runBlocking {
@@ -128,7 +73,7 @@ object SyfoTilgangsKontrollClientTest : Spek({
                 syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", "987654")
             }
 
-            coVerify(exactly = 2) { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) }
+            coVerify(exactly = 2) { azureAdV2Client.getOnBehalfOfToken(any(), any()) }
         }
         it("Henter ikke fra cache hvis samme fnr men ulikt accesstoken") {
             runBlocking {
@@ -136,7 +81,7 @@ object SyfoTilgangsKontrollClientTest : Spek({
                 syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("xxxxxxxxx", pasientFnr)
             }
 
-            coVerify(exactly = 2) { accessTokenClient.hentOnBehalfOfTokenForInnloggetBruker(any(), any()) }
+            coVerify(exactly = 2) { azureAdV2Client.getOnBehalfOfToken(any(), any()) }
         }
     }
 })

@@ -5,7 +5,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log
 import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
@@ -40,7 +39,7 @@ class OppgaveService(
         return oppgaveResponse.id
     }
 
-    fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder, loggingMeta: LoggingMeta) {
+    fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: String, loggingMeta: LoggingMeta) {
         val produceTask = tilOppfolgingsoppgave(manuellOppgave, enhet, veileder)
         val producerRecord = ProducerRecord(kafkaProduceTaskProducer.topic,
                 manuellOppgave.receivedSykmelding.sykmelding.id,
@@ -59,7 +58,7 @@ class OppgaveService(
         )
     }
 
-    suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String, veileder: Veileder) {
+    suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String, veileder: String) {
         val oppgave = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId)
         val oppgaveVersjon = oppgave.versjon
 
@@ -69,7 +68,7 @@ class OppgaveService(
                     id = manuellOppgave.oppgaveid,
                     status = OppgaveStatus.FERDIGSTILT,
                     tildeltEnhetsnr = enhet,
-                    tilordnetRessurs = veileder.veilederIdent,
+                    tilordnetRessurs = veileder,
                     mappeId = if (oppgave.tildeltEnhetsnr == enhet) {
                         oppgave.mappeId
                     } else {
@@ -105,7 +104,7 @@ class OppgaveService(
                     prioritet = "HOY"
             )
 
-    fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: Veileder): ProduceTask =
+    fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: String): ProduceTask =
             ProduceTask().apply {
                 messageId = manuellOppgave.receivedSykmelding.msgId
                 aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId
@@ -124,7 +123,7 @@ class OppgaveService(
                 aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
                 fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
                 prioritet = PrioritetType.HOY
-                metadata = mapOf("tilordnetRessurs" to veileder.veilederIdent)
+                metadata = mapOf("tilordnetRessurs" to veileder)
             }
 
     fun omTreUkedager(idag: LocalDate): LocalDate = when (idag.dayOfWeek) {

@@ -32,14 +32,17 @@ object KafkaITTest : Spek({
             databaseName = "",
             syfosmmanuellbackendDBURL = "url",
             syfosmmanuellUrl = "https://syfosmmanuell",
-            jwtIssuer = "",
-            aadAccessTokenUrl = "aad",
-            syfotilgangskontrollClientId = "clientid",
+            syfotilgangskontrollScope = "scope",
             oppgavebehandlingUrl = "oppgave",
             cluster = "cluster",
             truststore = "",
             truststorePassword = "",
-            syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll"
+            syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
+            msGraphApiScope = "http://ms.graph.fo/",
+            msGraphApiUrl = "http://ms.graph.fo.ton/",
+            azureTokenEndpoint = "http://ms.token/",
+            azureAppClientSecret = "hush",
+            azureAppClientId = "me"
     )
 
     fun Properties.overrideForTest(): Properties = apply {

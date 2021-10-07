@@ -13,7 +13,6 @@ import no.nav.syfo.aksessering.db.finnesOppgave
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
-import no.nav.syfo.client.Veileder
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
@@ -60,7 +59,7 @@ class ManuellOppgaveService(
     fun toggleApprecSendt(oppgaveId: Int) =
             database.oppdaterApprecStatus(oppgaveId, true)
 
-    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: Veileder, accessToken: String, merknader: List<Merknad>?) {
+    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: String, accessToken: String, merknader: List<Merknad>?) {
         val validationResult = ValidationResult(Status.OK, emptyList())
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).updateMerknader(merknader)
         val loggingMeta = LoggingMeta(

@@ -21,13 +21,14 @@ data class Environment(
     val syfosmmanuellUrl: String = getEnvVar("SYFOSMMANUELL_URL"),
     val oppgavebehandlingUrl: String = getEnvVar("OPPGAVEBEHANDLING_URL"),
     val syfoTilgangsKontrollClientUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
-    val jwkKeysUrl: String = getEnvVar("JWKKEYS_URL", "https://login.microsoftonline.com/common/discovery/keys"),
-    val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
     val securityTokenUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val smSyfoserviceMqTopic: String = "privat-syfo-syfoservice-mq",
-    val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
-    val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
-    val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean()
+    val syfotilgangskontrollScope: String = getEnvVar("SYFOTILGANGSKONTROLL_SCOPE"),
+    val msGraphApiScope: String = getEnvVar("MS_GRAPH_API_SCOPE"),
+    val msGraphApiUrl: String = getEnvVar("MS_GRAPH_API_URL"),
+    val azureTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+    val azureAppClientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
+    val azureAppClientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET")
 ) : KafkaConfig
 
 data class VaultSecrets(

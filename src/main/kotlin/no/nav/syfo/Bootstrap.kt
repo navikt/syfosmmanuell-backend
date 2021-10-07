@@ -71,7 +71,9 @@ fun main() {
     val manuellOppgaveService = ManuellOppgaveService(database,
             httpClients.syfoTilgangsKontrollClient,
             kafkaProducers, oppgaveService)
-    val authorizationService = AuthorizationService(httpClients.syfoTilgangsKontrollClient, database)
+
+    val authorizationService = AuthorizationService(httpClients.syfoTilgangsKontrollClient,
+            httpClients.msGraphClient, database)
 
     val applicationEngine = createApplicationEngine(
         env,
@@ -87,9 +89,7 @@ fun main() {
 
     applicationState.ready = true
 
-    if (!env.developmentMode) {
-        RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
-    }
+    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
 
     launchListeners(
         applicationState,

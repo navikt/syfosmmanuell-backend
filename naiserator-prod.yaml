@@ -37,6 +37,12 @@ spec:
     application:
       enabled: true
       tenant: nav.no
+  accessPolicy:
+    inbound:
+      rules:
+        - application: syfosmmanuell
+          namespace: teamsykmelding
+          cluster: prod-fss
   vault:
     enabled: true
     paths:
@@ -58,13 +64,13 @@ spec:
       value: /postgresql/prod-fss
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.nais.adeo.no
-    - name: JWT_ISSUER
-      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0
-    - name: AADACCESSTOKEN_URL
-      value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
-    - name: SYFOTILGANGSKONTROLL_CLIENT_ID
-      value: dfaa2699-7390-4459-9cfc-2e8de64dfaf9
+    - name: SYFOTILGANGSKONTROLL_SCOPE
+      value: api://prod-fss.teamsykefravr.syfo-tilgangskontroll/.default
     - name: OPPGAVEBEHANDLING_URL
       value: https://oppgave.nais.adeo.no/api/v1/oppgaver
     - name: SYFOTILGANGSKONTROLL_URL
       value: https://syfo-tilgangskontroll.nais.adeo.no/syfo-tilgangskontroll
+    - name: MS_GRAPH_API_URL
+      value: https://graph.microsoft.com/v1.0
+    - name: MS_GRAPH_API_SCOPE
+      value: https://graph.microsoft.com/.default
