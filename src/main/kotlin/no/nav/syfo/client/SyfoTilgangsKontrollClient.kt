@@ -27,6 +27,10 @@ class SyfoTilgangsKontrollClient(
             .expireAfterWrite(1, TimeUnit.HOURS)
             .maximumSize(100)
             .build<Map<String, String>, Tilgang>()
+            
+    companion object {
+        const val NAV_PERSONIDENT_HEADER = "nav-personident"
+    }
 
     suspend fun sjekkVeiledersTilgangTilPersonViaAzure(accessToken: String, personFnr: String): Tilgang? {
         syfoTilgangskontrollCache.getIfPresent(mapOf(Pair(accessToken, personFnr)))?.let {
@@ -36,10 +40,11 @@ class SyfoTilgangsKontrollClient(
         val oboToken = azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = scope)?.accessToken
                 ?: throw RuntimeException("Klarte ikke hente nytt accessToken for veileder ved tilgangssjekk")
 
-        val httpResponse = httpClient.get<HttpStatement>("$syfoTilgangsKontrollClientUrl/api/tilgang/navident/bruker/$personFnr") {
+        val httpResponse = httpClient.get<HttpStatement>("$syfoTilgangsKontrollClientUrl/api/tilgang/navident/person") {
             accept(ContentType.Application.Json)
             headers {
                 append("Authorization", "Bearer $oboToken")
+                append(NAV_PERSONIDENT_HEADER, personFnr)
             }
         }.execute()
         when (httpResponse.status) {
