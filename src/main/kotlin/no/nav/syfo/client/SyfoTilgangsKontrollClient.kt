@@ -27,7 +27,7 @@ class SyfoTilgangsKontrollClient(
             .expireAfterWrite(1, TimeUnit.HOURS)
             .maximumSize(100)
             .build<Map<String, String>, Tilgang>()
-            
+
     companion object {
         const val NAV_PERSONIDENT_HEADER = "nav-personident"
     }
