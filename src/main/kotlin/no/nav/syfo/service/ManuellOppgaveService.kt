@@ -10,6 +10,7 @@ import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.finnesOppgave
+import no.nav.syfo.aksessering.db.finnesSykmelding
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -52,6 +53,9 @@ class ManuellOppgaveService(
 
     fun finnesOppgave(oppgaveId: Int): Boolean =
             database.finnesOppgave(oppgaveId)
+
+    fun finnesSykmelding(sykmeldingId: String): Boolean =
+        database.finnesSykmelding(sykmeldingId)
 
     fun erApprecSendt(oppgaveId: Int): Boolean =
             database.erApprecSendt(oppgaveId)

@@ -24,6 +24,20 @@ fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
             }
         }
 
+fun DatabaseInterface.finnesSykmelding(id: String) =
+    connection.use { connection ->
+        connection.prepareStatement(
+            """
+                SELECT *
+                FROM MANUELLOPPGAVE
+                WHERE id=?;
+                """
+        ).use {
+            it.setString(1, id)
+            it.executeQuery().next()
+        }
+    }
+
 fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
         connection.use { connection ->
             connection.prepareStatement(

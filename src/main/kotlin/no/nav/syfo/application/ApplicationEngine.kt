@@ -25,6 +25,7 @@ import java.lang.NumberFormatException
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
+import no.nav.syfo.aksessering.api.sykmeldingsApi
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
@@ -84,6 +85,7 @@ fun createApplicationEngine(
                     manuellOppgaveService,
                     authorizationService
                 )
+                sykmeldingsApi(manuellOppgaveService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
