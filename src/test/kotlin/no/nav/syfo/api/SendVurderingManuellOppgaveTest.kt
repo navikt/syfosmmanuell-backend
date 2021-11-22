@@ -22,8 +22,6 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import java.util.concurrent.CompletableFuture
-import kotlin.test.assertFailsWith
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -53,6 +51,8 @@ import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.concurrent.CompletableFuture
+import kotlin.test.assertFailsWith
 
 const val oppgaveid = 308076319
 const val manuelloppgaveId = "1314"
@@ -69,7 +69,7 @@ val manuellOppgave = ManuellOppgave(
 
 @KtorExperimentalAPI
 object SendVurderingManuellOppgaveTest : Spek({
-    val database = TestDB()
+    val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val msGraphClient = mockk<MSGraphClient>()
     val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
@@ -83,10 +83,6 @@ object SendVurderingManuellOppgaveTest : Spek({
 
     afterEachTest {
         database.connection.dropData()
-    }
-
-    afterGroup {
-        database.stop()
     }
 
     describe("Test av api for sending av vurdering") {
@@ -118,13 +114,15 @@ object SendVurderingManuellOppgaveTest : Spek({
 
                 val result = Result(status = ResultStatus.GODKJENT, merknad = null)
 
-                with(handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
-                    addHeader("Accept", "application/json")
-                    addHeader("Content-Type", "application/json")
-                    addHeader("X-Nav-Enhet", "1234")
-                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-                    setBody(objectMapper.writeValueAsString(result))
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
+                        addHeader("Accept", "application/json")
+                        addHeader("Content-Type", "application/json")
+                        addHeader("X-Nav-Enhet", "1234")
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                        setBody(objectMapper.writeValueAsString(result))
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.NotFound
                 }
             }
@@ -199,13 +197,15 @@ object SendVurderingManuellOppgaveTest : Spek({
 })
 
 fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode, oppgaveId: Int, navEnhet: String = "1234") {
-    with(handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/$oppgaveId") {
-        addHeader("Accept", "application/json")
-        addHeader("Content-Type", "application/json")
-        addHeader("X-Nav-Enhet", navEnhet)
-        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-        setBody(objectMapper.writeValueAsString(result))
-    }) {
+    with(
+        handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/$oppgaveId") {
+            addHeader("Accept", "application/json")
+            addHeader("Content-Type", "application/json")
+            addHeader("X-Nav-Enhet", navEnhet)
+            addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+            setBody(objectMapper.writeValueAsString(result))
+        }
+    ) {
         response.status() shouldEqual statusCode
     }
 }

@@ -10,7 +10,7 @@ import no.nav.syfo.model.toPGObject
 fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, apprec: Apprec, oppgaveId: Int) {
     connection.use { connection ->
         connection.prepareStatement(
-                """
+            """
             INSERT INTO MANUELLOPPGAVE(
                 id,
                 receivedsykmelding,
@@ -42,39 +42,39 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, appr
 }
 
 fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
-        connection.use { connection ->
-            connection.prepareStatement(
-                    """
+    connection.use { connection ->
+        connection.prepareStatement(
+            """
                 SELECT *
                 FROM MANUELLOPPGAVE
                 WHERE id=?;
                 """
-            ).use {
-                it.setString(1, sykmledingsId)
-                it.executeQuery().next()
-            }
+        ).use {
+            it.setString(1, sykmledingsId)
+            it.executeQuery().next()
         }
+    }
 
 fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult): Int =
-        connection.use { connection ->
-            val status = connection.prepareStatement(
-                    """
+    connection.use { connection ->
+        val status = connection.prepareStatement(
+            """
             UPDATE MANUELLOPPGAVE
             SET ferdigstilt = ?,
                 receivedsykmelding = ?,
                 validationresult = ?
             WHERE oppgaveid = ?;
             """
-            ).use {
-                it.setBoolean(1, true)
-                it.setObject(2, receivedSykmelding.toPGObject())
-                it.setObject(3, validationResult.toPGObject())
-                it.setInt(4, oppgaveId)
-                it.executeUpdate()
-            }
-            connection.commit()
-            return status
+        ).use {
+            it.setBoolean(1, true)
+            it.setObject(2, receivedSykmelding.toPGObject())
+            it.setObject(3, validationResult.toPGObject())
+            it.setInt(4, oppgaveId)
+            it.executeUpdate()
         }
+        connection.commit()
+        return status
+    }
 
 fun DatabaseInterface.oppdaterManuellOppgaveUtenOpprinneligValidationResult(
     oppgaveId: Int,
@@ -105,18 +105,18 @@ fun DatabaseInterface.oppdaterManuellOppgaveUtenOpprinneligValidationResult(
     }
 
 fun DatabaseInterface.oppdaterApprecStatus(oppgaveId: Int, sendtApprec: Boolean): Int =
-        connection.use { connection ->
-            val status = connection.prepareStatement(
-                    """
+    connection.use { connection ->
+        val status = connection.prepareStatement(
+            """
             UPDATE MANUELLOPPGAVE
             SET sendt_apprec = ?
             WHERE oppgaveid = ?;
             """
-            ).use {
-                it.setBoolean(1, sendtApprec)
-                it.setInt(2, oppgaveId)
-                it.executeUpdate()
-            }
-            connection.commit()
-            return status
+        ).use {
+            it.setBoolean(1, sendtApprec)
+            it.setInt(2, oppgaveId)
+            it.executeUpdate()
         }
+        connection.commit()
+        return status
+    }

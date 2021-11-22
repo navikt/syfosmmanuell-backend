@@ -6,9 +6,6 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.util.UUID
-import java.util.concurrent.CompletableFuture
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
@@ -32,10 +29,13 @@ import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import kotlin.test.assertFailsWith
 
 @KtorExperimentalAPI
 object HandleReceivedMessageTest : Spek({
-    val database = TestDB()
+    val database = TestDB.database
     val oppgaveService = mockk<OppgaveService>()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
@@ -65,9 +65,6 @@ object HandleReceivedMessageTest : Spek({
 
     afterEachTest {
         database.connection.dropData()
-    }
-    afterGroup {
-        database.stop()
     }
 
     describe("Test av mottak av ny melding") {

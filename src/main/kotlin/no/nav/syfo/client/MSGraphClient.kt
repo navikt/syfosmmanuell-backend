@@ -8,11 +8,11 @@ import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.statement.HttpStatement
 import io.ktor.http.HttpStatusCode
-import java.io.Serializable
-import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.log
+import java.io.Serializable
+import java.util.concurrent.TimeUnit
 
 class MSGraphClient(
     environment: Environment,
@@ -25,9 +25,9 @@ class MSGraphClient(
     private val msGraphApiAccountNameQuery = "$msGraphApiUrl/me/?\$select=onPremisesSamAccountName"
 
     val subjectCache: Cache<String, String> = Caffeine.newBuilder()
-            .expireAfterWrite(1, TimeUnit.HOURS)
-            .maximumSize(100)
-            .build<String, String>()
+        .expireAfterWrite(1, TimeUnit.HOURS)
+        .maximumSize(100)
+        .build<String, String>()
 
     suspend fun getSubjectFromMsGraph(accessToken: String): String {
 

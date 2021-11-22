@@ -8,9 +8,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.util.KtorExperimentalAPI
-import java.net.URL
-import java.time.Duration
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -38,6 +35,9 @@ import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.URL
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 val objectMapper: ObjectMapper = ObjectMapper()
     .registerModule(JavaTimeModule())
@@ -68,12 +68,16 @@ fun main() {
     val httpClients = HttpClients(env, vaultSecrets)
     val oppgaveService = OppgaveService(httpClients.oppgaveClient, kafkaProducers.kafkaProduceTaskProducer)
 
-    val manuellOppgaveService = ManuellOppgaveService(database,
-            httpClients.syfoTilgangsKontrollClient,
-            kafkaProducers, oppgaveService)
+    val manuellOppgaveService = ManuellOppgaveService(
+        database,
+        httpClients.syfoTilgangsKontrollClient,
+        kafkaProducers, oppgaveService
+    )
 
-    val authorizationService = AuthorizationService(httpClients.syfoTilgangsKontrollClient,
-            httpClients.msGraphClient, database)
+    val authorizationService = AuthorizationService(
+        httpClients.syfoTilgangsKontrollClient,
+        httpClients.msGraphClient, database
+    )
 
     val applicationEngine = createApplicationEngine(
         env,

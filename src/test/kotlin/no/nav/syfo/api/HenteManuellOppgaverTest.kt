@@ -13,11 +13,9 @@ import io.ktor.jackson.jackson
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlin.test.assertFailsWith
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.authorization.service.AuthorizationService
@@ -41,11 +39,11 @@ import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import kotlin.test.assertFailsWith
 
-@KtorExperimentalAPI
 object HenteManuellOppgaverTest : Spek({
 
-    val database = TestDB()
+    val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val msGraphClient = mockk<MSGraphClient>()
     val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
@@ -73,9 +71,6 @@ object HenteManuellOppgaverTest : Spek({
     afterEachTest {
         database.connection.dropData()
     }
-    afterGroup {
-        database.stop()
-    }
 
     describe("Test av henting av manuelle oppgaver") {
         with(TestApplicationEngine()) {
@@ -91,9 +86,11 @@ object HenteManuellOppgaverTest : Spek({
 
             it("Skal hente ut manuell oppgave basert på oppgaveid") {
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
-                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.OK
                     objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldEqual oppgaveid
                 }
@@ -106,9 +103,11 @@ object HenteManuellOppgaverTest : Spek({
             }
 
             it("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.NotFound
                 }
             }

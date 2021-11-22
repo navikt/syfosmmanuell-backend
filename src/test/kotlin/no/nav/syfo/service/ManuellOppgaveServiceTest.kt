@@ -5,9 +5,6 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.util.UUID
-import javax.ws.rs.ForbiddenException
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
@@ -31,10 +28,13 @@ import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.UUID
+import javax.ws.rs.ForbiddenException
+import kotlin.test.assertFailsWith
 
 @KtorExperimentalAPI
 object ManuellOppgaveServiceTest : Spek({
-    val database = TestDB()
+    val database = TestDB.database
     val syfotilgangskontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
@@ -60,18 +60,15 @@ object ManuellOppgaveServiceTest : Spek({
     afterEachTest {
         database.connection.dropData()
     }
-    afterGroup {
-        database.stop()
-    }
 
     describe("Test av ferdigstilling av manuell behandling") {
         it("Happy case OK") {
             runBlocking {
                 manuellOppgaveService.ferdigstillManuellBehandling(
-                        oppgaveid, "1234",
-                        "4321",
-                        "token",
-                        merknader = null
+                    oppgaveid, "1234",
+                    "4321",
+                    "token",
+                    merknader = null
                 )
             }
 
@@ -89,11 +86,11 @@ object ManuellOppgaveServiceTest : Spek({
             val merknader = listOf(Merknad("UGYLDIG_TILBAKEDATERING", "ikke godkjent"))
             runBlocking {
                 manuellOppgaveService.ferdigstillManuellBehandling(
-                        oppgaveid,
-                        "1234",
-                        "4321",
-                        "token",
-                        merknader = merknader
+                    oppgaveid,
+                    "1234",
+                    "4321",
+                    "token",
+                    merknader = merknader
                 )
             }
 

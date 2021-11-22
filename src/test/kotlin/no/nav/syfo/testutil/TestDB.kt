@@ -1,26 +1,51 @@
 package no.nav.syfo.testutil
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import java.sql.Connection
+import io.mockk.every
+import io.mockk.mockk
+import no.nav.syfo.Environment
+import no.nav.syfo.db.Database
 import no.nav.syfo.db.DatabaseInterface
+import no.nav.syfo.db.VaultCredentialService
+import no.nav.syfo.db.VaultCredentials
+import no.nav.syfo.log
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.toPGObject
-import org.flywaydb.core.Flyway
+import org.testcontainers.containers.PostgreSQLContainer
+import java.sql.Connection
 
-class TestDB : DatabaseInterface {
-    private var pg: EmbeddedPostgres? = null
-    override val connection: Connection
-        get() = pg!!.postgresDatabase.connection.apply { autoCommit = false }
+class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 
-    init {
-        pg = EmbeddedPostgres.start()
-        Flyway.configure().run {
-            dataSource(pg?.postgresDatabase).load().migrate()
+class TestDB private constructor() {
+
+    companion object {
+        var database: DatabaseInterface
+        val vaultCredentialService = mockk<VaultCredentialService>()
+        val env = mockk<Environment>()
+        val psqlContainer = PsqlContainer()
+            .withExposedPorts(5432)
+            .withUsername("user")
+            .withPassword("password")
+            .withDatabaseName("database")
+            .withInitScript("db/db-init.sql")
+
+        init {
+            psqlContainer.start()
+            every { env.databaseName } returns "database"
+            every { env.mountPathVault } returns ""
+            every { env.syfosmmanuellbackendDBURL } returns psqlContainer.jdbcUrl
+            every { vaultCredentialService.renewCredentialsTaskData = any() } returns Unit
+            every { vaultCredentialService.getNewCredentials(any(), any(), any()) } returns VaultCredentials(
+                "1",
+                "user",
+                "password"
+            )
+            try {
+                database = Database(env, vaultCredentialService)
+            } catch (ex: Exception) {
+                log.error("error", ex)
+                database = Database(env, vaultCredentialService)
+            }
         }
-    }
-
-    fun stop() {
-        pg?.close()
     }
 }
 

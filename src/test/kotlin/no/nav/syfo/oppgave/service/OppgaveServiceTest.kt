@@ -3,7 +3,6 @@ package no.nav.syfo.oppgave.service
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.mockk
-import java.time.LocalDate
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -18,6 +17,7 @@ import org.amshove.kluent.shouldEqual
 import org.amshove.kluent.shouldNotEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 
 @KtorExperimentalAPI
 object OppgaveServiceTest : Spek({
@@ -25,12 +25,17 @@ object OppgaveServiceTest : Spek({
     val kafkaProducer = mockk<KafkaProducers.KafkaProduceTaskProducer>()
     val oppgaveService = OppgaveService(oppgaveClient, kafkaProducer)
     val manuelloppgaveId = "1314"
-    val receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding(
-        pasientAktoerId = "5555",
-        perioder = listOf(generatePeriode(
-            fom = LocalDate.of(2020, 8, 1),
-            tom = LocalDate.of(2020, 8, 15)
-        )))
+    val receivedSykmelding = receivedSykmelding(
+        manuelloppgaveId,
+        generateSykmelding(
+            pasientAktoerId = "5555",
+            perioder = listOf(
+                generatePeriode(
+                    fom = LocalDate.of(2020, 8, 1),
+                    tom = LocalDate.of(2020, 8, 15)
+                )
+            )
+        )
     )
     val apprec: Apprec = objectMapper.readValue(
         Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(Charsets.UTF_8)

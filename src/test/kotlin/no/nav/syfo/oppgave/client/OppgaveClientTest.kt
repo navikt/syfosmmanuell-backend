@@ -24,10 +24,6 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.net.ServerSocket
-import java.time.LocalDate
-import java.util.concurrent.TimeUnit
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
@@ -38,6 +34,10 @@ import no.nav.syfo.oppgave.OpprettOppgaveResponse
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.net.ServerSocket
+import java.time.LocalDate
+import java.util.concurrent.TimeUnit
+import kotlin.test.assertFailsWith
 
 @KtorExperimentalAPI
 object OppgaveClientTest : Spek({

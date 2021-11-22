@@ -1,9 +1,6 @@
 package no.nav.syfo.oppgave.service
 
 import io.ktor.util.KtorExperimentalAPI
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log
@@ -20,6 +17,9 @@ import no.nav.syfo.sak.avro.PrioritetType
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.ProducerRecord
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @KtorExperimentalAPI
 class OppgaveService(
@@ -41,9 +41,11 @@ class OppgaveService(
 
     fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: String, loggingMeta: LoggingMeta) {
         val produceTask = tilOppfolgingsoppgave(manuellOppgave, enhet, veileder)
-        val producerRecord = ProducerRecord(kafkaProduceTaskProducer.topic,
-                manuellOppgave.receivedSykmelding.sykmelding.id,
-                produceTask)
+        val producerRecord = ProducerRecord(
+            kafkaProduceTaskProducer.topic,
+            manuellOppgave.receivedSykmelding.sykmelding.id,
+            produceTask
+        )
 
         try {
             kafkaProduceTaskProducer.producer.send(producerRecord).get()
@@ -53,8 +55,8 @@ class OppgaveService(
         }
 
         log.info(
-                "Opprettelse av oppfølgingsoppgave forespurt for sykmelding med merknad {}",
-                StructuredArguments.fields(loggingMeta)
+            "Opprettelse av oppfølgingsoppgave forespurt for sykmelding med merknad {}",
+            StructuredArguments.fields(loggingMeta)
         )
     }
 
@@ -64,26 +66,26 @@ class OppgaveService(
 
         if (oppgave.status != OppgaveStatus.FERDIGSTILT.name) {
             val ferdigstillOppgave = FerdigstillOppgave(
-                    versjon = oppgaveVersjon,
-                    id = manuellOppgave.oppgaveid,
-                    status = OppgaveStatus.FERDIGSTILT,
-                    tildeltEnhetsnr = enhet,
-                    tilordnetRessurs = veileder,
-                    mappeId = if (oppgave.tildeltEnhetsnr == enhet) {
-                        oppgave.mappeId
-                    } else {
-                        // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke har den aktuelle mappen
-                        null
-                    }
+                versjon = oppgaveVersjon,
+                id = manuellOppgave.oppgaveid,
+                status = OppgaveStatus.FERDIGSTILT,
+                tildeltEnhetsnr = enhet,
+                tilordnetRessurs = veileder,
+                mappeId = if (oppgave.tildeltEnhetsnr == enhet) {
+                    oppgave.mappeId
+                } else {
+                    // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke har den aktuelle mappen
+                    null
+                }
             )
 
             log.info("Forsøker å ferdigstille oppgave {}, {}", StructuredArguments.fields(ferdigstillOppgave), StructuredArguments.fields(loggingMeta))
 
             val oppgaveResponse = oppgaveClient.ferdigstillOppgave(ferdigstillOppgave, manuellOppgave.receivedSykmelding.msgId)
             log.info(
-                    "Ferdigstilt oppgave med {}, {}",
-                    StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-                    StructuredArguments.fields(loggingMeta)
+                "Ferdigstilt oppgave med {}, {}",
+                StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+                StructuredArguments.fields(loggingMeta)
             )
         } else {
             log.info("Oppgaven er allerede ferdigstillt oppgaveId: ${oppgave.id} {}", StructuredArguments.fields(loggingMeta))
@@ -91,40 +93,40 @@ class OppgaveService(
     }
 
     fun tilOpprettOppgave(manuellOppgave: ManuellOppgave): OpprettOppgave =
-            OpprettOppgave(
-                    aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
-                    opprettetAvEnhetsnr = "9999",
-                    behandlesAvApplikasjon = "SMM",
-                    beskrivelse = "Manuell vurdering av sykmelding for periode: ${getFomTomTekst(manuellOppgave.receivedSykmelding)}",
-                    tema = "SYM",
-                    oppgavetype = "BEH_EL_SYM",
-                    behandlingstype = "ae0239",
-                    aktivDato = LocalDate.now(),
-                    fristFerdigstillelse = omTreUkedager(LocalDate.now()),
-                    prioritet = "HOY"
-            )
+        OpprettOppgave(
+            aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
+            opprettetAvEnhetsnr = "9999",
+            behandlesAvApplikasjon = "SMM",
+            beskrivelse = "Manuell vurdering av sykmelding for periode: ${getFomTomTekst(manuellOppgave.receivedSykmelding)}",
+            tema = "SYM",
+            oppgavetype = "BEH_EL_SYM",
+            behandlingstype = "ae0239",
+            aktivDato = LocalDate.now(),
+            fristFerdigstillelse = omTreUkedager(LocalDate.now()),
+            prioritet = "HOY"
+        )
 
     fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: String): ProduceTask =
-            ProduceTask().apply {
-                messageId = manuellOppgave.receivedSykmelding.msgId
-                aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId
-                tildeltEnhetsnr = enhet
-                opprettetAvEnhetsnr = "9999"
-                behandlesAvApplikasjon = "FS22" // Gosys
-                orgnr = manuellOppgave.receivedSykmelding.legekontorOrgNr ?: ""
-                beskrivelse = "Oppfølgingsoppgave for sykmelding registrert med merknad " +
-                        manuellOppgave.receivedSykmelding.merknader?.joinToString { it.type }
-                temagruppe = "ANY"
-                tema = "SYM"
-                behandlingstema = "ANY"
-                oppgavetype = "BEH_EL_SYM"
-                behandlingstype = "ANY"
-                mappeId = 1
-                aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-                fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-                prioritet = PrioritetType.HOY
-                metadata = mapOf("tilordnetRessurs" to veileder)
-            }
+        ProduceTask().apply {
+            messageId = manuellOppgave.receivedSykmelding.msgId
+            aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId
+            tildeltEnhetsnr = enhet
+            opprettetAvEnhetsnr = "9999"
+            behandlesAvApplikasjon = "FS22" // Gosys
+            orgnr = manuellOppgave.receivedSykmelding.legekontorOrgNr ?: ""
+            beskrivelse = "Oppfølgingsoppgave for sykmelding registrert med merknad " +
+                manuellOppgave.receivedSykmelding.merknader?.joinToString { it.type }
+            temagruppe = "ANY"
+            tema = "SYM"
+            behandlingstema = "ANY"
+            oppgavetype = "BEH_EL_SYM"
+            behandlingstype = "ANY"
+            mappeId = 1
+            aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
+            fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
+            prioritet = PrioritetType.HOY
+            metadata = mapOf("tilordnetRessurs" to veileder)
+        }
 
     fun omTreUkedager(idag: LocalDate): LocalDate = when (idag.dayOfWeek) {
         DayOfWeek.SUNDAY -> idag.plusDays(4)

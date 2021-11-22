@@ -1,7 +1,5 @@
 package no.nav.syfo
 
-import java.time.Duration
-import java.util.Properties
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
@@ -14,6 +12,8 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.Duration
+import java.util.Properties
 
 object KafkaITTest : Spek({
 
@@ -27,22 +27,22 @@ object KafkaITTest : Spek({
     val credentials = VaultSecrets("", "", "", "", "")
 
     val config = Environment(
-            kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-            mountPathVault = "",
-            databaseName = "",
-            syfosmmanuellbackendDBURL = "url",
-            syfosmmanuellUrl = "https://syfosmmanuell",
-            syfotilgangskontrollScope = "scope",
-            oppgavebehandlingUrl = "oppgave",
-            cluster = "cluster",
-            truststore = "",
-            truststorePassword = "",
-            syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
-            msGraphApiScope = "http://ms.graph.fo/",
-            msGraphApiUrl = "http://ms.graph.fo.ton/",
-            azureTokenEndpoint = "http://ms.token/",
-            azureAppClientSecret = "hush",
-            azureAppClientId = "me"
+        kafkaBootstrapServers = embeddedEnvironment.brokersURL,
+        mountPathVault = "",
+        databaseName = "",
+        syfosmmanuellbackendDBURL = "url",
+        syfosmmanuellUrl = "https://syfosmmanuell",
+        syfotilgangskontrollScope = "scope",
+        oppgavebehandlingUrl = "oppgave",
+        cluster = "cluster",
+        truststore = "",
+        truststorePassword = "",
+        syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
+        msGraphApiScope = "http://ms.graph.fo/",
+        msGraphApiUrl = "http://ms.graph.fo.ton/",
+        azureTokenEndpoint = "http://ms.token/",
+        azureAppClientSecret = "hush",
+        azureAppClientId = "me"
     )
 
     fun Properties.overrideForTest(): Properties = apply {

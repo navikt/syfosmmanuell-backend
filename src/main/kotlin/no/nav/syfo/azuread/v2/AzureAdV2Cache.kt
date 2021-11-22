@@ -1,11 +1,11 @@
 package no.nav.syfo.azuread.v2
 
 import com.github.benmanes.caffeine.cache.Caffeine
+import org.slf4j.LoggerFactory
 import java.security.MessageDigest
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import org.slf4j.LoggerFactory
 
 class AzureAdV2Cache {
     companion object {

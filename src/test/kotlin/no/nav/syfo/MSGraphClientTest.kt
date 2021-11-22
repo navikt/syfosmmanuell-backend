@@ -6,8 +6,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
-import java.lang.RuntimeException
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.azuread.v2.AzureAdV2TokenResponse
@@ -19,6 +17,8 @@ import no.nav.syfo.testutil.ResponseData
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.lang.RuntimeException
+import kotlin.test.assertFailsWith
 
 object MSGraphClientTest : Spek({
 
@@ -32,11 +32,13 @@ object MSGraphClientTest : Spek({
     coEvery { vault.syfosmmanuellBackendClientId } returns "1234"
     coEvery { vault.syfosmmanuellBackendClientSecret } returns "secret"
 
-    val msGraphClient = spyk(MSGraphClient(
+    val msGraphClient = spyk(
+        MSGraphClient(
             environment = environment,
             azureAdV2Client = azureAdV2Client,
             httpClient = httpClient.httpClient
-    ))
+        )
+    )
 
     beforeEachTest {
         clearAllMocks()

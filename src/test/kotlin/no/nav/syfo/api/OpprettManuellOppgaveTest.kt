@@ -18,7 +18,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
 object OpprettManuellOppgaveTest : Spek({
-    val database = TestDB()
+    val database = TestDB.database
     val manuelloppgaveId = "1314"
     val receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding())
     val apprec: Apprec = objectMapper.readValue(
@@ -35,9 +35,6 @@ object OpprettManuellOppgaveTest : Spek({
 
     afterEachTest {
         database.connection.dropData()
-    }
-    afterGroup {
-        database.stop()
     }
 
     describe("Test av oppretting av manuelle oppgaver") {

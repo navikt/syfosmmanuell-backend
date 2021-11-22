@@ -1,7 +1,6 @@
 package no.nav.syfo.aksessering.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.sql.ResultSet
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
@@ -9,20 +8,21 @@ import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
+import java.sql.ResultSet
 
 fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
-        connection.use { connection ->
-            connection.prepareStatement(
-                    """
+    connection.use { connection ->
+        connection.prepareStatement(
+            """
                 SELECT *
                 FROM MANUELLOPPGAVE
                 WHERE oppgaveid=?;
                 """
-            ).use {
-                it.setInt(1, oppgaveId)
-                it.executeQuery().next()
-            }
+        ).use {
+            it.setInt(1, oppgaveId)
+            it.executeQuery().next()
         }
+    }
 
 fun DatabaseInterface.finnesSykmelding(id: String) =
     connection.use { connection ->
@@ -39,20 +39,20 @@ fun DatabaseInterface.finnesSykmelding(id: String) =
     }
 
 fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
-        connection.use { connection ->
-            connection.prepareStatement(
-                    """
+    connection.use { connection ->
+        connection.prepareStatement(
+            """
                 SELECT *
                 FROM MANUELLOPPGAVE
                 WHERE oppgaveid=?
                 AND sendt_apprec=?;
                 """
-            ).use {
-                it.setInt(1, oppgaveId)
-                it.setBoolean(2, true)
-                it.executeQuery().next()
-            }
+        ).use {
+            it.setInt(1, oppgaveId)
+            it.setBoolean(2, true)
+            it.executeQuery().next()
         }
+    }
 
 fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
     connection.use { connection ->
@@ -73,11 +73,11 @@ fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
 fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO {
     val receivedSykmelding: ReceivedSykmelding = objectMapper.readValue(getString("receivedsykmelding"))
     return ManuellOppgaveDTO(
-            oppgaveid = getInt("oppgaveid"),
-            sykmelding = receivedSykmelding.sykmelding,
-            personNrPasient = receivedSykmelding.personNrPasient,
-            mottattDato = receivedSykmelding.mottattDato,
-            validationResult = objectMapper.readValue(getString("validationresult"))
+        oppgaveid = getInt("oppgaveid"),
+        sykmelding = receivedSykmelding.sykmelding,
+        personNrPasient = receivedSykmelding.personNrPasient,
+        mottattDato = receivedSykmelding.mottattDato,
+        validationResult = objectMapper.readValue(getString("validationresult"))
     )
 }
 

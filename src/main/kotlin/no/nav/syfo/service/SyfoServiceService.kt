@@ -22,9 +22,10 @@ fun notifySyfoService(
     val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
 
     val syfo = SyfoserviceSykmeldingKafkaMessage(
-            helseopplysninger = healthInformation,
-            tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, sykmeldingId = sykmeldingId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato),
-            metadata = KafkaMessageMetadata(sykmeldingId, "syfosmmanuell-backend"))
+        helseopplysninger = healthInformation,
+        tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, sykmeldingId = sykmeldingId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato),
+        metadata = KafkaMessageMetadata(sykmeldingId, "syfosmmanuell-backend")
+    )
 
     try {
         syfoserviceProducer.producer.send(ProducerRecord(syfoserviceProducer.topic, sykmeldingId, syfo)).get()

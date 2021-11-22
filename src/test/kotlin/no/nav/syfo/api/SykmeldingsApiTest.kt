@@ -16,7 +16,6 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.mockk
-import java.util.UUID
 import no.nav.syfo.aksessering.api.sykmeldingsApi
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
@@ -36,11 +35,12 @@ import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.UUID
 
 @KtorExperimentalAPI
 object SykmeldingsApiTest : Spek({
 
-    val database = TestDB()
+    val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
@@ -65,9 +65,6 @@ object SykmeldingsApiTest : Spek({
     afterEachTest {
         database.connection.dropData()
     }
-    afterGroup {
-        database.stop()
-    }
 
     describe("Test av henting av manuelle oppgaver") {
         with(TestApplicationEngine()) {
@@ -83,16 +80,20 @@ object SykmeldingsApiTest : Spek({
 
             it("Skal få 200 OK hvis sykmelding finnes") {
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
-                with(handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId/exists") {
-                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId/exists") {
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.OK
                 }
             }
             it("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId/exists") {
-                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId/exists") {
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.NotFound
                 }
             }

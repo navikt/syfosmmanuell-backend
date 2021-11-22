@@ -28,11 +28,13 @@ object SyfoTilgangsKontrollClientTest : Spek({
     coEvery { environment.syfoTilgangsKontrollClientUrl } returns "http://foo"
     coEvery { environment.syfotilgangskontrollScope } returns "scope"
 
-    val syfoTilgangsKontrollClient = spyk(SyfoTilgangsKontrollClient(
+    val syfoTilgangsKontrollClient = spyk(
+        SyfoTilgangsKontrollClient(
             environment = environment,
             httpClient = httpClient.httpClient,
             azureAdV2Client = azureAdV2Client
-    ))
+        )
+    )
 
     beforeEachTest {
         clearAllMocks()
