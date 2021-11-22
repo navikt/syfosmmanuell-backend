@@ -1,10 +1,6 @@
 package no.nav.syfo.testutil
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.UUID
-import kotlin.random.Random
 import no.nav.syfo.ICPC2
 import no.nav.syfo.diagnose.Kodeverk
 import no.nav.syfo.model.Adresse
@@ -33,28 +29,32 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.SporsmalSvar
 import no.nav.syfo.model.Sykmelding
 import no.nav.syfo.objectMapper
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
+import kotlin.random.Random
 
 fun receivedSykmelding(
     id: String,
     sykmelding: Sykmelding = generateSykmelding(),
     merknader: List<Merknad> = listOf(Merknad(type = "UNDER_BEHANDLING", beskrivelse = "Sykmeldingen er til manuell behandling"))
 ) = ReceivedSykmelding(
-        sykmelding = sykmelding,
-        personNrPasient = "123124",
-        tlfPasient = "12314",
-        personNrLege = "123145",
-        navLogId = "0412",
-        msgId = id,
-        legekontorOrgNr = "",
-        legekontorHerId = "",
-        legekontorReshId = "",
-        legekontorOrgName = "Legevakt",
-        mottattDato = LocalDateTime.now(),
-        rulesetVersion = "",
-        fellesformat = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml"),
-        tssid = "",
-        merknader = merknader,
-        partnerreferanse = null
+    sykmelding = sykmelding,
+    personNrPasient = "123124",
+    tlfPasient = "12314",
+    personNrLege = "123145",
+    navLogId = "0412",
+    msgId = id,
+    legekontorOrgNr = "",
+    legekontorHerId = "",
+    legekontorReshId = "",
+    legekontorOrgName = "Legevakt",
+    mottattDato = LocalDateTime.now(),
+    rulesetVersion = "",
+    fellesformat = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml"),
+    tssid = "",
+    merknader = merknader,
+    partnerreferanse = null
 )
 
 fun generateSykmelding(
@@ -80,27 +80,27 @@ fun generateSykmelding(
     signaturDato: LocalDateTime = LocalDateTime.now(),
     navnFastlege: String = UUID.randomUUID().toString()
 ) = Sykmelding(
-        id = id,
-        msgId = msgid,
-        pasientAktoerId = pasientAktoerId,
-        medisinskVurdering = medisinskVurdering,
-        skjermesForPasient = skjermetForPasient,
-        perioder = perioder,
-        prognose = prognose,
-        utdypendeOpplysninger = utdypendeOpplysninger,
-        tiltakArbeidsplassen = tiltakArbeidsplassen,
-        tiltakNAV = tiltakNAV,
-        andreTiltak = andreTiltak,
-        meldingTilNAV = meldingTilNAV,
-        meldingTilArbeidsgiver = meldingTilArbeidsgiver,
-        kontaktMedPasient = kontaktMedPasient,
-        behandletTidspunkt = behandletTidspunkt,
-        behandler = behandler,
-        avsenderSystem = avsenderSystem,
-        arbeidsgiver = arbeidsgiver,
-        syketilfelleStartDato = syketilfelleStartDato,
-        signaturDato = signaturDato,
-        navnFastlege = navnFastlege
+    id = id,
+    msgId = msgid,
+    pasientAktoerId = pasientAktoerId,
+    medisinskVurdering = medisinskVurdering,
+    skjermesForPasient = skjermetForPasient,
+    perioder = perioder,
+    prognose = prognose,
+    utdypendeOpplysninger = utdypendeOpplysninger,
+    tiltakArbeidsplassen = tiltakArbeidsplassen,
+    tiltakNAV = tiltakNAV,
+    andreTiltak = andreTiltak,
+    meldingTilNAV = meldingTilNAV,
+    meldingTilArbeidsgiver = meldingTilArbeidsgiver,
+    kontaktMedPasient = kontaktMedPasient,
+    behandletTidspunkt = behandletTidspunkt,
+    behandler = behandler,
+    avsenderSystem = avsenderSystem,
+    arbeidsgiver = arbeidsgiver,
+    syketilfelleStartDato = syketilfelleStartDato,
+    signaturDato = signaturDato,
+    navnFastlege = navnFastlege
 )
 
 fun generateMedisinskVurdering(
@@ -111,12 +111,12 @@ fun generateMedisinskVurdering(
     yrkesskadeDato: LocalDate? = null,
     annenFraversArsak: AnnenFraversArsak? = null
 ) = MedisinskVurdering(
-        hovedDiagnose = hovedDiagnose,
-        biDiagnoser = bidiagnoser,
-        svangerskap = svangerskap,
-        yrkesskade = yrkesskade,
-        yrkesskadeDato = yrkesskadeDato,
-        annenFraversArsak = annenFraversArsak
+    hovedDiagnose = hovedDiagnose,
+    biDiagnoser = bidiagnoser,
+    svangerskap = svangerskap,
+    yrkesskade = yrkesskade,
+    yrkesskadeDato = yrkesskadeDato,
+    annenFraversArsak = annenFraversArsak
 )
 
 fun generateDiagnose() = ICPC2.values()[Random.nextInt(ICPC2.values().size)].toDiagnose()
@@ -133,44 +133,44 @@ fun generatePeriode(
     reisetilskudd: Boolean = false
 ) = Periode(
     fom = fom,
-        tom = tom,
-        aktivitetIkkeMulig = aktivitetIkkeMulig,
-        avventendeInnspillTilArbeidsgiver = avventendeInnspillTilArbeidsgiver,
-        behandlingsdager = behandlingsdager,
-        gradert = gradert,
-        reisetilskudd = reisetilskudd
+    tom = tom,
+    aktivitetIkkeMulig = aktivitetIkkeMulig,
+    avventendeInnspillTilArbeidsgiver = avventendeInnspillTilArbeidsgiver,
+    behandlingsdager = behandlingsdager,
+    gradert = gradert,
+    reisetilskudd = reisetilskudd
 )
 
 fun generateAktivitetIkkeMulig(
     medisinskArsak: MedisinskArsak? = generateMedisinskArsak(),
     arbeidsrelatertArsak: ArbeidsrelatertArsak? = null
 ) = AktivitetIkkeMulig(
-        medisinskArsak = medisinskArsak,
-        arbeidsrelatertArsak = arbeidsrelatertArsak
+    medisinskArsak = medisinskArsak,
+    arbeidsrelatertArsak = arbeidsrelatertArsak
 )
 
 fun generateArbeidsrelatertArsak(
     beskrivelse: String = "test data",
     arsak: List<ArbeidsrelatertArsakType> = listOf(ArbeidsrelatertArsakType.values()[Random.nextInt(ICPC2.values().size)])
 ) = ArbeidsrelatertArsak(
-        beskrivelse = beskrivelse,
-        arsak = arsak
+    beskrivelse = beskrivelse,
+    arsak = arsak
 )
 
 fun generateMedisinskArsak(
     beskrivelse: String = "test data",
     arsak: List<MedisinskArsakType> = listOf(MedisinskArsakType.values()[Random.nextInt(MedisinskArsakType.values().size)])
 ) = MedisinskArsak(
-        beskrivelse = beskrivelse,
-        arsak = arsak
+    beskrivelse = beskrivelse,
+    arsak = arsak
 )
 
 fun generateGradert(
     reisetilskudd: Boolean = false,
     grad: Int = 50
 ) = Gradert(
-        reisetilskudd = reisetilskudd,
-        grad = grad
+    reisetilskudd = reisetilskudd,
+    grad = grad
 )
 
 fun generatePrognose(
@@ -180,9 +180,9 @@ fun generatePrognose(
     erIkkeIArbeid: ErIkkeIArbeid? = null
 ) = Prognose(
     arbeidsforEtterPeriode = arbeidsforEtterPeriode,
-        hensynArbeidsplassen = hennsynArbeidsplassen,
-        erIArbeid = erIArbeid,
-        erIkkeIArbeid = erIkkeIArbeid
+    hensynArbeidsplassen = hennsynArbeidsplassen,
+    erIArbeid = erIArbeid,
+    erIkkeIArbeid = erIkkeIArbeid
 )
 
 fun generateErIkkeIArbeid(
@@ -190,9 +190,9 @@ fun generateErIkkeIArbeid(
     arbeidsforFOM: LocalDate? = LocalDate.now().plusDays(30),
     vurderingsdato: LocalDate? = LocalDate.now()
 ) = ErIkkeIArbeid(
-        arbeidsforPaSikt = arbeidsforPaSikt,
-        arbeidsforFOM = arbeidsforFOM,
-        vurderingsdato = vurderingsdato
+    arbeidsforPaSikt = arbeidsforPaSikt,
+    arbeidsforFOM = arbeidsforFOM,
+    vurderingsdato = vurderingsdato
 )
 
 fun generateErIArbeid(
@@ -201,10 +201,10 @@ fun generateErIArbeid(
     arbeidFOM: LocalDate = LocalDate.now().plusDays(30),
     vurderingsdato: LocalDate = LocalDate.now()
 ) = ErIArbeid(
-        egetArbeidPaSikt = egetArbeidPaSikt,
-        annetArbeidPaSikt = annetArbeidPaSikt,
-        arbeidFOM = arbeidFOM,
-        vurderingsdato = vurderingsdato
+    egetArbeidPaSikt = egetArbeidPaSikt,
+    annetArbeidPaSikt = annetArbeidPaSikt,
+    arbeidFOM = arbeidFOM,
+    vurderingsdato = vurderingsdato
 )
 
 fun generateKontaktMedPasient(
@@ -224,14 +224,14 @@ fun generateBehandler(
     tlf: String? = null
 ) = Behandler(
     fornavn = fornavn,
-        mellomnavn = mellomnavn,
-        etternavn = etternavn,
-        aktoerId = aktoerId,
-        fnr = fnr,
-        hpr = hpr,
-        her = her,
-        adresse = adresse,
-        tlf = tlf
+    mellomnavn = mellomnavn,
+    etternavn = etternavn,
+    aktoerId = aktoerId,
+    fnr = fnr,
+    hpr = hpr,
+    her = her,
+    adresse = adresse,
+    tlf = tlf
 )
 
 fun generateAdresse(
@@ -241,19 +241,19 @@ fun generateAdresse(
     postboks: String? = null,
     land: String? = "NO"
 ) = Adresse(
-        gate = gate,
-        postnummer = postnummer,
-        kommune = kommune,
-        postboks = postboks,
-        land = land
+    gate = gate,
+    postnummer = postnummer,
+    kommune = kommune,
+    postboks = postboks,
+    land = land
 )
 
 fun generateAvsenderSystem(
     navn: String = "test",
     versjon: String = "1.2.3"
 ) = AvsenderSystem(
-        navn = navn,
-        versjon = versjon
+    navn = navn,
+    versjon = versjon
 )
 
 fun generateArbeidsgiver(
@@ -262,10 +262,11 @@ fun generateArbeidsgiver(
     yrkesbetegnelse: String = "Maler",
     stillingsprosent: Int = 100
 ) = Arbeidsgiver(
-        harArbeidsgiver = harArbeidsgiver,
-        navn = legekontor,
-        yrkesbetegnelse = yrkesbetegnelse,
-        stillingsprosent = stillingsprosent)
+    harArbeidsgiver = harArbeidsgiver,
+    navn = legekontor,
+    yrkesbetegnelse = yrkesbetegnelse,
+    stillingsprosent = stillingsprosent
+)
 
 fun okApprec(): Apprec {
     return objectMapper.readValue(

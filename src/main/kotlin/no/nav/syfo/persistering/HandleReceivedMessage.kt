@@ -1,6 +1,5 @@
 package no.nav.syfo.persistering
 
-import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.db.DatabaseInterface
@@ -15,7 +14,6 @@ import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.wrapExceptions
 
-@KtorExperimentalAPI
 suspend fun handleReceivedMessage(
     manuellOppgave: ManuellOppgave,
     loggingMeta: LoggingMeta,

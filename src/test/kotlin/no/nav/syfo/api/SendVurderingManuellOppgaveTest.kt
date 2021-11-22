@@ -17,13 +17,10 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.ktor.util.KtorExperimentalAPI
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import java.util.concurrent.CompletableFuture
-import kotlin.test.assertFailsWith
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -49,10 +46,12 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.concurrent.CompletableFuture
+import kotlin.test.assertFailsWith
 
 const val oppgaveid = 308076319
 const val manuelloppgaveId = "1314"
@@ -67,9 +66,8 @@ val manuellOppgave = ManuellOppgave(
     )
 )
 
-@KtorExperimentalAPI
 object SendVurderingManuellOppgaveTest : Spek({
-    val database = TestDB()
+    val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val msGraphClient = mockk<MSGraphClient>()
     val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
@@ -78,15 +76,11 @@ object SendVurderingManuellOppgaveTest : Spek({
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
     beforeEachTest {
-        clearAllMocks()
+        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
     }
 
     afterEachTest {
         database.connection.dropData()
-    }
-
-    afterGroup {
-        database.stop()
     }
 
     describe("Test av api for sending av vurdering") {
@@ -118,14 +112,16 @@ object SendVurderingManuellOppgaveTest : Spek({
 
                 val result = Result(status = ResultStatus.GODKJENT, merknad = null)
 
-                with(handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
-                    addHeader("Accept", "application/json")
-                    addHeader("Content-Type", "application/json")
-                    addHeader("X-Nav-Enhet", "1234")
-                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-                    setBody(objectMapper.writeValueAsString(result))
-                }) {
-                    response.status() shouldEqual HttpStatusCode.NotFound
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
+                        addHeader("Accept", "application/json")
+                        addHeader("Content-Type", "application/json")
+                        addHeader("X-Nav-Enhet", "1234")
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                        setBody(objectMapper.writeValueAsString(result))
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
                 }
             }
         }
@@ -167,24 +163,28 @@ object SendVurderingManuellOppgaveTest : Spek({
             val result = Result(status = ResultStatus.GODKJENT, merknad = null)
             val merknader = result.toMerknad()
 
-            merknader shouldEqual null
+            merknader shouldBeEqualTo null
         }
 
         it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
-            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.UGYLDIG_TILBAKEDATERING)
+            val result =
+                Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.UGYLDIG_TILBAKEDATERING)
             val merknad = result.toMerknad()
 
-            merknad shouldEqual Merknad(
+            merknad shouldBeEqualTo Merknad(
                 type = "UGYLDIG_TILBAKEDATERING",
                 beskrivelse = null
             )
         }
 
         it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER") {
-            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER)
+            val result = Result(
+                status = ResultStatus.GODKJENT_MED_MERKNAD,
+                merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER
+            )
             val merknad = result.toMerknad()
 
-            merknad shouldEqual Merknad(
+            merknad shouldBeEqualTo Merknad(
                 type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER",
                 beskrivelse = null
             )
@@ -199,18 +199,19 @@ object SendVurderingManuellOppgaveTest : Spek({
 })
 
 fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode, oppgaveId: Int, navEnhet: String = "1234") {
-    with(handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/$oppgaveId") {
-        addHeader("Accept", "application/json")
-        addHeader("Content-Type", "application/json")
-        addHeader("X-Nav-Enhet", navEnhet)
-        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-        setBody(objectMapper.writeValueAsString(result))
-    }) {
-        response.status() shouldEqual statusCode
+    with(
+        handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/$oppgaveId") {
+            addHeader("Accept", "application/json")
+            addHeader("Content-Type", "application/json")
+            addHeader("X-Nav-Enhet", navEnhet)
+            addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+            setBody(objectMapper.writeValueAsString(result))
+        }
+    ) {
+        response.status() shouldBeEqualTo statusCode
     }
 }
 
-@KtorExperimentalAPI
 fun setUpTest(
     testApplicationEngine: TestApplicationEngine,
     kafkaProducers: KafkaProducers,

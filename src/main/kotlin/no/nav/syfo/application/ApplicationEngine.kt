@@ -20,19 +20,19 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.util.KtorExperimentalAPI
-import java.lang.NumberFormatException
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
+import no.nav.syfo.aksessering.api.sykmeldingsApi
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
+import no.nav.syfo.service.IkkeTilgangException
 import no.nav.syfo.service.ManuellOppgaveService
+import java.lang.NumberFormatException
 
-@KtorExperimentalAPI
 fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
@@ -55,6 +55,11 @@ fun createApplicationEngine(
         install(StatusPages) {
             exception<NumberFormatException> { cause ->
                 call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
+                log.error("Caught exception", cause)
+                throw cause
+            }
+            exception<IkkeTilgangException> { cause ->
+                call.respond(HttpStatusCode.Forbidden)
                 log.error("Caught exception", cause)
                 throw cause
             }
@@ -84,6 +89,7 @@ fun createApplicationEngine(
                     manuellOppgaveService,
                     authorizationService
                 )
+                sykmeldingsApi(manuellOppgaveService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

@@ -1,14 +1,10 @@
 package no.nav.syfo.persistering
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.util.KtorExperimentalAPI
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.util.UUID
-import java.util.concurrent.CompletableFuture
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
@@ -28,14 +24,16 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import no.nav.syfo.util.LoggingMeta
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import kotlin.test.assertFailsWith
 
-@KtorExperimentalAPI
 object HandleReceivedMessageTest : Spek({
-    val database = TestDB()
+    val database = TestDB.database
     val oppgaveService = mockk<OppgaveService>()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
@@ -55,7 +53,7 @@ object HandleReceivedMessageTest : Spek({
     val loggingMeta = LoggingMeta("", null, msgId, sykmeldingsId)
 
     beforeEachTest {
-        clearAllMocks()
+        clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
         coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgaveid
         coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
         coEvery { kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic } returns "sm2013AutomaticHandlingTopic"
@@ -66,9 +64,6 @@ object HandleReceivedMessageTest : Spek({
     afterEachTest {
         database.connection.dropData()
     }
-    afterGroup {
-        database.stop()
-    }
 
     describe("Test av mottak av ny melding") {
         it("Happy-case") {
@@ -76,7 +71,7 @@ object HandleReceivedMessageTest : Spek({
                 handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
-            database.hentKomplettManuellOppgave(oppgaveid).size shouldEqual 1
+            database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
             coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
@@ -84,15 +79,15 @@ object HandleReceivedMessageTest : Spek({
         }
 
         it("Apprec oppdateres") {
-            database.erApprecSendt(oppgaveid) shouldEqual false
+            database.erApprecSendt(oppgaveid) shouldBeEqualTo false
 
             runBlocking {
                 handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
             val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
-            hentKomplettManuellOppgave.first().sendtApprec shouldEqual true
-            database.erApprecSendt(oppgaveid) shouldEqual true
+            hentKomplettManuellOppgave.first().sendtApprec shouldBeEqualTo true
+            database.erApprecSendt(oppgaveid) shouldBeEqualTo true
 
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
         }
@@ -103,7 +98,7 @@ object HandleReceivedMessageTest : Spek({
             }
 
             val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
-            komplettManuellOppgave.opprinneligValidationResult shouldEqual komplettManuellOppgave.validationResult
+            komplettManuellOppgave.opprinneligValidationResult shouldBeEqualTo komplettManuellOppgave.validationResult
         }
 
         it("Lagrer ikke melding som allerede finnes") {
@@ -112,7 +107,7 @@ object HandleReceivedMessageTest : Spek({
                 handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
-            database.hentKomplettManuellOppgave(oppgaveid).size shouldEqual 1
+            database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
             coVerify(exactly = 1) { oppgaveService.opprettOppgave(any(), any()) }
         }
         it("Kaster feil hvis opprettOppgave feilet") {
@@ -122,7 +117,7 @@ object HandleReceivedMessageTest : Spek({
                     handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
                 }
             }
-            database.erOpprettManuellOppgave(sykmeldingsId) shouldEqual false
+            database.erOpprettManuellOppgave(sykmeldingsId) shouldBeEqualTo false
             coVerify(exactly = 0) { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
             coVerify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
         }

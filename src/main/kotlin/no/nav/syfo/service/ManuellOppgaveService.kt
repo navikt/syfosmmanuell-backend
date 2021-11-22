@@ -2,14 +2,11 @@ package no.nav.syfo.service
 
 import com.migesok.jaxb.adapter.javatime.LocalDateTimeXmlAdapter
 import com.migesok.jaxb.adapter.javatime.LocalDateXmlAdapter
-import io.ktor.util.KtorExperimentalAPI
-import java.io.StringReader
-import javax.ws.rs.ForbiddenException
-import javax.xml.bind.Unmarshaller
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.finnesOppgave
+import no.nav.syfo.aksessering.db.finnesSykmelding
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -39,8 +36,9 @@ import no.nav.syfo.util.XMLDateTimeAdapter
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.fellesformatJaxBContext
 import org.apache.kafka.clients.producer.ProducerRecord
+import java.io.StringReader
+import javax.xml.bind.Unmarshaller
 
-@KtorExperimentalAPI
 class ManuellOppgaveService(
     private val database: DatabaseInterface,
     private val syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
@@ -51,13 +49,16 @@ class ManuellOppgaveService(
         database.hentManuellOppgaver(oppgaveId)
 
     fun finnesOppgave(oppgaveId: Int): Boolean =
-            database.finnesOppgave(oppgaveId)
+        database.finnesOppgave(oppgaveId)
+
+    fun finnesSykmelding(sykmeldingId: String): Boolean =
+        database.finnesSykmelding(sykmeldingId)
 
     fun erApprecSendt(oppgaveId: Int): Boolean =
-            database.erApprecSendt(oppgaveId)
+        database.erApprecSendt(oppgaveId)
 
     fun toggleApprecSendt(oppgaveId: Int) =
-            database.oppdaterApprecStatus(oppgaveId, true)
+        database.oppdaterApprecStatus(oppgaveId, true)
 
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: String, accessToken: String, merknader: List<Merknad>?) {
         val validationResult = ValidationResult(Status.OK, emptyList())
@@ -78,7 +79,7 @@ class ManuellOppgaveService(
              * Fallback for å sende apprec for oppgaver hvor apprec ikke har blitt sendt
              * Tidligere ble apprec sendt ved ferdigstilling, mens det nå blir sendt ved mottak i manuell
              * Frem til alle gamle oppgaver er ferdigstilt er vi nødt til å sjekke
-              */
+             */
 
             sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
         }
@@ -107,7 +108,7 @@ class ManuellOppgaveService(
     private fun skalOppretteOppfolgingsOppgave(manuellOppgave: ManuellOppgaveKomplett): Boolean {
         return manuellOppgave.receivedSykmelding.merknader?.any {
             it.type == "UGYLDIG_TILBAKEDATERING" ||
-                    it.type == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
+                it.type == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
         } ?: false
     }
 
@@ -125,11 +126,11 @@ class ManuellOppgaveService(
         }
         val harTilgangTilOppgave =
             syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                    accessToken = accessToken,
-                    personFnr = manuellOppgave.receivedSykmelding.personNrPasient
+                accessToken = accessToken,
+                personFnr = manuellOppgave.receivedSykmelding.personNrPasient
             )?.harTilgang
         if (harTilgangTilOppgave != true) {
-            throw ForbiddenException()
+            throw IkkeTilgangException()
         }
         return manuellOppgave
     }
@@ -140,7 +141,8 @@ class ManuellOppgaveService(
             setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
         }
         val fellesformat = fellesformatUnmarshaller.unmarshal(
-                StringReader(receivedSykmelding.fellesformat)) as XMLEIFellesformat
+            StringReader(receivedSykmelding.fellesformat)
+        ) as XMLEIFellesformat
 
         notifySyfoService(
             syfoserviceProducer = kafkaProducers.kafkaSyfoserviceProducer,

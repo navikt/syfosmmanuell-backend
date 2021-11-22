@@ -5,35 +5,36 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.3.3"
-val ktorVersion = "1.3.2"
-val logbackVersion = "1.2.3"
-val logstashEncoderVersion = "5.1"
-val prometheusVersion = "0.8.0"
-val smCommonVersion = "1.dff6489"
+val coroutinesVersion = "1.5.1"
+val ktorVersion = "1.6.5"
+val logbackVersion = "1.2.6"
+val logstashEncoderVersion = "6.6"
+val prometheusVersion = "0.12.0"
+val smCommonVersion = "1.88ca328"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val syfooppgaveSchemasVersion = "c8be932543e7356a34690ce7979d494c5d8516d8"
-val jacksonVersion = "2.9.7"
-val kluentVersion = "1.49"
-val kafkaEmbeddedVersion = "2.3.0"
-val mockkVersion = "1.9.3"
-val postgresVersion = "42.2.5"
-val flywayVersion = "5.2.4"
+val jacksonVersion = "2.12.0"
+val kluentVersion = "1.68"
+val mockkVersion = "1.12.0"
+val postgresVersion = "42.2.24"
+val flywayVersion = "8.0.5"
 val hikariVersion = "3.3.0"
 val vaultJavaDriveVersion = "3.1.0"
 val postgresEmbeddedVersion = "0.13.3"
 val javaTimeAdapterVersion = "1.1.3"
-val spekVersion = "2.0.12"
+val spekVersion = "2.0.17"
 val nimbusdsVersion = "7.5.1"
 val caffeineVersion = "2.8.5"
 val confluentVersion = "5.3.0"
-
+val testContainerVersion = "1.16.0"
+val kotlinVersion = "1.6.0"
 plugins {
-    kotlin("jvm") version "1.3.71"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("org.jmailen.kotlinter") version "2.2.0"
+    kotlin("jvm") version "1.6.0"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("org.jmailen.kotlinter") version "3.7.0"
+    id("com.diffplug.spotless") version "5.16.0"
 }
 
 val githubUser: String by project
@@ -41,9 +42,6 @@ val githubPassword: String by project
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven(url = "https://dl.bintray.com/kotlin/ktor")
-    maven(url = "https://dl.bintray.com/spekframework/spek-dev")
     maven(url = "https://kotlin.bintray.com/kotlinx")
     maven(url = "https://packages.confluent.io/maven/")
     maven {
@@ -98,12 +96,15 @@ dependencies {
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
 
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+
+    testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
     testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
+    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }

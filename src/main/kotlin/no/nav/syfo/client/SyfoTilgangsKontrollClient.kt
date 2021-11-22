@@ -10,11 +10,11 @@ import io.ktor.client.request.headers
 import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import java.lang.RuntimeException
-import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.log
+import java.lang.RuntimeException
+import java.util.concurrent.TimeUnit
 
 class SyfoTilgangsKontrollClient(
     environment: Environment,
@@ -24,9 +24,9 @@ class SyfoTilgangsKontrollClient(
     private val scope: String = environment.syfotilgangskontrollScope
 ) {
     val syfoTilgangskontrollCache: Cache<Map<String, String>, Tilgang> = Caffeine.newBuilder()
-            .expireAfterWrite(1, TimeUnit.HOURS)
-            .maximumSize(100)
-            .build<Map<String, String>, Tilgang>()
+        .expireAfterWrite(1, TimeUnit.HOURS)
+        .maximumSize(100)
+        .build<Map<String, String>, Tilgang>()
 
     companion object {
         const val NAV_PERSONIDENT_HEADER = "nav-personident"
@@ -38,7 +38,7 @@ class SyfoTilgangsKontrollClient(
             return it
         }
         val oboToken = azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = scope)?.accessToken
-                ?: throw RuntimeException("Klarte ikke hente nytt accessToken for veileder ved tilgangssjekk")
+            ?: throw RuntimeException("Klarte ikke hente nytt accessToken for veileder ved tilgangssjekk")
 
         val httpResponse = httpClient.get<HttpStatement>("$syfoTilgangsKontrollClientUrl/api/tilgang/navident/person") {
             accept(ContentType.Application.Json)
@@ -56,11 +56,11 @@ class SyfoTilgangsKontrollClient(
                 return tilgang
             }
             else -> {
-                    log.error("syfo-tilgangskontroll svarte med ${httpResponse.status.value}")
-                    return Tilgang(
-                            harTilgang = false,
-                            begrunnelse = "syfo-tilgangskontroll svarte med ${HttpStatusCode.fromValue(httpResponse.status.value)}"
-                    )
+                log.error("syfo-tilgangskontroll svarte med ${httpResponse.status.value}")
+                return Tilgang(
+                    harTilgang = false,
+                    begrunnelse = "syfo-tilgangskontroll svarte med ${HttpStatusCode.fromValue(httpResponse.status.value)}"
+                )
             }
         }
     }

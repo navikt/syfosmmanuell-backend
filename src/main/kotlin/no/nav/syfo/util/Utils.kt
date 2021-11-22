@@ -15,7 +15,7 @@ fun getFileAsString(filePath: String) = String(Files.readAllBytes(Paths.get(file
 
 fun getAccessTokenFromAuthHeader(request: ApplicationRequest): String {
     val authHeader = request.parseAuthorizationHeader()
-            ?: throw UnauthorizedException()
+        ?: throw UnauthorizedException()
     return (authHeader as HttpAuthHeader.Single).blob
 }
 

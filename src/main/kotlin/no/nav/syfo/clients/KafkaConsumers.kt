@@ -15,7 +15,8 @@ class KafkaConsumers(env: Environment, vaultSecrets: KafkaCredentials) {
     }
 
     private val properties = kafkaBaseConfig.toConsumerConfig(
-            "${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class)
+        "${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class
+    )
 
     val kafkaConsumerManuellOppgave = KafkaConsumer<String, String>(properties)
 }

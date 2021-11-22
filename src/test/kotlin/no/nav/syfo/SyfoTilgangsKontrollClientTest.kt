@@ -1,7 +1,7 @@
 package no.nav.syfo
 
 import io.ktor.http.HttpStatusCode
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -13,7 +13,7 @@ import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.testutil.HttpClientTest
 import no.nav.syfo.testutil.ResponseData
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -28,14 +28,16 @@ object SyfoTilgangsKontrollClientTest : Spek({
     coEvery { environment.syfoTilgangsKontrollClientUrl } returns "http://foo"
     coEvery { environment.syfotilgangskontrollScope } returns "scope"
 
-    val syfoTilgangsKontrollClient = spyk(SyfoTilgangsKontrollClient(
+    val syfoTilgangsKontrollClient = spyk(
+        SyfoTilgangsKontrollClient(
             environment = environment,
             httpClient = httpClient.httpClient,
             azureAdV2Client = azureAdV2Client
-    ))
+        )
+    )
 
     beforeEachTest {
-        clearAllMocks()
+        clearMocks(environment, azureAdV2Client)
         syfoTilgangsKontrollClient.syfoTilgangskontrollCache.invalidateAll()
     }
 
@@ -43,10 +45,14 @@ object SyfoTilgangsKontrollClientTest : Spek({
 
         it("Skal returnere harTilgang = true") {
             runBlocking {
-                httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
-                httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(true, "")))
+                httpClient.responseDataOboToken = ResponseData(
+                    HttpStatusCode.OK,
+                    objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type"))
+                )
+                httpClient.responseData =
+                    ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(true, "")))
                 val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
-                tilgang?.harTilgang shouldEqual true
+                tilgang?.harTilgang shouldBeEqualTo true
             }
         }
         it("Skal returnere harTilgang = false hvis syfotilgangskontroll svarer med feilmelding") {
@@ -54,7 +60,7 @@ object SyfoTilgangsKontrollClientTest : Spek({
             httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(false, "har ikke tilgang")))
             runBlocking {
                 val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
-                tilgang?.harTilgang shouldEqual false
+                tilgang?.harTilgang shouldBeEqualTo false
             }
         }
     }
@@ -65,7 +71,7 @@ object SyfoTilgangsKontrollClientTest : Spek({
                 syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
             }
 
-            coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken(any(), any()) }
+            coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken("sdfsdfsfs", "scope") }
         }
         it("Henter ikke fra cache hvis samme accesstoken men ulikt fnr") {
             runBlocking {
@@ -73,7 +79,7 @@ object SyfoTilgangsKontrollClientTest : Spek({
                 syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", "987654")
             }
 
-            coVerify(exactly = 2) { azureAdV2Client.getOnBehalfOfToken(any(), any()) }
+            coVerify(exactly = 2) { azureAdV2Client.getOnBehalfOfToken("sdfsdfsfs", "scope") }
         }
         it("Henter ikke fra cache hvis samme fnr men ulikt accesstoken") {
             runBlocking {
@@ -81,7 +87,8 @@ object SyfoTilgangsKontrollClientTest : Spek({
                 syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("xxxxxxxxx", pasientFnr)
             }
 
-            coVerify(exactly = 2) { azureAdV2Client.getOnBehalfOfToken(any(), any()) }
+            coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken("sdfsdfsfs", "scope") }
+            coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken("xxxxxxxxx", "scope") }
         }
     }
 })

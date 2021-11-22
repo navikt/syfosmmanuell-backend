@@ -14,14 +14,9 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
-import io.mockk.coEvery
 import io.mockk.mockk
-import no.nav.syfo.aksessering.ManuellOppgaveDTO
-import no.nav.syfo.aksessering.api.hentManuellOppgaver
-import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.client.MSGraphClient
+import no.nav.syfo.aksessering.api.sykmeldingsApi
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
-import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -39,21 +34,19 @@ import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import kotlin.test.assertFailsWith
+import java.util.UUID
 
-object HenteManuellOppgaverTest : Spek({
+object SykmeldingsApiTest : Spek({
 
     val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val msGraphClient = mockk<MSGraphClient>()
-    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
-    val manuelloppgaveId = "1314"
+    val sykmeldingsId = UUID.randomUUID().toString()
     val manuellOppgave = ManuellOppgave(
-        receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
+        receivedSykmelding = receivedSykmelding(sykmeldingsId, generateSykmelding(sykmeldingsId)),
         validationResult = ValidationResult(Status.OK, emptyList()),
         apprec = objectMapper.readValue(
             Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
@@ -64,8 +57,7 @@ object HenteManuellOppgaverTest : Spek({
     val oppgaveid = 308076319
 
     beforeEachTest {
-        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
-        coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+        clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
     }
 
     afterEachTest {
@@ -75,7 +67,7 @@ object HenteManuellOppgaverTest : Spek({
     describe("Test av henting av manuelle oppgaver") {
         with(TestApplicationEngine()) {
             start()
-            application.routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+            application.routing { sykmeldingsApi(manuellOppgaveService) }
             application.install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -84,27 +76,19 @@ object HenteManuellOppgaverTest : Spek({
                 }
             }
 
-            it("Skal hente ut manuell oppgave basert på oppgaveid") {
+            it("Skal få 200 OK hvis sykmelding finnes") {
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldBeEqualTo oppgaveid
                 }
             }
-            it("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
-                database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
-                assertFailsWith<NumberFormatException> {
-                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
-                }
-            }
-
             it("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {

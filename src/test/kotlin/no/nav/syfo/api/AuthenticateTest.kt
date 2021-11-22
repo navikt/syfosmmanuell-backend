@@ -18,11 +18,9 @@ import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.ktor.util.KtorExperimentalAPI
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.nio.file.Paths
 import no.nav.syfo.Environment
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
@@ -46,11 +44,11 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.nio.file.Paths
 
-@KtorExperimentalAPI
 object AuthenticateTest : Spek({
     val path = "src/test/resources/jwkset.json"
     val uri = Paths.get(path).toUri().toURL()
@@ -60,7 +58,7 @@ object AuthenticateTest : Spek({
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
 
-    val database = TestDB()
+    val database = TestDB.database
     val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
     val manuelloppgaveId = "1314"
@@ -76,35 +74,32 @@ object AuthenticateTest : Spek({
     val oppgaveid = 308076319
 
     beforeEachTest {
-        clearAllMocks()
+        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
         database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
         coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
     }
     afterEachTest {
         database.connection.dropData()
     }
-    afterGroup {
-        database.stop()
-    }
 
     describe("Autentiseringstest for api") {
         val config = Environment(
-                kafkaBootstrapServers = "http://foo",
-                mountPathVault = "",
-                databaseName = "",
-                syfosmmanuellbackendDBURL = "url",
-                syfosmmanuellUrl = "https://syfosmmanuell",
-                syfotilgangskontrollScope = "scope",
-                oppgavebehandlingUrl = "oppgave",
-                cluster = "cluster",
-                truststore = "",
-                truststorePassword = "",
-                syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
-                msGraphApiScope = "http://ms.graph.fo/",
-                msGraphApiUrl = "http://ms.graph.fo.ton/",
-                azureTokenEndpoint = "http://ms.token/",
-                azureAppClientSecret = "secret",
-                azureAppClientId = "clientId"
+            kafkaBootstrapServers = "http://foo",
+            mountPathVault = "",
+            databaseName = "",
+            syfosmmanuellbackendDBURL = "url",
+            syfosmmanuellUrl = "https://syfosmmanuell",
+            syfotilgangskontrollScope = "scope",
+            oppgavebehandlingUrl = "oppgave",
+            cluster = "cluster",
+            truststore = "",
+            truststorePassword = "",
+            syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
+            msGraphApiScope = "http://ms.graph.fo/",
+            msGraphApiUrl = "http://ms.graph.fo.ton/",
+            azureTokenEndpoint = "http://ms.token/",
+            azureAppClientSecret = "secret",
+            azureAppClientId = "clientId"
         )
         with(TestApplicationEngine()) {
             start()
@@ -130,19 +125,23 @@ object AuthenticateTest : Spek({
             }
             it("Aksepterer gyldig JWT med riktig audience") {
 
-                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-                }) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldEqual oppgaveid
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldBeEqualTo oppgaveid
                 }
             }
             it("Gyldig JWT med feil audience gir Unauthorized") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")
-                }) {
-                    response.status() shouldEqual HttpStatusCode.Unauthorized
-                    response.content shouldEqual null
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                    response.content shouldBeEqualTo null
                 }
             }
         }

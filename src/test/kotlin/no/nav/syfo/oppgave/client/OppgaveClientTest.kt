@@ -1,15 +1,9 @@
 package no.nav.syfo.oppgave.client
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
 import io.ktor.features.ContentNegotiation
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
@@ -20,37 +14,28 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.util.KtorExperimentalAPI
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.net.ServerSocket
-import java.time.LocalDate
-import java.util.concurrent.TimeUnit
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.clients.HttpClients.Companion.config
 import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
 import no.nav.syfo.oppgave.OpprettOppgaveResponse
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.net.ServerSocket
+import java.time.LocalDate
+import java.util.concurrent.TimeUnit
+import kotlin.test.assertFailsWith
 
-@KtorExperimentalAPI
 object OppgaveClientTest : Spek({
     val httpClient = HttpClient(Apache) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-        expectSuccess = false
+        config()
     }
     val oidcClient = mockk<StsOidcClient>()
 
@@ -98,7 +83,7 @@ object OppgaveClientTest : Spek({
     val oppgaveClient = OppgaveClient("$mockHttpServerUrl/oppgave", oidcClient, httpClient)
 
     beforeEachTest {
-        clearAllMocks()
+        clearMocks(oidcClient)
         coEvery { oidcClient.oidcToken() } returns OidcToken("token", "", 1L)
     }
 
@@ -113,8 +98,8 @@ object OppgaveClientTest : Spek({
                 opprettOppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, "123")
             }
 
-            opprettOppgaveResponse?.id shouldEqual 1
-            opprettOppgaveResponse?.versjon shouldEqual 1
+            opprettOppgaveResponse?.id shouldBeEqualTo 1
+            opprettOppgaveResponse?.versjon shouldBeEqualTo 1
         }
         it("Kaster feil hvis oppretting feiler") {
             assertFailsWith<RuntimeException> {
@@ -129,11 +114,21 @@ object OppgaveClientTest : Spek({
         it("Ferdigstiller oppgave") {
             var opprettOppgaveResponse: OpprettOppgaveResponse? = null
             runBlocking {
-                opprettOppgaveResponse = oppgaveClient.ferdigstillOppgave(FerdigstillOppgave(id = 2, versjon = 2, status = OppgaveStatus.FERDIGSTILT, tildeltEnhetsnr = "1234", tilordnetRessurs = "4321", mappeId = null), "123")
+                opprettOppgaveResponse = oppgaveClient.ferdigstillOppgave(
+                    FerdigstillOppgave(
+                        id = 2,
+                        versjon = 2,
+                        status = OppgaveStatus.FERDIGSTILT,
+                        tildeltEnhetsnr = "1234",
+                        tilordnetRessurs = "4321",
+                        mappeId = null
+                    ),
+                    "123"
+                )
             }
 
-            opprettOppgaveResponse?.id shouldEqual 2
-            opprettOppgaveResponse?.versjon shouldEqual 2
+            opprettOppgaveResponse?.id shouldBeEqualTo 2
+            opprettOppgaveResponse?.versjon shouldBeEqualTo 2
         }
         it("Kaster feil hvis ferdigstilling feiler") {
             assertFailsWith<RuntimeException> {
@@ -151,8 +146,8 @@ object OppgaveClientTest : Spek({
                 opprettOppgaveResponse = oppgaveClient.hentOppgave(4, "123")
             }
 
-            opprettOppgaveResponse?.id shouldEqual 4
-            opprettOppgaveResponse?.versjon shouldEqual 1
+            opprettOppgaveResponse?.id shouldBeEqualTo 4
+            opprettOppgaveResponse?.versjon shouldBeEqualTo 1
         }
         it("Kaster feil hvis henting feiler") {
             assertFailsWith<RuntimeException> {
