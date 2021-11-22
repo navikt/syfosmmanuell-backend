@@ -18,8 +18,7 @@ import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.ktor.util.KtorExperimentalAPI
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.syfo.Environment
@@ -45,12 +44,11 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
 
-@KtorExperimentalAPI
 object AuthenticateTest : Spek({
     val path = "src/test/resources/jwkset.json"
     val uri = Paths.get(path).toUri().toURL()
@@ -76,7 +74,7 @@ object AuthenticateTest : Spek({
     val oppgaveid = 308076319
 
     beforeEachTest {
-        clearAllMocks()
+        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
         database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
         coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
     }
@@ -132,8 +130,8 @@ object AuthenticateTest : Spek({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldEqual oppgaveid
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldBeEqualTo oppgaveid
                 }
             }
             it("Gyldig JWT med feil audience gir Unauthorized") {
@@ -142,8 +140,8 @@ object AuthenticateTest : Spek({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.Unauthorized
-                    response.content shouldEqual null
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                    response.content shouldBeEqualTo null
                 }
             }
         }

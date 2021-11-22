@@ -13,7 +13,7 @@ import io.ktor.jackson.jackson
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
@@ -36,7 +36,7 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertFailsWith
@@ -64,7 +64,7 @@ object HenteManuellOppgaverTest : Spek({
     val oppgaveid = 308076319
 
     beforeEachTest {
-        clearAllMocks()
+        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
         coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
     }
 
@@ -91,8 +91,8 @@ object HenteManuellOppgaverTest : Spek({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldEqual oppgaveid
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldBeEqualTo oppgaveid
                 }
             }
             it("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
@@ -108,7 +108,7 @@ object HenteManuellOppgaverTest : Spek({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.NotFound
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
                 }
             }
         }

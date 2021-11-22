@@ -13,7 +13,7 @@ import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -43,16 +43,16 @@ object OpprettManuellOppgaveTest : Spek({
 
             val oppgaveliste = database.hentKomplettManuellOppgave(123144)
 
-            oppgaveliste.size shouldEqual 1
-            oppgaveliste[0].apprec shouldEqual apprec
-            oppgaveliste[0].receivedSykmelding shouldEqual receivedSykmelding
-            oppgaveliste[0].validationResult shouldEqual validationResult
-            oppgaveliste[0].sendtApprec shouldEqual false
+            oppgaveliste.size shouldBeEqualTo 1
+            oppgaveliste[0].apprec shouldBeEqualTo apprec
+            oppgaveliste[0].receivedSykmelding shouldBeEqualTo receivedSykmelding
+            oppgaveliste[0].validationResult shouldBeEqualTo validationResult
+            oppgaveliste[0].sendtApprec shouldBeEqualTo false
         }
         it("Hvis oppgave er lagret for sykmeldingsid skal erOpprettManuellOppgave returnere true") {
             database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)
 
-            database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id) shouldEqual true
+            database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id) shouldBeEqualTo true
         }
     }
 })

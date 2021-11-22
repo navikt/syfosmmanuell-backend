@@ -2,7 +2,6 @@ package no.nav.syfo.service
 
 import com.migesok.jaxb.adapter.javatime.LocalDateTimeXmlAdapter
 import com.migesok.jaxb.adapter.javatime.LocalDateXmlAdapter
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.db.erApprecSendt
@@ -38,10 +37,8 @@ import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.fellesformatJaxBContext
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.io.StringReader
-import javax.ws.rs.ForbiddenException
 import javax.xml.bind.Unmarshaller
 
-@KtorExperimentalAPI
 class ManuellOppgaveService(
     private val database: DatabaseInterface,
     private val syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
@@ -133,7 +130,7 @@ class ManuellOppgaveService(
                 personFnr = manuellOppgave.receivedSykmelding.personNrPasient
             )?.harTilgang
         if (harTilgangTilOppgave != true) {
-            throw ForbiddenException()
+            throw IkkeTilgangException()
         }
         return manuellOppgave
     }

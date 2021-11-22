@@ -10,7 +10,6 @@ import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
@@ -18,7 +17,6 @@ import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OpprettOppgave
 import no.nav.syfo.oppgave.OpprettOppgaveResponse
 
-@KtorExperimentalAPI
 class OppgaveClient(
     private val url: String,
     private val oidcClient: StsOidcClient,

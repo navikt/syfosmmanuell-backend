@@ -17,8 +17,7 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.ktor.util.KtorExperimentalAPI
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -47,7 +46,7 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -67,7 +66,6 @@ val manuellOppgave = ManuellOppgave(
     )
 )
 
-@KtorExperimentalAPI
 object SendVurderingManuellOppgaveTest : Spek({
     val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
@@ -78,7 +76,7 @@ object SendVurderingManuellOppgaveTest : Spek({
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
     beforeEachTest {
-        clearAllMocks()
+        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
     }
 
     afterEachTest {
@@ -123,7 +121,7 @@ object SendVurderingManuellOppgaveTest : Spek({
                         setBody(objectMapper.writeValueAsString(result))
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.NotFound
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
                 }
             }
         }
@@ -165,24 +163,28 @@ object SendVurderingManuellOppgaveTest : Spek({
             val result = Result(status = ResultStatus.GODKJENT, merknad = null)
             val merknader = result.toMerknad()
 
-            merknader shouldEqual null
+            merknader shouldBeEqualTo null
         }
 
         it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
-            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.UGYLDIG_TILBAKEDATERING)
+            val result =
+                Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.UGYLDIG_TILBAKEDATERING)
             val merknad = result.toMerknad()
 
-            merknad shouldEqual Merknad(
+            merknad shouldBeEqualTo Merknad(
                 type = "UGYLDIG_TILBAKEDATERING",
                 beskrivelse = null
             )
         }
 
         it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER") {
-            val result = Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER)
+            val result = Result(
+                status = ResultStatus.GODKJENT_MED_MERKNAD,
+                merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER
+            )
             val merknad = result.toMerknad()
 
-            merknad shouldEqual Merknad(
+            merknad shouldBeEqualTo Merknad(
                 type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER",
                 beskrivelse = null
             )
@@ -206,11 +208,10 @@ fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode
             setBody(objectMapper.writeValueAsString(result))
         }
     ) {
-        response.status() shouldEqual statusCode
+        response.status() shouldBeEqualTo statusCode
     }
 }
 
-@KtorExperimentalAPI
 fun setUpTest(
     testApplicationEngine: TestApplicationEngine,
     kafkaProducers: KafkaProducers,

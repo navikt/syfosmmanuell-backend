@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -47,7 +46,6 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 
-@KtorExperimentalAPI
 fun main() {
     val env = Environment()
     val vaultSecrets = VaultSecrets()
@@ -120,7 +118,6 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         }
     }
 
-@KtorExperimentalAPI
 fun launchListeners(
     applicationState: ApplicationState,
     env: Environment,
@@ -143,7 +140,6 @@ fun launchListeners(
     }
 }
 
-@KtorExperimentalAPI
 suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
     kafkaConsumer: KafkaConsumer<String, String>,

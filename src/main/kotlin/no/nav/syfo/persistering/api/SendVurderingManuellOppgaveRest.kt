@@ -7,14 +7,12 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
 
-@KtorExperimentalAPI
 fun Route.sendVurderingManuellOppgave(
     manuellOppgaveService: ManuellOppgaveService,
     authorizationService: AuthorizationService

@@ -10,7 +10,6 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.azuread.v2.AzureAdV2Client
@@ -45,9 +44,8 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     private val httpClientWithProxy = HttpClient(Apache, proxyConfig)
     private val httpClient = HttpClient(Apache, config)
 
-    @KtorExperimentalAPI
     val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenUrl)
-    @KtorExperimentalAPI
+
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
 
     private val azureAdV2Client = AzureAdV2Client(
@@ -57,14 +55,12 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
         httpClient = httpClientWithProxy
     )
 
-    @KtorExperimentalAPI
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
         environment = env,
         azureAdV2Client = azureAdV2Client,
         httpClient = httpClientWithProxy
     )
 
-    @KtorExperimentalAPI
     val msGraphClient = MSGraphClient(
         environment = env,
         azureAdV2Client = azureAdV2Client,

@@ -13,10 +13,10 @@ fun Route.sykmeldingsApi(
     manuellOppgaveService: ManuellOppgaveService
 ) {
     route("/api/v1") {
-        get("/sykmelding/{sykmeldingsId}/exists") {
-            val sykmeldingsId = call.parameters["oppgaveid"]!!
+        get("/sykmelding/{sykmeldingsId}") {
+            val sykmeldingsId = call.parameters["sykmeldingsId"]!!
 
-            log.info("Mottok kall til /api/v1/sykmelding/{$sykmeldingsId}/exists")
+            log.info("Mottok kall til /api/v1/sykmelding/{$sykmeldingsId}")
 
             val finnesSykmelding = manuellOppgaveService.finnesSykmelding(sykmeldingsId)
 

@@ -1,6 +1,5 @@
 package no.nav.syfo.oppgave.service
 
-import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log
@@ -21,7 +20,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-@KtorExperimentalAPI
 class OppgaveService(
     private val oppgaveClient: OppgaveClient,
     private val kafkaProduceTaskProducer: KafkaProducers.KafkaProduceTaskProducer

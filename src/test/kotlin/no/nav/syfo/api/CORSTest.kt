@@ -10,7 +10,7 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.api.registerNaisApi
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -30,9 +30,9 @@ object CORSTest : Spek({
 
             it("No origin header") {
                 with(handleRequest(HttpMethod.Get, "/is_alive")) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual null
-                    response.content shouldEqual "I'm alive! :)"
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo null
+                    response.content shouldBeEqualTo "I'm alive! :)"
                 }
             }
             it("Wrong origin header") {
@@ -41,9 +41,9 @@ object CORSTest : Spek({
                         addHeader(HttpHeaders.Origin, "invalid-host")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual null
-                    response.content shouldEqual "I'm ready! :)"
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo null
+                    response.content shouldBeEqualTo "I'm ready! :)"
                 }
             }
             it("Wrong origin header is empty") {
@@ -52,9 +52,9 @@ object CORSTest : Spek({
                         addHeader(HttpHeaders.Origin, "")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual null
-                    response.content shouldEqual "I'm ready! :)"
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo null
+                    response.content shouldBeEqualTo "I'm ready! :)"
                 }
             }
             it("Simple credentials") {
@@ -64,10 +64,10 @@ object CORSTest : Spek({
                         addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual "https://syfosmmanuell.nais.preprod.local"
-                    response.headers[HttpHeaders.Vary] shouldEqual HttpHeaders.Origin
-                    response.headers[HttpHeaders.AccessControlAllowCredentials] shouldEqual "true"
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo "https://syfosmmanuell.nais.preprod.local"
+                    response.headers[HttpHeaders.Vary] shouldBeEqualTo HttpHeaders.Origin
+                    response.headers[HttpHeaders.AccessControlAllowCredentials] shouldBeEqualTo "true"
                 }
             }
         }
@@ -90,9 +90,9 @@ object CORSTest : Spek({
                         addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual "https://syfosmmanuell.nais.preprod.local"
-                    response.content shouldEqual "I'm ready! :)"
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo "https://syfosmmanuell.nais.preprod.local"
+                    response.content shouldBeEqualTo "I'm ready! :)"
                 }
             }
         }
@@ -112,9 +112,9 @@ object CORSTest : Spek({
                         addHeader(HttpHeaders.Origin, "null")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual "*"
-                    response.content shouldEqual "I'm ready! :)"
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo "*"
+                    response.content shouldBeEqualTo "I'm ready! :)"
                 }
             }
         }
@@ -136,10 +136,10 @@ object CORSTest : Spek({
                         addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldEqual "https://syfosmmanuell.nais.preprod.local"
-                    response.headers[HttpHeaders.AccessControlAllowHeaders] shouldEqual "Content-Type"
-                    response.headers[HttpHeaders.Vary] shouldEqual HttpHeaders.Origin
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo "https://syfosmmanuell.nais.preprod.local"
+                    response.headers[HttpHeaders.AccessControlAllowHeaders] shouldBeEqualTo "Content-Type"
+                    response.headers[HttpHeaders.Vary] shouldBeEqualTo HttpHeaders.Origin
                 }
             }
         }
