@@ -21,16 +21,21 @@ import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
 
 class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
-    private val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
+    companion object {
+        val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+            install(JsonFeature) {
+                serializer = JacksonSerializer {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
             }
+            expectSuccess = false
         }
     }
+
     private val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         config()
         engine {
