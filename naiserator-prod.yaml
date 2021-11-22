@@ -43,7 +43,7 @@ spec:
         - application: syfosmmanuell
           namespace: teamsykmelding
           cluster: prod-fss
-       - application: syfosminfotrygd
+        - application: syfosminfotrygd
   vault:
     enabled: true
     paths:
