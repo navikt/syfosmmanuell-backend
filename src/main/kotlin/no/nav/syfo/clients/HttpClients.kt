@@ -30,7 +30,6 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-        expectSuccess = false
     }
     private val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         config()
