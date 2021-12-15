@@ -54,7 +54,9 @@ fun receivedSykmelding(
     fellesformat = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml"),
     tssid = "",
     merknader = merknader,
-    partnerreferanse = null
+    partnerreferanse = null,
+    legeHelsepersonellkategori = null,
+    legeHprNr = null
 )
 
 fun generateSykmelding(
