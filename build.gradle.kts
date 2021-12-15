@@ -6,33 +6,33 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.5.1"
-val ktorVersion = "1.6.5"
-val logbackVersion = "1.2.6"
-val logstashEncoderVersion = "6.6"
+val ktorVersion = "1.6.7"
+val logbackVersion = "1.2.8"
+val logstashEncoderVersion = "7.0.1"
 val prometheusVersion = "0.12.0"
-val smCommonVersion = "1.88ca328"
+val smCommonVersion = "1.a92720c"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val syfooppgaveSchemasVersion = "c8be932543e7356a34690ce7979d494c5d8516d8"
-val jacksonVersion = "2.12.0"
+val jacksonVersion = "2.13.0"
 val kluentVersion = "1.68"
-val mockkVersion = "1.12.0"
-val postgresVersion = "42.2.24"
-val flywayVersion = "8.0.5"
-val hikariVersion = "3.3.0"
+val mockkVersion = "1.12.1"
+val postgresVersion = "42.3.1"
+val flywayVersion = "8.1.0"
+val hikariVersion = "5.0.0"
 val vaultJavaDriveVersion = "3.1.0"
-val postgresEmbeddedVersion = "0.13.3"
 val javaTimeAdapterVersion = "1.1.3"
 val spekVersion = "2.0.17"
-val nimbusdsVersion = "7.5.1"
-val caffeineVersion = "2.8.5"
-val confluentVersion = "5.3.0"
-val testContainerVersion = "1.16.0"
+val nimbusdsVersion = "9.15.2"
+val caffeineVersion = "3.0.4"
+val confluentVersion = "7.0.1"
+val testContainerVersion = "1.16.2"
 val kotlinVersion = "1.6.0"
+
 plugins {
     kotlin("jvm") version "1.6.0"
-    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
     id("org.jmailen.kotlinter") version "3.7.0"
     id("com.diffplug.spotless") version "5.16.0"
 }
@@ -42,7 +42,6 @@ val githubPassword: String by project
 
 repositories {
     mavenCentral()
-    maven(url = "https://kotlin.bintray.com/kotlinx")
     maven(url = "https://packages.confluent.io/maven/")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
@@ -54,7 +53,7 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
 
@@ -71,7 +70,6 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-ws:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
 
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
@@ -101,7 +99,6 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
@@ -127,7 +124,7 @@ tasks {
         }
     }
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "12"
+        kotlinOptions.jvmTarget = "17"
     }
 
     withType<ShadowJar> {

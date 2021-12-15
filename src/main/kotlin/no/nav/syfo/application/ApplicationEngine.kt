@@ -21,7 +21,6 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.syfo.Environment
-import no.nav.syfo.VaultSecrets
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.aksessering.api.sykmeldingsApi
 import no.nav.syfo.application.api.registerNaisApi
@@ -37,7 +36,6 @@ fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
     manuellOppgaveService: ManuellOppgaveService,
-    vaultSecrets: VaultSecrets,
     jwkProvider: JwkProvider,
     issuer: String,
     authorizationService: AuthorizationService

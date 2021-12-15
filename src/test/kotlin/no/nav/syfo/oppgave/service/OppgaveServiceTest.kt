@@ -13,7 +13,7 @@ import no.nav.syfo.testutil.generatePeriode
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldNotEqual
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
@@ -57,7 +57,7 @@ object OppgaveServiceTest : Spek({
             opprettOppgave.oppgavetype shouldBeEqualTo "BEH_EL_SYM"
             opprettOppgave.behandlingstype shouldBeEqualTo "ae0239"
             opprettOppgave.aktivDato shouldBeEqualTo LocalDate.now()
-            opprettOppgave.fristFerdigstillelse shouldNotEqual null
+            opprettOppgave.fristFerdigstillelse shouldNotBeEqualTo null
             opprettOppgave.prioritet shouldBeEqualTo "HOY"
         }
     }

@@ -81,7 +81,6 @@ fun main() {
         env,
         applicationState,
         manuellOppgaveService,
-        vaultSecrets,
         jwkProvider,
         wellKnown.issuer,
         authorizationService
