@@ -8,14 +8,17 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.features.HttpResponseValidator
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.network.sockets.SocketTimeoutException
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.clients.exception.ServiceUnavailableException
 import no.nav.syfo.oppgave.client.OppgaveClient
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
@@ -33,6 +36,13 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
                 }
             }
             expectSuccess = false
+            HttpResponseValidator {
+                handleResponseException { exception ->
+                    when (exception) {
+                        is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                    }
+                }
+            }
         }
     }
 
