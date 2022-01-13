@@ -18,6 +18,7 @@ import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
+import no.nav.syfo.util.TrackableOpprettOppgaveException
 import no.nav.syfo.util.wrapExceptions
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
@@ -44,7 +45,7 @@ class MottattSykmeldingService(
                 runConsumer()
             } catch (ex: Exception) {
                 when (ex) {
-                    is OpprettOppgaveException -> {
+                    is TrackableOpprettOppgaveException -> {
                         log.warn("Caught {}, unsubscribing and retrying", ex.cause)
                         kafkaConsumer.unsubscribe()
                         delay(DELAY_ON_ERROR_SECONDS.seconds)
