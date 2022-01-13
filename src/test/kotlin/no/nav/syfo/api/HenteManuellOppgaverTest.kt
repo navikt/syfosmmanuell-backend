@@ -84,7 +84,7 @@ object HenteManuellOppgaverTest : Spek({
                 }
             }
 
-            it("Skal hente ut manuell oppgave basert på oppgaveid") {
+            it("Skal hente ut manuell oppgav    e basert på oppgaveid") {
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
