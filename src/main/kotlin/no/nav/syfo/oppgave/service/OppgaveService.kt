@@ -27,6 +27,9 @@ class OppgaveService(
 
     suspend fun opprettOppgave(manuellOppgave: ManuellOppgave, loggingMeta: LoggingMeta): Int {
         val opprettOppgave = tilOpprettOppgave(manuellOppgave)
+        if (opprettOppgave != null) {
+            throw RuntimeException("Test av feilhåndtering i Q")
+        }
         val oppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
         OPPRETT_OPPGAVE_COUNTER.inc()
         log.info(
