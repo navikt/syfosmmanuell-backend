@@ -14,7 +14,6 @@ val smCommonVersion = "1.a92720c"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
-val syfooppgaveSchemasVersion = "c8be932543e7356a34690ce7979d494c5d8516d8"
 val jacksonVersion = "2.13.0"
 val kluentVersion = "1.68"
 val mockkVersion = "1.12.1"
@@ -26,7 +25,6 @@ val javaTimeAdapterVersion = "1.1.3"
 val spekVersion = "2.0.17"
 val nimbusdsVersion = "9.15.2"
 val caffeineVersion = "3.0.4"
-val confluentVersion = "7.0.1"
 val testContainerVersion = "1.16.2"
 val kotlinVersion = "1.6.0"
 
@@ -75,7 +73,6 @@ dependencies {
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
     implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
-    implementation ("no.nav.syfo.schemas:syfosmoppgave-avro:$syfooppgaveSchemasVersion")
 
     implementation("com.migesok:jaxb-java-time-adapters:$javaTimeAdapterVersion")
 
@@ -91,7 +88,6 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")
-    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")

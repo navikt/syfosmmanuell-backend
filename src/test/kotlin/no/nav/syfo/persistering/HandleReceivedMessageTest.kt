@@ -56,7 +56,7 @@ object HandleReceivedMessageTest : Spek({
         clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
         coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgaveid
         coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
-        coEvery { kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic } returns "sm2013AutomaticHandlingTopic"
+        coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "sm2013AutomaticHandlingTopic"
         coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     }

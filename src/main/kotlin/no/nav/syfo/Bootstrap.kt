@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -46,6 +47,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 
+@DelicateCoroutinesApi
 fun main() {
     val env = Environment()
     val vaultSecrets = VaultSecrets()
@@ -61,7 +63,7 @@ fun main() {
 
     val applicationState = ApplicationState()
 
-    val kafkaProducers = KafkaProducers(env, vaultSecrets)
+    val kafkaProducers = KafkaProducers(env)
     val kafkaConsumers = KafkaConsumers(env, vaultSecrets)
     val httpClients = HttpClients(env, vaultSecrets)
     val oppgaveService = OppgaveService(httpClients.oppgaveClient, kafkaProducers.kafkaProduceTaskProducer)
@@ -102,6 +104,7 @@ fun main() {
     )
 }
 
+@DelicateCoroutinesApi
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
     GlobalScope.launch {
         try {
@@ -117,6 +120,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         }
     }
 
+@DelicateCoroutinesApi
 fun launchListeners(
     applicationState: ApplicationState,
     env: Environment,
