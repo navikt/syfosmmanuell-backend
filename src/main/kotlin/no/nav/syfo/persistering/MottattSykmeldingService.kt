@@ -46,7 +46,7 @@ class MottattSykmeldingService(
             } catch (ex: Exception) {
                 when (ex) {
                     is TrackableOpprettOppgaveException -> {
-                        log.warn("Caught {}, unsubscribing and retrying", ex.cause)
+                        log.warn("Caught TrackableOpprettOppgaveException, unsubscribing and retrying")
                         kafkaConsumer.unsubscribe()
                         delay(DELAY_ON_ERROR_SECONDS.seconds)
                     }
