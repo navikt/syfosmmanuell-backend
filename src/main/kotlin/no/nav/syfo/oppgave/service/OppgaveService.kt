@@ -12,8 +12,8 @@ import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
 import no.nav.syfo.oppgave.client.OppgaveClient
-import no.nav.syfo.sak.avro.PrioritetType
-import no.nav.syfo.sak.avro.ProduceTask
+import no.nav.syfo.oppgave.model.OpprettOppgaveKafkaMessage
+import no.nav.syfo.oppgave.model.PrioritetType
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.DayOfWeek
@@ -38,11 +38,11 @@ class OppgaveService(
     }
 
     fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: String, loggingMeta: LoggingMeta) {
-        val produceTask = tilOppfolgingsoppgave(manuellOppgave, enhet, veileder)
+        val opprettOppgaveKafkaMessage = tilOppfolgingsoppgave(manuellOppgave, enhet, veileder)
         val producerRecord = ProducerRecord(
             kafkaProduceTaskProducer.topic,
             manuellOppgave.receivedSykmelding.sykmelding.id,
-            produceTask
+            opprettOppgaveKafkaMessage
         )
 
         try {
@@ -104,27 +104,27 @@ class OppgaveService(
             prioritet = "HOY"
         )
 
-    fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: String): ProduceTask =
-        ProduceTask().apply {
-            messageId = manuellOppgave.receivedSykmelding.msgId
-            aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId
-            tildeltEnhetsnr = enhet
-            opprettetAvEnhetsnr = "9999"
-            behandlesAvApplikasjon = "FS22" // Gosys
-            orgnr = manuellOppgave.receivedSykmelding.legekontorOrgNr ?: ""
+    fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: String): OpprettOppgaveKafkaMessage =
+        OpprettOppgaveKafkaMessage(
+            messageId = manuellOppgave.receivedSykmelding.msgId,
+            aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
+            tildeltEnhetsnr = enhet,
+            opprettetAvEnhetsnr = "9999",
+            behandlesAvApplikasjon = "FS22", // Gosys
+            orgnr = manuellOppgave.receivedSykmelding.legekontorOrgNr ?: "",
             beskrivelse = "Oppfølgingsoppgave for sykmelding registrert med merknad " +
-                manuellOppgave.receivedSykmelding.merknader?.joinToString { it.type }
-            temagruppe = "ANY"
-            tema = "SYM"
-            behandlingstema = "ANY"
-            oppgavetype = "BEH_EL_SYM"
-            behandlingstype = "ANY"
-            mappeId = 1
-            aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-            fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-            prioritet = PrioritetType.HOY
+                manuellOppgave.receivedSykmelding.merknader?.joinToString { it.type },
+            temagruppe = "ANY",
+            tema = "SYM",
+            behandlingstema = "ANY",
+            oppgavetype = "BEH_EL_SYM",
+            behandlingstype = "ANY",
+            mappeId = 1,
+            aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now()),
+            fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now()),
+            prioritet = PrioritetType.HOY,
             metadata = mapOf("tilordnetRessurs" to veileder)
-        }
+        )
 
     fun omTreUkedager(idag: LocalDate): LocalDate = when (idag.dayOfWeek) {
         DayOfWeek.SUNDAY -> idag.plusDays(4)

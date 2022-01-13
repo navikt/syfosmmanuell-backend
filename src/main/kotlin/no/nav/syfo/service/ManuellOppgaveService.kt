@@ -156,8 +156,8 @@ class ManuellOppgaveService(
 
     fun sendApprec(oppgaveId: Int, apprec: Apprec, loggingMeta: LoggingMeta) {
         try {
-            kafkaProducers.kafkaApprecProducer.producer.send(ProducerRecord(kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic, apprec)).get()
-            log.info("Apprec kvittering sent til kafka topic {} {}", kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic, loggingMeta)
+            kafkaProducers.kafkaApprecProducer.producer.send(ProducerRecord(kafkaProducers.kafkaApprecProducer.apprecTopic, apprec)).get()
+            log.info("Apprec kvittering sent til kafka topic {} {}", kafkaProducers.kafkaApprecProducer.apprecTopic, loggingMeta)
             toggleApprecSendt(oppgaveId)
         } catch (ex: Exception) {
             log.error("Failed to send apprec {}", loggingMeta)
@@ -181,7 +181,7 @@ class ManuellOppgaveService(
         )
 
     fun sendReceivedSykmelding(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
-        val topic = kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic
+        val topic = kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic
         try {
             kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(
                 ProducerRecord(

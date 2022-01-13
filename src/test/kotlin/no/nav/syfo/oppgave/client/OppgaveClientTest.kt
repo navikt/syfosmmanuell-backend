@@ -93,7 +93,7 @@ object OppgaveClientTest : Spek({
 
     describe("Test av opprettOppgave") {
         it("Oppretter oppgave") {
-            var opprettOppgaveResponse: OpprettOppgaveResponse? = null
+            var opprettOppgaveResponse: OpprettOppgaveResponse?
             runBlocking {
                 opprettOppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, "123")
             }
@@ -112,7 +112,7 @@ object OppgaveClientTest : Spek({
 
     describe("Test av ferdigstillOppgave") {
         it("Ferdigstiller oppgave") {
-            var opprettOppgaveResponse: OpprettOppgaveResponse? = null
+            var opprettOppgaveResponse: OpprettOppgaveResponse?
             runBlocking {
                 opprettOppgaveResponse = oppgaveClient.ferdigstillOppgave(
                     FerdigstillOppgave(
@@ -141,7 +141,7 @@ object OppgaveClientTest : Spek({
 
     describe("Test av hentOppgave") {
         it("Henter oppgave") {
-            var opprettOppgaveResponse: OpprettOppgaveResponse? = null
+            var opprettOppgaveResponse: OpprettOppgaveResponse?
             runBlocking {
                 opprettOppgaveResponse = oppgaveClient.hentOppgave(4, "123")
             }

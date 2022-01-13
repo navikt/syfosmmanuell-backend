@@ -226,10 +226,10 @@ fun setUpTest(
     val sm2013ApprecTopicName = "sm2013ApprecTopicName"
 
     coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
-    coEvery { kafkaProducers.kafkaApprecProducer.sm2013ApprecTopic } returns sm2013ApprecTopicName
+    coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns sm2013ApprecTopicName
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer } returns mockk()
-    coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.sm2013AutomaticHandlingTopic } returns sm2013AutomaticHandlingTopic
+    coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic } returns sm2013AutomaticHandlingTopic
     coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
     coEvery { msGraphClient.getSubjectFromMsGraph(any()) } returns "4321"
 
