@@ -8,6 +8,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
+import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
@@ -25,6 +26,7 @@ import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeEqualTo
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -32,12 +34,16 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 
-object HandleReceivedMessageTest : Spek({
+object MotattSykmeldingServiceTest : Spek({
+    val applicationState = ApplicationState(alive = true, ready = true)
     val database = TestDB.database
     val oppgaveService = mockk<OppgaveService>()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
+    val manuellOppgaveConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+    val mottattSykmeldingService = MottattSykmeldingService(kafkaConsumer = manuellOppgaveConsumer, applicationState = applicationState, "topic", database, oppgaveService, manuellOppgaveService)
+
     val sykmeldingsId = UUID.randomUUID().toString()
     val msgId = "1314"
     val manuellOppgave = ManuellOppgave(
@@ -66,9 +72,10 @@ object HandleReceivedMessageTest : Spek({
     }
 
     describe("Test av mottak av ny melding") {
+
         it("Happy-case") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
@@ -82,7 +89,7 @@ object HandleReceivedMessageTest : Spek({
             database.erApprecSendt(oppgaveid) shouldBeEqualTo false
 
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
             val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
@@ -94,7 +101,7 @@ object HandleReceivedMessageTest : Spek({
 
         it("Lagrer opprinnelig validation result") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
             val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
@@ -103,8 +110,8 @@ object HandleReceivedMessageTest : Spek({
 
         it("Lagrer ikke melding som allerede finnes") {
             runBlocking {
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
-                handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
@@ -114,7 +121,7 @@ object HandleReceivedMessageTest : Spek({
             coEvery { oppgaveService.opprettOppgave(any(), any()) } throws RuntimeException("Noe gikk galt")
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                    mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
                 }
             }
             database.erOpprettManuellOppgave(sykmeldingsId) shouldBeEqualTo false
