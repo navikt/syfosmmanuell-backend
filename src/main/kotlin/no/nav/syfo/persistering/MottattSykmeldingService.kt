@@ -12,15 +12,14 @@ import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.objectMapper
-import no.nav.syfo.oppgave.exceptions.OpprettOppgaveException
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.LoggingMeta
-import no.nav.syfo.util.TrackableOpprettOppgaveException
 import no.nav.syfo.util.wrapExceptions
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.errors.AuthorizationException
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
@@ -36,6 +35,7 @@ class MottattSykmeldingService(
 
     companion object {
         private const val DELAY_ON_ERROR_SECONDS = 60L
+        private const val POLL_TIME_SECONDS = 10L
     }
 
     @OptIn(ExperimentalTime::class)
@@ -45,13 +45,13 @@ class MottattSykmeldingService(
                 runConsumer()
             } catch (ex: Exception) {
                 when (ex) {
-                    is TrackableOpprettOppgaveException -> {
-                        log.warn("Caught TrackableOpprettOppgaveException, unsubscribing and retrying")
-                        kafkaConsumer.unsubscribe()
-                        delay(DELAY_ON_ERROR_SECONDS.seconds)
+                    is AuthorizationException -> {
+                        throw ex
                     }
                     else -> {
-                        throw ex
+                        log.error("Caught exception, unsubscribing and retrying", ex)
+                        kafkaConsumer.unsubscribe()
+                        delay(DELAY_ON_ERROR_SECONDS.seconds)
                     }
                 }
             }
@@ -62,7 +62,7 @@ class MottattSykmeldingService(
         kafkaConsumer.subscribe(listOf(topic))
         log.info("Starting consuming topic $topic")
         while (applicationState.ready) {
-            kafkaConsumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
+            kafkaConsumer.poll(Duration.ofSeconds(POLL_TIME_SECONDS)).forEach { consumerRecord ->
                 val receivedManuellOppgave: ManuellOppgave = objectMapper.readValue(consumerRecord.value())
                 val loggingMeta = LoggingMeta(
                     mottakId = receivedManuellOppgave.receivedSykmelding.navLogId,
@@ -86,7 +86,6 @@ class MottattSykmeldingService(
                     manuellOppgaveService
                 )
             }
-            delay(100)
         }
     }
 
@@ -107,29 +106,19 @@ class MottattSykmeldingService(
                     manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
                 )
             } else {
-                try {
-                    val oppgaveId = try {
-                        oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
-                    } catch (e: Exception) {
-                        log.warn("Opprett Oppgave: Kall mot oppgave api feilet: {}, {}", e.message, fields(loggingMeta))
-                        throw OpprettOppgaveException("Opprettelse av oppgave feilet ved kall mot oppgave api")
-                    }
-                    val oppdatertApprec = manuellOppgaveService.lagOppdatertApprec(manuellOppgave)
+                val oppgaveId = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
+                val oppdatertApprec = manuellOppgaveService.lagOppdatertApprec(manuellOppgave)
 
-                    database.opprettManuellOppgave(manuellOppgave, oppdatertApprec, oppgaveId)
-                    log.info(
-                        "Manuell oppgave lagret i databasen, for {}, {}",
-                        StructuredArguments.keyValue("oppgaveId", oppgaveId),
-                        fields(loggingMeta)
-                    )
-                    manuellOppgaveService.sendApprec(oppgaveId, oppdatertApprec, loggingMeta)
-                    manuellOppgaveService.sendReceivedSykmelding(manuellOppgave.receivedSykmelding, loggingMeta)
-                    manuellOppgaveService.sendToSyfoService(manuellOppgave.receivedSykmelding, loggingMeta)
-                    MESSAGE_STORED_IN_DB_COUNTER.inc()
-                } catch (e: Exception) {
-                    log.error("Noe gikk galt ved oppretting av oppgave: {}, {}", e.message, fields(loggingMeta))
-                    throw e
-                }
+                database.opprettManuellOppgave(manuellOppgave, oppdatertApprec, oppgaveId)
+                log.info(
+                    "Manuell oppgave lagret i databasen, for {}, {}",
+                    StructuredArguments.keyValue("oppgaveId", oppgaveId),
+                    fields(loggingMeta)
+                )
+                manuellOppgaveService.sendApprec(oppgaveId, oppdatertApprec, loggingMeta)
+                manuellOppgaveService.sendReceivedSykmelding(manuellOppgave.receivedSykmelding, loggingMeta)
+                manuellOppgaveService.sendToSyfoService(manuellOppgave.receivedSykmelding, loggingMeta)
+                MESSAGE_STORED_IN_DB_COUNTER.inc()
             }
         }
     }
