@@ -20,6 +20,7 @@ import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.wrapExceptions
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.AuthorizationException
+import org.apache.kafka.common.errors.ClusterAuthorizationException
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
@@ -45,7 +46,7 @@ class MottattSykmeldingService(
                 runConsumer()
             } catch (ex: Exception) {
                 when (ex) {
-                    is AuthorizationException -> {
+                    is AuthorizationException, is ClusterAuthorizationException -> {
                         throw ex
                     }
                     else -> {
