@@ -127,7 +127,7 @@ class MottattSykmeldingService(
                     manuellOppgaveService.sendToSyfoService(manuellOppgave.receivedSykmelding, loggingMeta)
                     MESSAGE_STORED_IN_DB_COUNTER.inc()
                 } catch (e: Exception) {
-                    log.warn("Noe gikk galt ved oppretting av oppgave: {}, {}", e.message, fields(loggingMeta))
+                    log.error("Noe gikk galt ved oppretting av oppgave: {}, {}", e.message, fields(loggingMeta))
                     throw e
                 }
             }
