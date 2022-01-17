@@ -60,7 +60,7 @@ fun main() {
     val applicationState = ApplicationState()
 
     val kafkaProducers = KafkaProducers(env)
-    val kafkaConsumers = KafkaConsumers(env, vaultSecrets)
+    val kafkaConsumers = KafkaConsumers(env)
     val httpClients = HttpClients(env, vaultSecrets)
     val oppgaveService = OppgaveService(httpClients.oppgaveClient, kafkaProducers.kafkaProduceTaskProducer)
 
@@ -90,19 +90,13 @@ fun main() {
 
     RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     val mottattSykmeldingService = MottattSykmeldingService(
-        kafkaConsumer = kafkaConsumers.kafkaConsumerManuellOppgave,
         kafkaAivenConsumer = kafkaConsumers.kafkaAivenConsumerManuellOppgave,
         applicationState = applicationState,
-        topic = env.syfoSmManuellTopic,
         topicAiven = env.manuellTopic,
         database = database,
         oppgaveService = oppgaveService,
         manuellOppgaveService = manuellOppgaveService
     )
-
-    createListener(applicationState) {
-        mottattSykmeldingService.startConsumer()
-    }
 
     createListener(applicationState) {
         mottattSykmeldingService.startAivenConsumer()
