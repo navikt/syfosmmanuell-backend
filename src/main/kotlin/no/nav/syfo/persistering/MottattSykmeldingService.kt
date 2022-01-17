@@ -27,8 +27,10 @@ import kotlin.time.ExperimentalTime
 
 class MottattSykmeldingService(
     private val kafkaConsumer: KafkaConsumer<String, String>,
+    private val kafkaAivenConsumer: KafkaConsumer<String, String>,
     private val applicationState: ApplicationState,
     private val topic: String,
+    private val topicAiven: String,
     private val database: DatabaseInterface,
     private val oppgaveService: OppgaveService,
     private val manuellOppgaveService: ManuellOppgaveService
@@ -39,7 +41,7 @@ class MottattSykmeldingService(
         private const val POLL_TIME_SECONDS = 10L
     }
 
-    @OptIn(ExperimentalTime::class)
+    @ExperimentalTime
     suspend fun startConsumer() {
         while (applicationState.ready) {
             try {
@@ -50,8 +52,28 @@ class MottattSykmeldingService(
                         throw ex
                     }
                     else -> {
-                        log.error("Caught exception, unsubscribing and retrying", ex)
+                        log.error("On-prem: Caught exception, unsubscribing and retrying", ex)
                         kafkaConsumer.unsubscribe()
+                        delay(DELAY_ON_ERROR_SECONDS.seconds)
+                    }
+                }
+            }
+        }
+    }
+
+    @ExperimentalTime
+    suspend fun startAivenConsumer() {
+        while (applicationState.ready) {
+            try {
+                runAivenConsumer()
+            } catch (ex: Exception) {
+                when (ex) {
+                    is AuthorizationException, is ClusterAuthorizationException -> {
+                        throw ex
+                    }
+                    else -> {
+                        log.error("Aiven: Caught exception, unsubscribing and retrying", ex)
+                        kafkaAivenConsumer.unsubscribe()
                         delay(DELAY_ON_ERROR_SECONDS.seconds)
                     }
                 }
@@ -64,6 +86,37 @@ class MottattSykmeldingService(
         log.info("Starting consuming topic $topic")
         while (applicationState.ready) {
             kafkaConsumer.poll(Duration.ofSeconds(POLL_TIME_SECONDS)).forEach { consumerRecord ->
+                val receivedManuellOppgave: ManuellOppgave = objectMapper.readValue(consumerRecord.value())
+                val loggingMeta = LoggingMeta(
+                    mottakId = receivedManuellOppgave.receivedSykmelding.navLogId,
+                    orgNr = receivedManuellOppgave.receivedSykmelding.legekontorOrgNr,
+                    msgId = receivedManuellOppgave.receivedSykmelding.msgId,
+                    sykmeldingId = receivedManuellOppgave.receivedSykmelding.sykmelding.id
+                )
+                val receivedManuellOppgaveMedMerknad = receivedManuellOppgave.copy(
+                    receivedSykmelding = receivedManuellOppgave.receivedSykmelding.copy(
+                        merknader = listOf(
+                            Merknad(type = "UNDER_BEHANDLING", beskrivelse = "Sykmeldingen er til manuell behandling")
+                        )
+                    )
+                )
+
+                handleReceivedMessage(
+                    receivedManuellOppgaveMedMerknad,
+                    loggingMeta,
+                    database,
+                    oppgaveService,
+                    manuellOppgaveService
+                )
+            }
+        }
+    }
+
+    private suspend fun runAivenConsumer() {
+        kafkaAivenConsumer.subscribe(listOf(topicAiven))
+        log.info("Starting consuming topic $topicAiven")
+        while (applicationState.ready) {
+            kafkaAivenConsumer.poll(Duration.ofSeconds(POLL_TIME_SECONDS)).forEach { consumerRecord ->
                 val receivedManuellOppgave: ManuellOppgave = objectMapper.readValue(consumerRecord.value())
                 val loggingMeta = LoggingMeta(
                     mottakId = receivedManuellOppgave.receivedSykmelding.navLogId,

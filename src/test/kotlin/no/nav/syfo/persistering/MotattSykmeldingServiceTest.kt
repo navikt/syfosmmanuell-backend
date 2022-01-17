@@ -41,8 +41,18 @@ object MotattSykmeldingServiceTest : Spek({
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val manuellOppgaveConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
+    val manuellOppgaveAivenConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-    val mottattSykmeldingService = MottattSykmeldingService(kafkaConsumer = manuellOppgaveConsumer, applicationState = applicationState, "topic", database, oppgaveService, manuellOppgaveService)
+    val mottattSykmeldingService = MottattSykmeldingService(
+        kafkaConsumer = manuellOppgaveConsumer,
+        kafkaAivenConsumer = manuellOppgaveAivenConsumer,
+        applicationState = applicationState,
+        topic = "topic",
+        topicAiven = "topic-aiven",
+        database = database,
+        oppgaveService = oppgaveService,
+        manuellOppgaveService = manuellOppgaveService
+    )
 
     val sykmeldingsId = UUID.randomUUID().toString()
     val msgId = "1314"
@@ -62,7 +72,7 @@ object MotattSykmeldingServiceTest : Spek({
         clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
         coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgaveid
         coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
-        coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "sm2013AutomaticHandlingTopic"
+        coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "apprectopic"
         coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     }

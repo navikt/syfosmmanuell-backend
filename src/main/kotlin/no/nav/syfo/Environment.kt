@@ -15,6 +15,7 @@ data class Environment(
     val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmmanuell-backend"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val syfoSmManuellTopic: String = getEnvVar("KAFKA_SYFO_SM_MANUELL_TOPIC", "privat-syfo-sm2013-manuell"),
+    val manuellTopic: String = "teamsykmelding.sykmelding-manuell",
     val apprecTopic: String = "teamsykmelding.sykmelding-apprec",
     val okSykmeldingTopic: String = "teamsykmelding.ok-sykmelding",
     val produserOppgaveTopic: String = "teamsykmelding.oppgave-produser-oppgave",

@@ -32,6 +32,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
 
 val objectMapper: ObjectMapper = ObjectMapper()
     .registerModule(JavaTimeModule())
@@ -41,6 +42,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 
+@ExperimentalTime
 @DelicateCoroutinesApi
 fun main() {
     val env = Environment()
@@ -88,16 +90,22 @@ fun main() {
 
     RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     val mottattSykmeldingService = MottattSykmeldingService(
-        kafkaConsumers.kafkaConsumerManuellOppgave,
-        applicationState,
-        env.syfoSmManuellTopic,
-        database,
-        oppgaveService,
-        manuellOppgaveService
+        kafkaConsumer = kafkaConsumers.kafkaConsumerManuellOppgave,
+        kafkaAivenConsumer = kafkaConsumers.kafkaAivenConsumerManuellOppgave,
+        applicationState = applicationState,
+        topic = env.syfoSmManuellTopic,
+        topicAiven = env.manuellTopic,
+        database = database,
+        oppgaveService = oppgaveService,
+        manuellOppgaveService = manuellOppgaveService
     )
 
     createListener(applicationState) {
         mottattSykmeldingService.startConsumer()
+    }
+
+    createListener(applicationState) {
+        mottattSykmeldingService.startAivenConsumer()
     }
 }
 
