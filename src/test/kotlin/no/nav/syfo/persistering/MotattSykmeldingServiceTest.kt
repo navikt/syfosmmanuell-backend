@@ -40,14 +40,11 @@ object MotattSykmeldingServiceTest : Spek({
     val oppgaveService = mockk<OppgaveService>()
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
-    val manuellOppgaveConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
     val manuellOppgaveAivenConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
     val mottattSykmeldingService = MottattSykmeldingService(
-        kafkaConsumer = manuellOppgaveConsumer,
         kafkaAivenConsumer = manuellOppgaveAivenConsumer,
         applicationState = applicationState,
-        topic = "topic",
         topicAiven = "topic-aiven",
         database = database,
         oppgaveService = oppgaveService,

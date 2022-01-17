@@ -84,16 +84,12 @@ object AuthenticateTest : Spek({
 
     describe("Autentiseringstest for api") {
         val config = Environment(
-            kafkaBootstrapServers = "http://foo",
             mountPathVault = "",
             databaseName = "",
             syfosmmanuellbackendDBURL = "url",
             syfosmmanuellUrl = "https://syfosmmanuell",
             syfotilgangskontrollScope = "scope",
             oppgavebehandlingUrl = "oppgave",
-            cluster = "cluster",
-            truststore = "",
-            truststorePassword = "",
             syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
             msGraphApiScope = "http://ms.graph.fo/",
             msGraphApiUrl = "http://ms.graph.fo.ton/",

@@ -26,10 +26,8 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 class MottattSykmeldingService(
-    private val kafkaConsumer: KafkaConsumer<String, String>,
     private val kafkaAivenConsumer: KafkaConsumer<String, String>,
     private val applicationState: ApplicationState,
-    private val topic: String,
     private val topicAiven: String,
     private val database: DatabaseInterface,
     private val oppgaveService: OppgaveService,
@@ -39,26 +37,6 @@ class MottattSykmeldingService(
     companion object {
         private const val DELAY_ON_ERROR_SECONDS = 60L
         private const val POLL_TIME_SECONDS = 10L
-    }
-
-    @ExperimentalTime
-    suspend fun startConsumer() {
-        while (applicationState.ready) {
-            try {
-                runConsumer()
-            } catch (ex: Exception) {
-                when (ex) {
-                    is AuthorizationException, is ClusterAuthorizationException -> {
-                        throw ex
-                    }
-                    else -> {
-                        log.error("On-prem: Caught exception, unsubscribing and retrying", ex)
-                        kafkaConsumer.unsubscribe()
-                        delay(DELAY_ON_ERROR_SECONDS.seconds)
-                    }
-                }
-            }
-        }
     }
 
     @ExperimentalTime
@@ -77,37 +55,6 @@ class MottattSykmeldingService(
                         delay(DELAY_ON_ERROR_SECONDS.seconds)
                     }
                 }
-            }
-        }
-    }
-
-    private suspend fun runConsumer() {
-        kafkaConsumer.subscribe(listOf(topic))
-        log.info("Starting consuming topic $topic")
-        while (applicationState.ready) {
-            kafkaConsumer.poll(Duration.ofSeconds(POLL_TIME_SECONDS)).forEach { consumerRecord ->
-                val receivedManuellOppgave: ManuellOppgave = objectMapper.readValue(consumerRecord.value())
-                val loggingMeta = LoggingMeta(
-                    mottakId = receivedManuellOppgave.receivedSykmelding.navLogId,
-                    orgNr = receivedManuellOppgave.receivedSykmelding.legekontorOrgNr,
-                    msgId = receivedManuellOppgave.receivedSykmelding.msgId,
-                    sykmeldingId = receivedManuellOppgave.receivedSykmelding.sykmelding.id
-                )
-                val receivedManuellOppgaveMedMerknad = receivedManuellOppgave.copy(
-                    receivedSykmelding = receivedManuellOppgave.receivedSykmelding.copy(
-                        merknader = listOf(
-                            Merknad(type = "UNDER_BEHANDLING", beskrivelse = "Sykmeldingen er til manuell behandling")
-                        )
-                    )
-                )
-
-                handleReceivedMessage(
-                    receivedManuellOppgaveMedMerknad,
-                    loggingMeta,
-                    database,
-                    oppgaveService,
-                    manuellOppgaveService
-                )
             }
         }
     }
