@@ -66,6 +66,7 @@ fun createApplicationEngine(
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                 log.error("Caught exception", cause)
                 if (cause is ClusterAuthorizationException) {
+                    log.error("Exception is ClusterAuthorizationException, restarting..")
                     applicationState.ready = false
                     applicationState.alive = false
                 }
