@@ -30,8 +30,8 @@ import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.IkkeTilgangException
 import no.nav.syfo.service.ManuellOppgaveService
-import org.apache.kafka.common.errors.ClusterAuthorizationException
 import java.lang.NumberFormatException
+import java.util.concurrent.ExecutionException
 
 fun createApplicationEngine(
     env: Environment,
@@ -65,8 +65,8 @@ fun createApplicationEngine(
             exception<Throwable> { cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                 log.error("Caught exception", cause)
-                if (cause is ClusterAuthorizationException) {
-                    log.error("Exception is ClusterAuthorizationException, restarting..")
+                if (cause is ExecutionException) {
+                    log.error("Exception is ExecutionException, restarting..")
                     applicationState.ready = false
                     applicationState.alive = false
                 }
