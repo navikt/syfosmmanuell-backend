@@ -76,7 +76,7 @@ object AuthenticateTest : Spek({
     beforeEachTest {
         clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
         database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
-        coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+        coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
     }
     afterEachTest {
         database.connection.dropData()

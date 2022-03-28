@@ -50,17 +50,17 @@ object SyfoTilgangsKontrollClientTest : Spek({
                     objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type"))
                 )
                 httpClient.responseData =
-                    ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(true, "")))
+                    ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(true)))
                 val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
-                tilgang?.harTilgang shouldBeEqualTo true
+                tilgang.harTilgang shouldBeEqualTo true
             }
         }
         it("Skal returnere harTilgang = false hvis syfotilgangskontroll svarer med feilmelding") {
             httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
-            httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(false, "har ikke tilgang")))
+            httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(false)))
             runBlocking {
                 val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
-                tilgang?.harTilgang shouldBeEqualTo false
+                tilgang.harTilgang shouldBeEqualTo false
             }
         }
     }

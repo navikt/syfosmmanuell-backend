@@ -49,7 +49,7 @@ object ManuellOppgaveServiceTest : Spek({
     beforeEachTest {
         database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
         clearMocks(kafkaProducers, oppgaveService, syfotilgangskontrollClient)
-        coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, null)
+        coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
     }
 
     afterEachTest {
@@ -102,7 +102,7 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.apprec shouldBeEqualTo okApprec()
         }
         it("Feiler hvis veileder ikke har tilgang til oppgave") {
-            coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(false, null)
+            coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(false)
 
             assertFailsWith<IkkeTilgangException> {
                 runBlocking {

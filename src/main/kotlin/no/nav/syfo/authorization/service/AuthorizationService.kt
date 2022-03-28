@@ -18,8 +18,7 @@ class AuthorizationService(
             return false
         }
         return syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(accessToken, pasientFnr)
-            ?.harTilgang
-            ?: false
+            .harTilgang
     }
 
     suspend fun getVeileder(oppgaveId: Int, accessToken: String): String {

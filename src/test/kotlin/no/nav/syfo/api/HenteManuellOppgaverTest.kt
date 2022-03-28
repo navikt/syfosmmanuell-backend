@@ -65,7 +65,7 @@ object HenteManuellOppgaverTest : Spek({
 
     beforeEachTest {
         clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
-        coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true, "")
+        coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
     }
 
     afterEachTest {

@@ -32,7 +32,7 @@ class SyfoTilgangsKontrollClient(
         const val NAV_PERSONIDENT_HEADER = "nav-personident"
     }
 
-    suspend fun sjekkVeiledersTilgangTilPersonViaAzure(accessToken: String, personFnr: String): Tilgang? {
+    suspend fun sjekkVeiledersTilgangTilPersonViaAzure(accessToken: String, personFnr: String): Tilgang {
         syfoTilgangskontrollCache.getIfPresent(mapOf(Pair(accessToken, personFnr)))?.let {
             log.debug("Traff cache for syfotilgangskontroll")
             return it
@@ -47,19 +47,18 @@ class SyfoTilgangsKontrollClient(
                 append(NAV_PERSONIDENT_HEADER, personFnr)
             }
         }.execute()
-        when (httpResponse.status) {
+        return when (httpResponse.status) {
             HttpStatusCode.OK -> {
                 log.debug("syfo-tilgangskontroll svarer med httpResponse status kode: {}", httpResponse.status.value)
                 log.info("Sjekker tilgang for veileder på person")
                 val tilgang = httpResponse.call.response.receive<Tilgang>()
                 syfoTilgangskontrollCache.put(mapOf(Pair(accessToken, personFnr)), tilgang)
-                return tilgang
+                tilgang
             }
             else -> {
                 log.error("syfo-tilgangskontroll svarte med ${httpResponse.status.value}")
-                return Tilgang(
-                    harTilgang = false,
-                    begrunnelse = "syfo-tilgangskontroll svarte med ${HttpStatusCode.fromValue(httpResponse.status.value)}"
+                Tilgang(
+                    harTilgang = false
                 )
             }
         }
@@ -67,6 +66,5 @@ class SyfoTilgangsKontrollClient(
 }
 
 data class Tilgang(
-    val harTilgang: Boolean,
-    val begrunnelse: String?
+    val harTilgang: Boolean
 )

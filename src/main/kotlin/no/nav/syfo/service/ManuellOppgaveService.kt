@@ -128,8 +128,8 @@ class ManuellOppgaveService(
             syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                 accessToken = accessToken,
                 personFnr = manuellOppgave.receivedSykmelding.personNrPasient
-            )?.harTilgang
-        if (harTilgangTilOppgave != true) {
+            ).harTilgang
+        if (!harTilgangTilOppgave) {
             throw IkkeTilgangException()
         }
         return manuellOppgave
