@@ -8,6 +8,7 @@ import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.finnesOppgave
 import no.nav.syfo.aksessering.db.finnesSykmelding
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
+import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
@@ -29,6 +30,7 @@ import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.oppdaterApprecStatus
 import no.nav.syfo.persistering.db.oppdaterManuellOppgave
 import no.nav.syfo.persistering.db.oppdaterManuellOppgaveUtenOpprinneligValidationResult
+import no.nav.syfo.persistering.db.slettOppgave
 import no.nav.syfo.persistering.error.OppgaveNotFoundException
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.XMLDateAdapter
@@ -133,6 +135,22 @@ class ManuellOppgaveService(
             throw IkkeTilgangException()
         }
         return manuellOppgave
+    }
+
+    suspend fun slettOppgave(sykmeldingId: String) {
+        val manuellOppgave = database.hentManuellOppgaveForSykmeldingId(sykmeldingId)
+        manuellOppgave?.let {
+            if (!it.ferdigstilt) {
+                oppgaveService.ferdigstillOppgave(
+                    manuellOppgave = it,
+                    loggingMeta = LoggingMeta("", null, "", sykmeldingId),
+                    enhet = "9999",
+                    veileder = "srvsyfosmmanuell-backend"
+                )
+            }
+            val antallSlettedeOppgaver = database.slettOppgave(it.oppgaveid)
+            log.info("Slettet $antallSlettedeOppgaver oppgaver")
+        }
     }
 
     fun sendToSyfoService(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {

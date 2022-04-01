@@ -156,5 +156,41 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.apprec shouldBeEqualTo okApprec()
             database.erApprecSendt(oppgaveId2) shouldBeEqualTo true
         }
+        it("Sletter manuell oppgave og ferdigstiller åpen oppgave") {
+            runBlocking {
+                manuellOppgaveService.slettOppgave(sykmeldingsId)
+
+                val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
+                oppgaveliste.size shouldBeEqualTo 0
+                coVerify { oppgaveService.ferdigstillOppgave(any(), any(), eq("9999"), eq("srvsyfosmmanuell-backend")) }
+            }
+        }
+        it("Sletter manuell oppgave og ferdigstiller ikke ferdigstilt oppgave") {
+            runBlocking {
+                manuellOppgaveService.ferdigstillManuellBehandling(
+                    oppgaveid,
+                    "1234",
+                    "4321",
+                    "token",
+                    merknader = emptyList()
+                )
+
+                manuellOppgaveService.slettOppgave(sykmeldingsId)
+
+                val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
+                oppgaveliste.size shouldBeEqualTo 0
+                coVerify { oppgaveService.ferdigstillOppgave(any(), any(), eq("1234"), eq("4321")) }
+                coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), eq("9999"), eq("srvsyfosmmanuell-backend")) }
+            }
+        }
+        it("Sletter ikke andre manuelle oppgaver") {
+            runBlocking {
+                manuellOppgaveService.slettOppgave(UUID.randomUUID().toString())
+
+                val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
+                oppgaveliste.size shouldBeEqualTo 1
+                coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
+            }
+        }
     }
 })

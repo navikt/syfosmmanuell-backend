@@ -120,3 +120,18 @@ fun DatabaseInterface.oppdaterApprecStatus(oppgaveId: Int, sendtApprec: Boolean)
         connection.commit()
         return status
     }
+
+fun DatabaseInterface.slettOppgave(oppgaveId: Int): Int =
+    connection.use { connection ->
+        val status = connection.prepareStatement(
+            """
+            DELETE FROM MANUELLOPPGAVE
+            WHERE oppgaveid = ?;
+            """
+        ).use {
+            it.setInt(1, oppgaveId)
+            it.executeUpdate()
+        }
+        connection.commit()
+        return status
+    }

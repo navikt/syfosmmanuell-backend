@@ -95,6 +95,20 @@ fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: Int): List<ManuellOp
         }
     }
 
+fun DatabaseInterface.hentManuellOppgaveForSykmeldingId(sykmeldingId: String): ManuellOppgaveKomplett? =
+    connection.use { connection ->
+        connection.prepareStatement(
+            """
+                SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec,opprinnelig_validationresult
+                FROM MANUELLOPPGAVE  
+                WHERE receivedsykmelding->'sykmelding'->>'id' = ?;
+                """
+        ).use {
+            it.setString(1, sykmeldingId)
+            it.executeQuery().toList { toManuellOppgave() }.firstOrNull()
+        }
+    }
+
 fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
     ManuellOppgaveKomplett(
         receivedSykmelding = objectMapper.readValue(getString("receivedsykmelding")),
