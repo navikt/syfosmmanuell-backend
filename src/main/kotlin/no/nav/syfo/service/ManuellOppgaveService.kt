@@ -144,8 +144,8 @@ class ManuellOppgaveService(
                 oppgaveService.ferdigstillOppgave(
                     manuellOppgave = it,
                     loggingMeta = LoggingMeta("", null, "", sykmeldingId),
-                    enhet = "9999",
-                    veileder = "srvsyfosmmanuell-backend"
+                    enhet = null,
+                    veileder = null
                 )
             }
             val antallSlettedeOppgaver = database.slettOppgave(it.oppgaveid)

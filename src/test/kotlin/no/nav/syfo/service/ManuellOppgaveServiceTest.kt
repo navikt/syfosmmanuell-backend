@@ -162,7 +162,7 @@ object ManuellOppgaveServiceTest : Spek({
 
                 val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
                 oppgaveliste.size shouldBeEqualTo 0
-                coVerify { oppgaveService.ferdigstillOppgave(any(), any(), eq("9999"), eq("srvsyfosmmanuell-backend")) }
+                coVerify { oppgaveService.ferdigstillOppgave(any(), any(), matchNullable { it == null }, matchNullable { it == null }) }
             }
         }
         it("Sletter manuell oppgave og ferdigstiller ikke ferdigstilt oppgave") {
@@ -180,7 +180,7 @@ object ManuellOppgaveServiceTest : Spek({
                 val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
                 oppgaveliste.size shouldBeEqualTo 0
                 coVerify { oppgaveService.ferdigstillOppgave(any(), any(), eq("1234"), eq("4321")) }
-                coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), eq("9999"), eq("srvsyfosmmanuell-backend")) }
+                coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), matchNullable { it == null }, matchNullable { it == null }) }
             }
         }
         it("Sletter ikke andre manuelle oppgaver") {

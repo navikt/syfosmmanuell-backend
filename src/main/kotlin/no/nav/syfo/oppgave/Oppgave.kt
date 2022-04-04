@@ -23,8 +23,8 @@ data class FerdigstillOppgave(
     val versjon: Int,
     val id: Int,
     val status: OppgaveStatus,
-    val tildeltEnhetsnr: String,
-    val tilordnetRessurs: String,
+    val tildeltEnhetsnr: String?,
+    val tilordnetRessurs: String?,
     val mappeId: Int?
 )
 
