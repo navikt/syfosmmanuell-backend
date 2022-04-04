@@ -64,38 +64,40 @@ class MottattSykmeldingService(
         log.info("Starting consuming topic $topicAiven")
         while (applicationState.ready) {
             kafkaAivenConsumer.poll(Duration.ofSeconds(POLL_TIME_SECONDS)).forEach { consumerRecord ->
-                val receivedManuellOppgave: ManuellOppgave = objectMapper.readValue(consumerRecord.value())
-                val loggingMeta = LoggingMeta(
-                    mottakId = receivedManuellOppgave.receivedSykmelding.navLogId,
-                    orgNr = receivedManuellOppgave.receivedSykmelding.legekontorOrgNr,
-                    msgId = receivedManuellOppgave.receivedSykmelding.msgId,
-                    sykmeldingId = receivedManuellOppgave.receivedSykmelding.sykmelding.id
-                )
-                val receivedManuellOppgaveMedMerknad = receivedManuellOppgave.copy(
-                    receivedSykmelding = receivedManuellOppgave.receivedSykmelding.copy(
-                        merknader = listOf(
-                            Merknad(type = "UNDER_BEHANDLING", beskrivelse = "Sykmeldingen er til manuell behandling")
+                if (consumerRecord.value() == null) {
+                    log.info("Mottatt tombstone for sykmelding med id ${consumerRecord.key()}")
+                    manuellOppgaveService.slettOppgave(consumerRecord.key())
+                } else {
+                    val receivedManuellOppgave: ManuellOppgave = objectMapper.readValue(consumerRecord.value())
+                    val loggingMeta = LoggingMeta(
+                        mottakId = receivedManuellOppgave.receivedSykmelding.navLogId,
+                        orgNr = receivedManuellOppgave.receivedSykmelding.legekontorOrgNr,
+                        msgId = receivedManuellOppgave.receivedSykmelding.msgId,
+                        sykmeldingId = receivedManuellOppgave.receivedSykmelding.sykmelding.id
+                    )
+                    val receivedManuellOppgaveMedMerknad = receivedManuellOppgave.copy(
+                        receivedSykmelding = receivedManuellOppgave.receivedSykmelding.copy(
+                            merknader = listOf(
+                                Merknad(
+                                    type = "UNDER_BEHANDLING",
+                                    beskrivelse = "Sykmeldingen er til manuell behandling"
+                                )
+                            )
                         )
                     )
-                )
 
-                handleReceivedMessage(
-                    receivedManuellOppgaveMedMerknad,
-                    loggingMeta,
-                    database,
-                    oppgaveService,
-                    manuellOppgaveService
-                )
+                    handleReceivedMessage(
+                        receivedManuellOppgaveMedMerknad,
+                        loggingMeta
+                    )
+                }
             }
         }
     }
 
     suspend fun handleReceivedMessage(
         manuellOppgave: ManuellOppgave,
-        loggingMeta: LoggingMeta,
-        database: DatabaseInterface,
-        oppgaveService: OppgaveService,
-        manuellOppgaveService: ManuellOppgaveService
+        loggingMeta: LoggingMeta
     ) {
         wrapExceptions(loggingMeta) {
             log.info("Mottok en manuell oppgave, {}", fields(loggingMeta))

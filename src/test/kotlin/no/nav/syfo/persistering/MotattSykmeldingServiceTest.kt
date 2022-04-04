@@ -82,7 +82,7 @@ object MotattSykmeldingServiceTest : Spek({
 
         it("Happy-case") {
             runBlocking {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
@@ -96,7 +96,7 @@ object MotattSykmeldingServiceTest : Spek({
             database.erApprecSendt(oppgaveid) shouldBeEqualTo false
 
             runBlocking {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
             }
 
             val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
@@ -108,7 +108,7 @@ object MotattSykmeldingServiceTest : Spek({
 
         it("Lagrer opprinnelig validation result") {
             runBlocking {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
             }
 
             val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
@@ -117,8 +117,8 @@ object MotattSykmeldingServiceTest : Spek({
 
         it("Lagrer ikke melding som allerede finnes") {
             runBlocking {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
             }
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
@@ -128,7 +128,7 @@ object MotattSykmeldingServiceTest : Spek({
             coEvery { oppgaveService.opprettOppgave(any(), any()) } throws RuntimeException("Noe gikk galt")
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta, database, oppgaveService, manuellOppgaveService)
+                    mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
                 }
             }
             database.erOpprettManuellOppgave(sykmeldingsId) shouldBeEqualTo false
