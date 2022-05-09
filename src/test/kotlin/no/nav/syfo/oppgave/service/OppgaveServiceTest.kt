@@ -1,6 +1,7 @@
 package no.nav.syfo.oppgave.service
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.mockk
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
@@ -14,11 +15,9 @@ import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 
-object OppgaveServiceTest : Spek({
+class OppgaveServiceTest : FunSpec({
     val oppgaveClient = mockk<OppgaveClient>()
     val kafkaProducer = mockk<KafkaProducers.KafkaProduceTaskProducer>()
     val oppgaveService = OppgaveService(oppgaveClient, kafkaProducer)
@@ -45,8 +44,8 @@ object OppgaveServiceTest : Spek({
         apprec = apprec
     )
 
-    describe("Test av oppretting av oppgave") {
-        it("Oppgave opprettes med riktige parametre") {
+    context("Test av oppretting av oppgave") {
+        test("Oppgave opprettes med riktige parametre") {
             val opprettOppgave = oppgaveService.tilOpprettOppgave(manuellOppgave)
 
             opprettOppgave.aktoerId shouldBeEqualTo "5555"
@@ -62,38 +61,38 @@ object OppgaveServiceTest : Spek({
         }
     }
 
-    describe("Test av frist for ferdigstilling") {
-        it("Frist blir torsdag hvis oppgaven opprettes på mandag") {
+    context("Test av frist for ferdigstilling") {
+        test("Frist blir torsdag hvis oppgaven opprettes på mandag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 7))
 
             frist shouldBeEqualTo LocalDate.of(2020, 9, 10)
         }
-        it("Frist blir fredag hvis oppgaven opprettes på tirsdag") {
+        test("Frist blir fredag hvis oppgaven opprettes på tirsdag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 8))
 
             frist shouldBeEqualTo LocalDate.of(2020, 9, 11)
         }
-        it("Frist blir mandag hvis oppgaven opprettes på onsdag") {
+        test("Frist blir mandag hvis oppgaven opprettes på onsdag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 9))
 
             frist shouldBeEqualTo LocalDate.of(2020, 9, 14)
         }
-        it("Frist blir tirsdag hvis oppgaven opprettes på torsdag") {
+        test("Frist blir tirsdag hvis oppgaven opprettes på torsdag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 10))
 
             frist shouldBeEqualTo LocalDate.of(2020, 9, 15)
         }
-        it("Frist blir onsdag hvis oppgaven opprettes på fredag") {
+        test("Frist blir onsdag hvis oppgaven opprettes på fredag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 11))
 
             frist shouldBeEqualTo LocalDate.of(2020, 9, 16)
         }
-        it("Frist blir torsdag hvis oppgaven opprettes på lørdag") {
+        test("Frist blir torsdag hvis oppgaven opprettes på lørdag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 12))
 
             frist shouldBeEqualTo LocalDate.of(2020, 9, 17)
         }
-        it("Frist blir torsdag hvis oppgaven opprettes på søndag") {
+        test("Frist blir torsdag hvis oppgaven opprettes på søndag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 13))
 
             frist shouldBeEqualTo LocalDate.of(2020, 9, 17)

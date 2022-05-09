@@ -5,36 +5,36 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.6.0"
+val coroutinesVersion = "1.6.1"
 val ktorVersion = "1.6.8"
 val logbackVersion = "1.2.11"
-val logstashEncoderVersion = "7.0.1"
+val logstashEncoderVersion = "7.1.1"
 val prometheusVersion = "0.15.0"
 val smCommonVersion = "1.a92720c"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val jacksonVersion = "2.13.2"
-val jacksonPatchVersion = "2.13.2.1"
-val jacksonBomVersion = "2.13.2.20220324"
+val jacksonPatchVersion = "2.13.2.2"
+val jacksonBomVersion = "2.13.2.20220328"
 val kluentVersion = "1.68"
 val mockkVersion = "1.12.3"
-val postgresVersion = "42.3.3"
-val flywayVersion = "8.5.4"
+val postgresVersion = "42.3.4"
+val flywayVersion = "8.5.10"
 val hikariVersion = "5.0.1"
 val vaultJavaDriveVersion = "3.1.0"
 val javaTimeAdapterVersion = "1.1.3"
-val spekVersion = "2.0.18"
-val nimbusdsVersion = "9.21"
-val caffeineVersion = "3.0.6"
-val testContainerVersion = "1.16.3"
-val kotlinVersion = "1.6.0"
+val kotestVersion = "5.2.3"
+val nimbusdsVersion = "9.22"
+val caffeineVersion = "3.1.0"
+val testContainerVersion = "1.17.1"
+val kotlinVersion = "1.6.20"
 
 plugins {
-    kotlin("jvm") version "1.6.0"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("org.jmailen.kotlinter") version "3.7.0"
-    id("com.diffplug.spotless") version "5.16.0"
+    kotlin("jvm") version "1.6.20"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("org.jmailen.kotlinter") version "3.10.0"
+    id("com.diffplug.spotless") version "6.5.0"
 }
 
 val githubUser: String by project
@@ -99,17 +99,11 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
+    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
-    }
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
     }
 }
 
@@ -137,7 +131,6 @@ tasks {
     withType<Test> {
         dependsOn("lintKotlin")
         useJUnitPlatform {
-            includeEngines("spek2")
         }
         testLogging.showStandardStreams = true
     }

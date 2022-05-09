@@ -1,6 +1,7 @@
 package no.nav.syfo.api
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -14,10 +15,8 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object OpprettManuellOppgaveTest : Spek({
+class OpprettManuellOppgaveTest : FunSpec({
     val database = TestDB.database
     val manuelloppgaveId = "1314"
     val receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding())
@@ -33,12 +32,12 @@ object OpprettManuellOppgaveTest : Spek({
         apprec = apprec
     )
 
-    afterEachTest {
+    afterTest {
         database.connection.dropData()
     }
 
-    describe("Test av oppretting av manuelle oppgaver") {
-        it("Skal lagre manuellOppgave i databasen og kunne hente den opp som forventet") {
+    context("Test av oppretting av manuelle oppgaver") {
+        test("Skal lagre manuellOppgave i databasen og kunne hente den opp som forventet") {
             database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)
 
             val oppgaveliste = database.hentKomplettManuellOppgave(123144)
@@ -49,7 +48,7 @@ object OpprettManuellOppgaveTest : Spek({
             oppgaveliste[0].validationResult shouldBeEqualTo validationResult
             oppgaveliste[0].sendtApprec shouldBeEqualTo false
         }
-        it("Hvis oppgave er lagret for sykmeldingsid skal erOpprettManuellOppgave returnere true") {
+        test("Hvis oppgave er lagret for sykmeldingsid skal erOpprettManuellOppgave returnere true") {
             database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)
 
             database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id) shouldBeEqualTo true

@@ -1,6 +1,7 @@
 package no.nav.syfo.persistering
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -28,13 +29,11 @@ import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.RecordMetadata
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 
-object MotattSykmeldingServiceTest : Spek({
+class MotattSykmeldingServiceTest : FunSpec({
     val applicationState = ApplicationState(alive = true, ready = true)
     val database = TestDB.database
     val oppgaveService = mockk<OppgaveService>()
@@ -65,7 +64,7 @@ object MotattSykmeldingServiceTest : Spek({
     val oppgaveid = 308076319
     val loggingMeta = LoggingMeta("", null, msgId, sykmeldingsId)
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
         coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgaveid
         coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
@@ -74,16 +73,13 @@ object MotattSykmeldingServiceTest : Spek({
         coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     }
 
-    afterEachTest {
+    afterTest {
         database.connection.dropData()
     }
 
-    describe("Test av mottak av ny melding") {
-
-        it("Happy-case") {
-            runBlocking {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
-            }
+    context("Test av mottak av ny melding") {
+        test("Happy-case") {
+            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
@@ -92,12 +88,10 @@ object MotattSykmeldingServiceTest : Spek({
             coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
         }
 
-        it("Apprec oppdateres") {
+        test("Apprec oppdateres") {
             database.erApprecSendt(oppgaveid) shouldBeEqualTo false
 
-            runBlocking {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
-            }
+            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
             val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
             hentKomplettManuellOppgave.first().sendtApprec shouldBeEqualTo true
@@ -106,25 +100,21 @@ object MotattSykmeldingServiceTest : Spek({
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
         }
 
-        it("Lagrer opprinnelig validation result") {
-            runBlocking {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
-            }
+        test("Lagrer opprinnelig validation result") {
+            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
             val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
             komplettManuellOppgave.opprinneligValidationResult shouldBeEqualTo komplettManuellOppgave.validationResult
         }
 
-        it("Lagrer ikke melding som allerede finnes") {
-            runBlocking {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
-            }
+        test("Lagrer ikke melding som allerede finnes") {
+            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
             database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
             coVerify(exactly = 1) { oppgaveService.opprettOppgave(any(), any()) }
         }
-        it("Kaster feil hvis opprettOppgave feilet") {
+        test("Kaster feil hvis opprettOppgave feilet") {
             coEvery { oppgaveService.opprettOppgave(any(), any()) } throws RuntimeException("Noe gikk galt")
             assertFailsWith<RuntimeException> {
                 runBlocking {

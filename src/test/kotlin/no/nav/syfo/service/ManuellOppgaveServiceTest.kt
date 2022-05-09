@@ -1,5 +1,6 @@
 package no.nav.syfo.service
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -25,12 +26,10 @@ import no.nav.syfo.testutil.okApprec
 import no.nav.syfo.testutil.opprettManuellOppgaveUtenOpprinneligValidationResult
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
-object ManuellOppgaveServiceTest : Spek({
+class ManuellOppgaveServiceTest : FunSpec({
     val database = TestDB.database
     val syfotilgangskontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
@@ -46,26 +45,21 @@ object ManuellOppgaveServiceTest : Spek({
 
     val manuellOppgaveService = ManuellOppgaveService(database, syfotilgangskontrollClient, kafkaProducers, oppgaveService)
 
-    beforeEachTest {
+    beforeTest {
+        database.connection.dropData()
         database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
         clearMocks(kafkaProducers, oppgaveService, syfotilgangskontrollClient)
         coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
     }
 
-    afterEachTest {
-        database.connection.dropData()
-    }
-
-    describe("Test av ferdigstilling av manuell behandling") {
-        it("Happy case OK") {
-            runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(
-                    oppgaveid, "1234",
-                    "4321",
-                    "token",
-                    merknader = null
-                )
-            }
+    context("Test av ferdigstilling av manuell behandling") {
+        test("Happy case OK") {
+            manuellOppgaveService.ferdigstillManuellBehandling(
+                oppgaveid, "1234",
+                "4321",
+                "token",
+                merknader = null
+            )
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
@@ -77,17 +71,16 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.validationResult shouldBeEqualTo ValidationResult(Status.OK, emptyList())
             oppgaveFraDb.apprec shouldBeEqualTo okApprec()
         }
-        it("Happy case OK med merknad") {
+        test("Happy case OK med merknad") {
             val merknader = listOf(Merknad("UGYLDIG_TILBAKEDATERING", "ikke godkjent"))
-            runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(
-                    oppgaveid,
-                    "1234",
-                    "4321",
-                    "token",
-                    merknader = merknader
-                )
-            }
+
+            manuellOppgaveService.ferdigstillManuellBehandling(
+                oppgaveid,
+                "1234",
+                "4321",
+                "token",
+                merknader = merknader
+            )
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
@@ -101,7 +94,7 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.receivedSykmelding.merknader shouldBeEqualTo merknader
             oppgaveFraDb.apprec shouldBeEqualTo okApprec()
         }
-        it("Feiler hvis veileder ikke har tilgang til oppgave") {
+        test("Feiler hvis veileder ikke har tilgang til oppgave") {
             coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(false)
 
             assertFailsWith<IkkeTilgangException> {
@@ -110,7 +103,7 @@ object ManuellOppgaveServiceTest : Spek({
                 }
             }
         }
-        it("Setter opprinnelig validation result hvis det mangler ved ferdigstilling") {
+        test("Setter opprinnelig validation result hvis det mangler ved ferdigstilling") {
             val oppgaveId2 = 998765
             database.connection.opprettManuellOppgaveUtenOpprinneligValidationResult(
                 ManuellOppgaveKomplett(
@@ -136,14 +129,13 @@ object ManuellOppgaveServiceTest : Spek({
                     opprinneligValidationResult = null
                 )
             )
-            runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(
-                    oppgaveId2, "1234",
-                    "4321",
-                    "token",
-                    merknader = null
-                )
-            }
+
+            manuellOppgaveService.ferdigstillManuellBehandling(
+                oppgaveId2, "1234",
+                "4321",
+                "token",
+                merknader = null
+            )
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
@@ -156,41 +148,35 @@ object ManuellOppgaveServiceTest : Spek({
             oppgaveFraDb.apprec shouldBeEqualTo okApprec()
             database.erApprecSendt(oppgaveId2) shouldBeEqualTo true
         }
-        it("Sletter manuell oppgave og ferdigstiller åpen oppgave") {
-            runBlocking {
-                manuellOppgaveService.slettOppgave(sykmeldingsId)
+        test("Sletter manuell oppgave og ferdigstiller åpen oppgave") {
+            manuellOppgaveService.slettOppgave(sykmeldingsId)
 
-                val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-                oppgaveliste.size shouldBeEqualTo 0
-                coVerify { oppgaveService.ferdigstillOppgave(any(), any(), matchNullable { it == null }, matchNullable { it == null }) }
-            }
+            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
+            oppgaveliste.size shouldBeEqualTo 0
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), matchNullable { it == null }, matchNullable { it == null }) }
         }
-        it("Sletter manuell oppgave og ferdigstiller ikke ferdigstilt oppgave") {
-            runBlocking {
-                manuellOppgaveService.ferdigstillManuellBehandling(
-                    oppgaveid,
-                    "1234",
-                    "4321",
-                    "token",
-                    merknader = emptyList()
-                )
+        test("Sletter manuell oppgave og ferdigstiller ikke ferdigstilt oppgave") {
+            manuellOppgaveService.ferdigstillManuellBehandling(
+                oppgaveid,
+                "1234",
+                "4321",
+                "token",
+                merknader = emptyList()
+            )
 
-                manuellOppgaveService.slettOppgave(sykmeldingsId)
+            manuellOppgaveService.slettOppgave(sykmeldingsId)
 
-                val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-                oppgaveliste.size shouldBeEqualTo 0
-                coVerify { oppgaveService.ferdigstillOppgave(any(), any(), eq("1234"), eq("4321")) }
-                coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), matchNullable { it == null }, matchNullable { it == null }) }
-            }
+            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
+            oppgaveliste.size shouldBeEqualTo 0
+            coVerify { oppgaveService.ferdigstillOppgave(any(), any(), eq("1234"), eq("4321")) }
+            coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), matchNullable { it == null }, matchNullable { it == null }) }
         }
-        it("Sletter ikke andre manuelle oppgaver") {
-            runBlocking {
-                manuellOppgaveService.slettOppgave(UUID.randomUUID().toString())
+        test("Sletter ikke andre manuelle oppgaver") {
+            manuellOppgaveService.slettOppgave(UUID.randomUUID().toString())
 
-                val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-                oppgaveliste.size shouldBeEqualTo 1
-                coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
-            }
+            val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
+            oppgaveliste.size shouldBeEqualTo 1
+            coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
         }
     }
 })

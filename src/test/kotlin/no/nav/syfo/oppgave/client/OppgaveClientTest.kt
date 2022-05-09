@@ -1,5 +1,6 @@
 package no.nav.syfo.oppgave.client
 
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
@@ -26,14 +27,12 @@ import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
 import no.nav.syfo.oppgave.OpprettOppgaveResponse
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.net.ServerSocket
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFailsWith
 
-object OppgaveClientTest : Spek({
+class OppgaveClientTest : FunSpec({
     val httpClient = HttpClient(Apache) {
         config()
     }
@@ -82,26 +81,23 @@ object OppgaveClientTest : Spek({
 
     val oppgaveClient = OppgaveClient("$mockHttpServerUrl/oppgave", oidcClient, httpClient)
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(oidcClient)
         coEvery { oidcClient.oidcToken() } returns OidcToken("token", "", 1L)
     }
 
-    afterGroup {
+    afterSpec {
         mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
     }
 
-    describe("Test av opprettOppgave") {
-        it("Oppretter oppgave") {
-            var opprettOppgaveResponse: OpprettOppgaveResponse?
-            runBlocking {
-                opprettOppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, "123")
-            }
+    context("Test av opprettOppgave") {
+        test("Oppretter oppgave") {
+            val opprettOppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, "123")
 
-            opprettOppgaveResponse?.id shouldBeEqualTo 1
-            opprettOppgaveResponse?.versjon shouldBeEqualTo 1
+            opprettOppgaveResponse.id shouldBeEqualTo 1
+            opprettOppgaveResponse.versjon shouldBeEqualTo 1
         }
-        it("Kaster feil hvis oppretting feiler") {
+        test("Kaster feil hvis oppretting feiler") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
                     oppgaveClient.opprettOppgave(opprettOppgave, "1234")
@@ -110,27 +106,24 @@ object OppgaveClientTest : Spek({
         }
     }
 
-    describe("Test av ferdigstillOppgave") {
-        it("Ferdigstiller oppgave") {
-            var opprettOppgaveResponse: OpprettOppgaveResponse?
-            runBlocking {
-                opprettOppgaveResponse = oppgaveClient.ferdigstillOppgave(
-                    FerdigstillOppgave(
-                        id = 2,
-                        versjon = 2,
-                        status = OppgaveStatus.FERDIGSTILT,
-                        tildeltEnhetsnr = "1234",
-                        tilordnetRessurs = "4321",
-                        mappeId = null
-                    ),
-                    "123"
-                )
-            }
+    context("Test av ferdigstillOppgave") {
+        test("Ferdigstiller oppgave") {
+            val opprettOppgaveResponse = oppgaveClient.ferdigstillOppgave(
+                FerdigstillOppgave(
+                    id = 2,
+                    versjon = 2,
+                    status = OppgaveStatus.FERDIGSTILT,
+                    tildeltEnhetsnr = "1234",
+                    tilordnetRessurs = "4321",
+                    mappeId = null
+                ),
+                "123"
+            )
 
-            opprettOppgaveResponse?.id shouldBeEqualTo 2
-            opprettOppgaveResponse?.versjon shouldBeEqualTo 2
+            opprettOppgaveResponse.id shouldBeEqualTo 2
+            opprettOppgaveResponse.versjon shouldBeEqualTo 2
         }
-        it("Kaster feil hvis ferdigstilling feiler") {
+        test("Kaster feil hvis ferdigstilling feiler") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
                     oppgaveClient.ferdigstillOppgave(FerdigstillOppgave(id = 3, versjon = 2, status = OppgaveStatus.FERDIGSTILT, tildeltEnhetsnr = "1234", tilordnetRessurs = "4321", mappeId = null), "123")
@@ -139,17 +132,14 @@ object OppgaveClientTest : Spek({
         }
     }
 
-    describe("Test av hentOppgave") {
-        it("Henter oppgave") {
-            var opprettOppgaveResponse: OpprettOppgaveResponse?
-            runBlocking {
-                opprettOppgaveResponse = oppgaveClient.hentOppgave(4, "123")
-            }
+    context("Test av hentOppgave") {
+        test("Henter oppgave") {
+            val opprettOppgaveResponse = oppgaveClient.hentOppgave(4, "123")
 
-            opprettOppgaveResponse?.id shouldBeEqualTo 4
-            opprettOppgaveResponse?.versjon shouldBeEqualTo 1
+            opprettOppgaveResponse.id shouldBeEqualTo 4
+            opprettOppgaveResponse.versjon shouldBeEqualTo 1
         }
-        it("Kaster feil hvis henting feiler") {
+        test("Kaster feil hvis henting feiler") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
                     oppgaveClient.hentOppgave(5, "123")

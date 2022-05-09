@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
@@ -48,8 +49,6 @@ import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.RecordMetadata
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 
@@ -66,7 +65,7 @@ val manuellOppgave = ManuellOppgave(
     )
 )
 
-object SendVurderingManuellOppgaveTest : Spek({
+class SendVurderingManuellOppgaveTest : FunSpec({
     val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val msGraphClient = mockk<MSGraphClient>()
@@ -75,16 +74,16 @@ object SendVurderingManuellOppgaveTest : Spek({
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
     }
 
-    afterEachTest {
+    afterTest {
         database.connection.dropData()
     }
 
-    describe("Test av api for sending av vurdering") {
-        it("Skal returnere InternalServerError når oppdatering av manuelloppgave sitt ValidationResults feilet fordi oppgave ikke finnes") {
+    context("Test av api for sending av vurdering") {
+        test("Skal returnere InternalServerError når oppdatering av manuelloppgave sitt ValidationResults feilet fordi oppgave ikke finnes") {
             with(TestApplicationEngine()) {
                 start()
 
@@ -126,7 +125,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             }
         }
 
-        it("should fail when writing sykmelding to kafka fails with status OK") {
+        test("should fail when writing sykmelding to kafka fails with status OK") {
             with(TestApplicationEngine()) {
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, msGraphClient, authorizationService, oppgaveService, database, manuellOppgaveService)
@@ -137,7 +136,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             }
         }
 
-        it("noContent oppdatering av manuelloppgave med status OK") {
+        test("noContent oppdatering av manuelloppgave med status OK") {
             with(TestApplicationEngine()) {
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, msGraphClient, authorizationService, oppgaveService, database, manuellOppgaveService)
@@ -147,7 +146,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             }
         }
 
-        it("should fail when X-Nav-Enhet header is empty") {
+        test("should fail when X-Nav-Enhet header is empty") {
             with(TestApplicationEngine()) {
                 start()
                 setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, msGraphClient, authorizationService, oppgaveService, database, manuellOppgaveService)
@@ -158,15 +157,15 @@ object SendVurderingManuellOppgaveTest : Spek({
         }
     }
 
-    describe("Merknader") {
-        it("Får ikke merknad for status GODKJENT") {
+    context("Merknader") {
+        test("Får ikke merknad for status GODKJENT") {
             val result = Result(status = ResultStatus.GODKJENT, merknad = null)
             val merknader = result.toMerknad()
 
             merknader shouldBeEqualTo null
         }
 
-        it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
+        test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
             val result =
                 Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.UGYLDIG_TILBAKEDATERING)
             val merknad = result.toMerknad()
@@ -177,7 +176,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             )
         }
 
-        it("Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER") {
+        test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER") {
             val result = Result(
                 status = ResultStatus.GODKJENT_MED_MERKNAD,
                 merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER
@@ -190,7 +189,7 @@ object SendVurderingManuellOppgaveTest : Spek({
             )
         }
 
-        it("Kaster TypeCastException for status GODKJENT_MED_MERKNAD merknad NULL") {
+        test("Kaster TypeCastException for status GODKJENT_MED_MERKNAD merknad NULL") {
             assertFailsWith<IllegalArgumentException> {
                 Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null).toMerknad()
             }
