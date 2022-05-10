@@ -5,21 +5,20 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.ApplicationCallPipeline
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.auth.authenticate
-import io.ktor.features.CORS
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
-import io.ktor.response.respond
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.ApplicationCallPipeline
+import io.ktor.server.application.install
+import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.CORS
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.response.respond
+import io.ktor.server.routing.routing
 import no.nav.syfo.Environment
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.aksessering.api.sykmeldingsApi
@@ -30,7 +29,6 @@ import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.IkkeTilgangException
 import no.nav.syfo.service.ManuellOppgaveService
-import java.lang.NumberFormatException
 import java.util.concurrent.ExecutionException
 
 fun createApplicationEngine(
@@ -52,17 +50,17 @@ fun createApplicationEngine(
             }
         }
         install(StatusPages) {
-            exception<NumberFormatException> { cause ->
+            exception<NumberFormatException> { call, cause ->
                 call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
                 log.error("Caught exception", cause)
                 throw cause
             }
-            exception<IkkeTilgangException> { cause ->
+            exception<IkkeTilgangException> { call, cause ->
                 call.respond(HttpStatusCode.Forbidden)
                 log.error("Caught exception", cause)
                 throw cause
             }
-            exception<Throwable> { cause ->
+            exception<Throwable> { call, cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                 log.error("Caught exception", cause)
                 if (cause is ExecutionException) {
@@ -74,12 +72,12 @@ fun createApplicationEngine(
             }
         }
         install(CORS) {
-            method(HttpMethod.Get)
-            method(HttpMethod.Post)
-            method(HttpMethod.Put)
-            method(HttpMethod.Options)
-            header("Content-Type")
-            host(env.syfosmmanuellUrl, schemes = listOf("http", "https"))
+            allowMethod(HttpMethod.Get)
+            allowMethod(HttpMethod.Post)
+            allowMethod(HttpMethod.Put)
+            allowMethod(HttpMethod.Options)
+            allowHeader("Content-Type")
+            allowHost(env.syfosmmanuellUrl, schemes = listOf("http", "https"))
             allowCredentials = true
         }
         routing {

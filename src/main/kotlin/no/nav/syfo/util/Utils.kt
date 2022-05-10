@@ -1,8 +1,8 @@
 package no.nav.syfo.util
 
-import io.ktor.auth.parseAuthorizationHeader
 import io.ktor.http.auth.HttpAuthHeader
-import io.ktor.request.ApplicationRequest
+import io.ktor.server.auth.parseAuthorizationHeader
+import io.ktor.server.request.ApplicationRequest
 import java.io.IOException
 import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets

@@ -3,17 +3,15 @@ package no.nav.syfo.client
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
+import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
-import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.log
-import java.lang.RuntimeException
 import java.util.concurrent.TimeUnit
 
 class SyfoTilgangsKontrollClient(
@@ -40,18 +38,18 @@ class SyfoTilgangsKontrollClient(
         val oboToken = azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = scope)?.accessToken
             ?: throw RuntimeException("Klarte ikke hente nytt accessToken for veileder ved tilgangssjekk")
 
-        val httpResponse = httpClient.get<HttpStatement>("$syfoTilgangsKontrollClientUrl/api/tilgang/navident/person") {
+        val httpResponse = httpClient.get("$syfoTilgangsKontrollClientUrl/api/tilgang/navident/person") {
             accept(ContentType.Application.Json)
             headers {
                 append("Authorization", "Bearer $oboToken")
                 append(NAV_PERSONIDENT_HEADER, personFnr)
             }
-        }.execute()
+        }
         return when (httpResponse.status) {
             HttpStatusCode.OK -> {
                 log.debug("syfo-tilgangskontroll svarer med httpResponse status kode: {}", httpResponse.status.value)
                 log.info("Sjekker tilgang for veileder på person")
-                val tilgang = httpResponse.call.response.receive<Tilgang>()
+                val tilgang = httpResponse.body<Tilgang>()
                 syfoTilgangskontrollCache.put(mapOf(Pair(accessToken, personFnr)), tilgang)
                 tilgang
             }

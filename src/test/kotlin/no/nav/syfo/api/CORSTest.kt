@@ -1,12 +1,12 @@
 package no.nav.syfo.api
 
 import io.kotest.core.spec.style.FunSpec
-import io.ktor.application.install
-import io.ktor.features.CORS
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.routing.routing
+import io.ktor.server.application.install
+import io.ktor.server.plugins.cors.CORS
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import no.nav.syfo.application.ApplicationState
@@ -19,7 +19,7 @@ class CORSTest : FunSpec({
         with(TestApplicationEngine()) {
             start()
             application.install(CORS) {
-                host("syfosmmanuell.nais.preprod.local", schemes = listOf("https"))
+                allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("https"))
                 allowCredentials = true
             }
             val applicationState = ApplicationState()
@@ -77,7 +77,7 @@ class CORSTest : FunSpec({
             with(TestApplicationEngine()) {
                 start()
                 application.install(CORS) {
-                    host("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
+                    allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
                 }
                 val applicationState = ApplicationState()
                 applicationState.ready = true
@@ -121,7 +121,7 @@ class CORSTest : FunSpec({
             with(TestApplicationEngine()) {
                 start()
                 application.install(CORS) {
-                    host("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
+                    allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
                     allowNonSimpleContentTypes = true
                 }
                 val applicationState = ApplicationState()

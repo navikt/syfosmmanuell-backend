@@ -1,13 +1,14 @@
 package no.nav.syfo.azuread.v2
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
-import io.ktor.client.features.ClientRequestException
-import io.ktor.client.features.ResponseException
-import io.ktor.client.features.ServerResponseException
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.accept
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.Parameters
@@ -53,9 +54,9 @@ class AzureAdV2Client(
         return try {
             val response: HttpResponse = httpClient.post(azureTokenEndpoint) {
                 accept(ContentType.Application.Json)
-                body = FormDataContent(formParameters)
+                setBody(FormDataContent(formParameters))
             }
-            response.receive<AzureAdV2TokenResponse>()
+            response.body<AzureAdV2TokenResponse>()
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e)
         } catch (e: ServerResponseException) {

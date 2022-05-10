@@ -3,10 +3,9 @@ package no.nav.syfo.client
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
-import io.ktor.client.statement.HttpStatement
 import io.ktor.http.HttpStatusCode
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
@@ -48,16 +47,16 @@ class MSGraphClient(
 
     private suspend fun callMsGraphApi(oboToken: String): String {
 
-        val response = httpClient.get<HttpStatement>(msGraphApiAccountNameQuery) {
+        val response = httpClient.get(msGraphApiAccountNameQuery) {
             headers {
                 append("Authorization", "Bearer $oboToken")
             }
-        }.execute()
+        }
 
         if (response.status == HttpStatusCode.OK) {
-            return response.call.receive<GraphResponse>().onPremisesSamAccountName
+            return response.body<GraphResponse>().onPremisesSamAccountName
         } else {
-            throw RuntimeException("Noe gikk galt ved henting av veilderIdent fra Ms Graph ${response.status} ${response.call.receive<String>()}")
+            throw RuntimeException("Noe gikk galt ved henting av veilderIdent fra Ms Graph ${response.status} ${response.body<String>()}")
         }
     }
 }
