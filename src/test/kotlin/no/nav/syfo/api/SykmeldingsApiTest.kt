@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.install
-import io.ktor.features.ContentNegotiation
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.install
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
@@ -32,11 +33,9 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.util.UUID
 
-object SykmeldingsApiTest : Spek({
+class SykmeldingsApiTest : FunSpec({
 
     val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
@@ -56,15 +55,15 @@ object SykmeldingsApiTest : Spek({
     )
     val oppgaveid = 308076319
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
     }
 
-    afterEachTest {
+    afterTest {
         database.connection.dropData()
     }
 
-    describe("Test av henting av manuelle oppgaver") {
+    context("Test av henting av manuelle oppgaver") {
         with(TestApplicationEngine()) {
             start()
             application.routing { sykmeldingsApi(manuellOppgaveService) }
@@ -76,7 +75,7 @@ object SykmeldingsApiTest : Spek({
                 }
             }
 
-            it("Skal få 200 OK hvis sykmelding finnes") {
+            test("Skal få 200 OK hvis sykmelding finnes") {
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId") {
@@ -86,7 +85,7 @@ object SykmeldingsApiTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
             }
-            it("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
+            test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")

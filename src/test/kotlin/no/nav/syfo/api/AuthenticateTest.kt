@@ -5,17 +5,17 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.auth.authenticate
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
-import io.ktor.response.respond
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.install
+import io.ktor.server.auth.authenticate
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.response.respond
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
@@ -45,11 +45,9 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
 
-object AuthenticateTest : Spek({
+class AuthenticateTest : FunSpec({
     val path = "src/test/resources/jwkset.json"
     val uri = Paths.get(path).toUri().toURL()
     val jwkProvider = JwkProviderBuilder(uri).build()
@@ -73,16 +71,14 @@ object AuthenticateTest : Spek({
     )
     val oppgaveid = 308076319
 
-    beforeEachTest {
+    beforeTest {
+        database.connection.dropData()
         clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
         database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
         coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
     }
-    afterEachTest {
-        database.connection.dropData()
-    }
 
-    describe("Autentiseringstest for api") {
+    context("Autentiseringstest for api") {
         val config = Environment(
             mountPathVault = "",
             databaseName = "",
@@ -95,7 +91,8 @@ object AuthenticateTest : Spek({
             msGraphApiUrl = "http://ms.graph.fo.ton/",
             azureTokenEndpoint = "http://ms.token/",
             azureAppClientSecret = "secret",
-            azureAppClientId = "clientId"
+            azureAppClientId = "clientId",
+            oppgaveScope = "oppgave"
         )
         with(TestApplicationEngine()) {
             start()
@@ -113,14 +110,14 @@ object AuthenticateTest : Spek({
                 }
             }
             application.install(StatusPages) {
-                exception<Throwable> { cause ->
+                exception<Throwable> { call, cause ->
                     call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                     log.error("Caught exception", cause)
                     throw cause
                 }
             }
-            it("Aksepterer gyldig JWT med riktig audience") {
 
+            test("Aksepterer gyldig JWT med riktig audience") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
@@ -130,7 +127,7 @@ object AuthenticateTest : Spek({
                     objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldBeEqualTo oppgaveid
                 }
             }
-            it("Gyldig JWT med feil audience gir Unauthorized") {
+            test("Gyldig JWT med feil audience gir Unauthorized") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")

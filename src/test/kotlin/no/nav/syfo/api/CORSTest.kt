@@ -1,26 +1,25 @@
 package no.nav.syfo.api
 
-import io.ktor.application.install
-import io.ktor.features.CORS
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.routing.routing
+import io.ktor.server.application.install
+import io.ktor.server.plugins.cors.CORS
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.api.registerNaisApi
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object CORSTest : Spek({
+class CORSTest : FunSpec({
 
-    describe("CORS-test, anyhost med allow credentials = true") {
+    context("CORS-test, anyhost med allow credentials = true") {
         with(TestApplicationEngine()) {
             start()
             application.install(CORS) {
-                host("syfosmmanuell.nais.preprod.local", schemes = listOf("https"))
+                allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("https"))
                 allowCredentials = true
             }
             val applicationState = ApplicationState()
@@ -28,14 +27,14 @@ object CORSTest : Spek({
             applicationState.alive = true
             application.routing { registerNaisApi(applicationState) }
 
-            it("No origin header") {
+            test("No origin header") {
                 with(handleRequest(HttpMethod.Get, "/is_alive")) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo null
                     response.content shouldBeEqualTo "I'm alive! :)"
                 }
             }
-            it("Wrong origin header") {
+            test("Wrong origin header") {
                 with(
                     handleRequest(HttpMethod.Get, "/is_ready") {
                         addHeader(HttpHeaders.Origin, "invalid-host")
@@ -46,7 +45,7 @@ object CORSTest : Spek({
                     response.content shouldBeEqualTo "I'm ready! :)"
                 }
             }
-            it("Wrong origin header is empty") {
+            test("Wrong origin header is empty") {
                 with(
                     handleRequest(HttpMethod.Get, "/is_ready") {
                         addHeader(HttpHeaders.Origin, "")
@@ -57,7 +56,7 @@ object CORSTest : Spek({
                     response.content shouldBeEqualTo "I'm ready! :)"
                 }
             }
-            it("Simple credentials") {
+            test("Simple credentials") {
                 with(
                     handleRequest(HttpMethod.Options, "/is_ready") {
                         addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
@@ -73,12 +72,12 @@ object CORSTest : Spek({
         }
     }
 
-    describe("CORS-test, andre typer") {
-        it("Simple Request") {
+    context("CORS-test, andre typer") {
+        test("Simple Request") {
             with(TestApplicationEngine()) {
                 start()
                 application.install(CORS) {
-                    host("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
+                    allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
                 }
                 val applicationState = ApplicationState()
                 applicationState.ready = true
@@ -96,7 +95,7 @@ object CORSTest : Spek({
                 }
             }
         }
-        it("Simple Null") {
+        test("Simple Null") {
             with(TestApplicationEngine()) {
                 start()
                 application.install(CORS) {
@@ -118,11 +117,11 @@ object CORSTest : Spek({
                 }
             }
         }
-        it("Pre flight custom host") {
+        test("Pre flight custom host") {
             with(TestApplicationEngine()) {
                 start()
                 application.install(CORS) {
-                    host("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
+                    allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("http", "https"))
                     allowNonSimpleContentTypes = true
                 }
                 val applicationState = ApplicationState()

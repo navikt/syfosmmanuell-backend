@@ -1,43 +1,41 @@
 package no.nav.syfo.oppgave.client
 
-import io.ktor.application.call
-import io.ktor.application.install
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
-import io.ktor.features.ContentNegotiation
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
-import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.patch
-import io.ktor.routing.post
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.call
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.response.respond
+import io.ktor.server.routing.get
+import io.ktor.server.routing.patch
+import io.ktor.server.routing.post
+import io.ktor.server.routing.routing
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.OidcToken
-import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.clients.HttpClients.Companion.config
 import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
 import no.nav.syfo.oppgave.OpprettOppgaveResponse
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.net.ServerSocket
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFailsWith
 
-object OppgaveClientTest : Spek({
+class OppgaveClientTest : FunSpec({
     val httpClient = HttpClient(Apache) {
         config()
     }
-    val oidcClient = mockk<StsOidcClient>()
+    val azureAdV2Client = mockk<AzureAdV2Client>()
 
     val opprettOppgave = OpprettOppgave(
         aktoerId = "5555",
@@ -80,28 +78,25 @@ object OppgaveClientTest : Spek({
         }
     }.start()
 
-    val oppgaveClient = OppgaveClient("$mockHttpServerUrl/oppgave", oidcClient, httpClient)
+    val oppgaveClient = OppgaveClient("$mockHttpServerUrl/oppgave", azureAdV2Client, httpClient, "scope")
 
-    beforeEachTest {
-        clearMocks(oidcClient)
-        coEvery { oidcClient.oidcToken() } returns OidcToken("token", "", 1L)
+    beforeTest {
+        clearMocks(azureAdV2Client)
+        coEvery { azureAdV2Client.getAccessToken(any()) } returns "token"
     }
 
-    afterGroup {
+    afterSpec {
         mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
     }
 
-    describe("Test av opprettOppgave") {
-        it("Oppretter oppgave") {
-            var opprettOppgaveResponse: OpprettOppgaveResponse?
-            runBlocking {
-                opprettOppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, "123")
-            }
+    context("Test av opprettOppgave") {
+        test("Oppretter oppgave") {
+            val opprettOppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, "123")
 
-            opprettOppgaveResponse?.id shouldBeEqualTo 1
-            opprettOppgaveResponse?.versjon shouldBeEqualTo 1
+            opprettOppgaveResponse.id shouldBeEqualTo 1
+            opprettOppgaveResponse.versjon shouldBeEqualTo 1
         }
-        it("Kaster feil hvis oppretting feiler") {
+        test("Kaster feil hvis oppretting feiler") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
                     oppgaveClient.opprettOppgave(opprettOppgave, "1234")
@@ -110,27 +105,24 @@ object OppgaveClientTest : Spek({
         }
     }
 
-    describe("Test av ferdigstillOppgave") {
-        it("Ferdigstiller oppgave") {
-            var opprettOppgaveResponse: OpprettOppgaveResponse?
-            runBlocking {
-                opprettOppgaveResponse = oppgaveClient.ferdigstillOppgave(
-                    FerdigstillOppgave(
-                        id = 2,
-                        versjon = 2,
-                        status = OppgaveStatus.FERDIGSTILT,
-                        tildeltEnhetsnr = "1234",
-                        tilordnetRessurs = "4321",
-                        mappeId = null
-                    ),
-                    "123"
-                )
-            }
+    context("Test av ferdigstillOppgave") {
+        test("Ferdigstiller oppgave") {
+            val opprettOppgaveResponse = oppgaveClient.ferdigstillOppgave(
+                FerdigstillOppgave(
+                    id = 2,
+                    versjon = 2,
+                    status = OppgaveStatus.FERDIGSTILT,
+                    tildeltEnhetsnr = "1234",
+                    tilordnetRessurs = "4321",
+                    mappeId = null
+                ),
+                "123"
+            )
 
-            opprettOppgaveResponse?.id shouldBeEqualTo 2
-            opprettOppgaveResponse?.versjon shouldBeEqualTo 2
+            opprettOppgaveResponse.id shouldBeEqualTo 2
+            opprettOppgaveResponse.versjon shouldBeEqualTo 2
         }
-        it("Kaster feil hvis ferdigstilling feiler") {
+        test("Kaster feil hvis ferdigstilling feiler") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
                     oppgaveClient.ferdigstillOppgave(FerdigstillOppgave(id = 3, versjon = 2, status = OppgaveStatus.FERDIGSTILT, tildeltEnhetsnr = "1234", tilordnetRessurs = "4321", mappeId = null), "123")
@@ -139,17 +131,14 @@ object OppgaveClientTest : Spek({
         }
     }
 
-    describe("Test av hentOppgave") {
-        it("Henter oppgave") {
-            var opprettOppgaveResponse: OpprettOppgaveResponse?
-            runBlocking {
-                opprettOppgaveResponse = oppgaveClient.hentOppgave(4, "123")
-            }
+    context("Test av hentOppgave") {
+        test("Henter oppgave") {
+            val opprettOppgaveResponse = oppgaveClient.hentOppgave(4, "123")
 
-            opprettOppgaveResponse?.id shouldBeEqualTo 4
-            opprettOppgaveResponse?.versjon shouldBeEqualTo 1
+            opprettOppgaveResponse.id shouldBeEqualTo 4
+            opprettOppgaveResponse.versjon shouldBeEqualTo 1
         }
-        it("Kaster feil hvis henting feiler") {
+        test("Kaster feil hvis henting feiler") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
                     oppgaveClient.hentOppgave(5, "123")

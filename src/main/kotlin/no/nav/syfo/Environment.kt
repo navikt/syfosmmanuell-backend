@@ -15,19 +15,17 @@ data class Environment(
     val syfosmmanuellUrl: String = getEnvVar("SYFOSMMANUELL_URL"),
     val oppgavebehandlingUrl: String = getEnvVar("OPPGAVEBEHANDLING_URL"),
     val syfoTilgangsKontrollClientUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
-    val securityTokenUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val smSyfoserviceMqTopic: String = "teamsykmelding.syfoservice-mq",
     val syfotilgangskontrollScope: String = getEnvVar("SYFOTILGANGSKONTROLL_SCOPE"),
     val msGraphApiScope: String = getEnvVar("MS_GRAPH_API_SCOPE"),
     val msGraphApiUrl: String = getEnvVar("MS_GRAPH_API_URL"),
     val azureTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val azureAppClientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
-    val azureAppClientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET")
+    val azureAppClientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
+    val oppgaveScope: String = getEnvVar("OPPGAVE_SCOPE")
 )
 
 data class VaultSecrets(
-    val serviceuserUsername: String = getFileAsString("/secrets/serviceuser/username"),
-    val serviceuserPassword: String = getFileAsString("/secrets/serviceuser/password"),
     val oidcWellKnownUri: String = getFileAsString("/secrets/default/oidcWellKnownUri"),
     val syfosmmanuellBackendClientId: String = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_id"),
     val syfosmmanuellBackendClientSecret: String = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_secret")

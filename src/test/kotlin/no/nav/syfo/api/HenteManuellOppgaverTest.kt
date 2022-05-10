@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.install
-import io.ktor.features.ContentNegotiation
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.install
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
@@ -37,11 +38,9 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertFailsWith
 
-object HenteManuellOppgaverTest : Spek({
+class HenteManuellOppgaverTest : FunSpec({
 
     val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
@@ -63,16 +62,16 @@ object HenteManuellOppgaverTest : Spek({
     )
     val oppgaveid = 308076319
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
         coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
     }
 
-    afterEachTest {
+    afterTest {
         database.connection.dropData()
     }
 
-    describe("Test av henting av manuelle oppgaver") {
+    context("Test av henting av manuelle oppgaver") {
         with(TestApplicationEngine()) {
             start()
             application.routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
@@ -84,7 +83,7 @@ object HenteManuellOppgaverTest : Spek({
                 }
             }
 
-            it("Skal hente ut manuell oppgave basert på oppgaveid") {
+            test("Skal hente ut manuell oppgave basert på oppgaveid") {
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
@@ -95,14 +94,14 @@ object HenteManuellOppgaverTest : Spek({
                     objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldBeEqualTo oppgaveid
                 }
             }
-            it("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
+            test("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
                 assertFailsWith<NumberFormatException> {
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
                 }
             }
 
-            it("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
+            test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
