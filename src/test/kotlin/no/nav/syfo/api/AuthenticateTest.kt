@@ -91,7 +91,8 @@ class AuthenticateTest : FunSpec({
             msGraphApiUrl = "http://ms.graph.fo.ton/",
             azureTokenEndpoint = "http://ms.token/",
             azureAppClientSecret = "secret",
-            azureAppClientId = "clientId"
+            azureAppClientId = "clientId",
+            oppgaveScope = "oppgave"
         )
         with(TestApplicationEngine()) {
             start()

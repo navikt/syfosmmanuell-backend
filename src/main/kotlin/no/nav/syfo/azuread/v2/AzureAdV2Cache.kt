@@ -35,6 +35,24 @@ class AzureAdV2Cache {
         return azureAdV2Token
     }
 
+    fun getAccessToken(scope: String): AzureAdV2Token? {
+        val key = getSha256Key(scope)
+        return cache.getIfPresent(key)?.let {
+            when (it.expires.isBefore(OffsetDateTime.now(ZoneOffset.UTC))) {
+                true -> cache.invalidate(key).let {
+                    log.info("Access token in cache has expired")
+                    null
+                }
+                else -> it
+            }
+        }
+    }
+
+    fun putValue(token: String, azureAdV2Token: AzureAdV2Token): AzureAdV2Token {
+        cache.put(getSha256Key(token), azureAdV2Token)
+        return azureAdV2Token
+    }
+
     private fun getSha256Key(input: String): String =
         MessageDigest.getInstance("SHA-256")
             .digest(input.toByteArray())

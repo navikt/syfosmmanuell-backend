@@ -19,8 +19,7 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.OidcToken
-import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.clients.HttpClients.Companion.config
 import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
@@ -36,7 +35,7 @@ class OppgaveClientTest : FunSpec({
     val httpClient = HttpClient(Apache) {
         config()
     }
-    val oidcClient = mockk<StsOidcClient>()
+    val azureAdV2Client = mockk<AzureAdV2Client>()
 
     val opprettOppgave = OpprettOppgave(
         aktoerId = "5555",
@@ -79,11 +78,11 @@ class OppgaveClientTest : FunSpec({
         }
     }.start()
 
-    val oppgaveClient = OppgaveClient("$mockHttpServerUrl/oppgave", oidcClient, httpClient)
+    val oppgaveClient = OppgaveClient("$mockHttpServerUrl/oppgave", azureAdV2Client, httpClient, "scope")
 
     beforeTest {
-        clearMocks(oidcClient)
-        coEvery { oidcClient.oidcToken() } returns OidcToken("token", "", 1L)
+        clearMocks(azureAdV2Client)
+        coEvery { azureAdV2Client.getAccessToken(any()) } returns "token"
     }
 
     afterSpec {

@@ -10,7 +10,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.oppgave.FerdigstillOppgave
@@ -19,15 +19,16 @@ import no.nav.syfo.oppgave.OpprettOppgaveResponse
 
 class OppgaveClient(
     private val url: String,
-    private val oidcClient: StsOidcClient,
-    private val httpClient: HttpClient
+    private val azureAdV2Client: AzureAdV2Client,
+    private val httpClient: HttpClient,
+    private val scope: String
 ) {
     suspend fun opprettOppgave(opprettOppgave: OpprettOppgave, msgId: String):
         OpprettOppgaveResponse = retry("create_oppgave") {
         val response = httpClient.post(url) {
             contentType(ContentType.Application.Json)
-            val oidcToken = oidcClient.oidcToken()
-            header("Authorization", "Bearer ${oidcToken.access_token}")
+            val token = azureAdV2Client.getAccessToken(scope)
+            header("Authorization", "Bearer $token")
             header("X-Correlation-ID", msgId)
             setBody(opprettOppgave)
         }
@@ -43,8 +44,8 @@ class OppgaveClient(
     suspend fun ferdigstillOppgave(ferdigstilloppgave: FerdigstillOppgave, msgId: String): OpprettOppgaveResponse {
         val response = httpClient.patch(url + "/" + ferdigstilloppgave.id) {
             contentType(ContentType.Application.Json)
-            val oidcToken = oidcClient.oidcToken()
-            header("Authorization", "Bearer ${oidcToken.access_token}")
+            val token = azureAdV2Client.getAccessToken(scope)
+            header("Authorization", "Bearer $token")
             header("X-Correlation-ID", msgId)
             setBody(ferdigstilloppgave)
         }
@@ -60,8 +61,8 @@ class OppgaveClient(
     suspend fun hentOppgave(oppgaveId: Int, msgId: String): OpprettOppgaveResponse {
         val response = httpClient.get("$url/$oppgaveId") {
             contentType(ContentType.Application.Json)
-            val oidcToken = oidcClient.oidcToken()
-            header("Authorization", "Bearer ${oidcToken.access_token}")
+            val token = azureAdV2Client.getAccessToken(scope)
+            header("Authorization", "Bearer $token")
             header("X-Correlation-ID", msgId)
         }
         if (response.status == HttpStatusCode.OK) {

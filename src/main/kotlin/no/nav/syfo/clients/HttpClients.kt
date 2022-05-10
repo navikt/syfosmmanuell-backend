@@ -16,7 +16,6 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.MSGraphClient
-import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.exception.ServiceUnavailableException
 import no.nav.syfo.oppgave.client.OppgaveClient
@@ -58,16 +57,14 @@ class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
     private val httpClientWithProxy = HttpClient(Apache, proxyConfig)
     private val httpClient = HttpClient(Apache, config)
 
-    val oidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword, env.securityTokenUrl)
-
-    val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, oidcClient, httpClient)
-
     private val azureAdV2Client = AzureAdV2Client(
         azureAppClientId = env.azureAppClientId,
         azureAppClientSecret = env.azureAppClientSecret,
         azureTokenEndpoint = env.azureTokenEndpoint,
         httpClient = httpClientWithProxy
     )
+
+    val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, azureAdV2Client, httpClient, env.oppgaveScope)
 
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
         environment = env,

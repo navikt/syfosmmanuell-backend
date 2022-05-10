@@ -21,6 +21,28 @@ class AzureAdV2Client(
     private val httpClient: HttpClient,
     private val azureAdV2Cache: AzureAdV2Cache = AzureAdV2Cache()
 ) {
+    suspend fun getAccessToken(
+        scope: String
+    ): String {
+        return azureAdV2Cache.getAccessToken(scope)?.accessToken
+            ?: getClientSecretAccessToken(scope).let {
+                azureAdV2Cache.putValue(scope, it)
+            }.accessToken
+    }
+
+    private suspend fun getClientSecretAccessToken(
+        scope: String
+    ): AzureAdV2Token {
+        return getAccessToken(
+            Parameters.build {
+                append("client_id", azureAppClientId)
+                append("client_secret", azureAppClientSecret)
+                append("scope", scope)
+                append("grant_type", "client_credentials")
+            }
+        )?.toAzureAdV2Token() ?: throw RuntimeException("Noe gikk galt ved henting av token")
+    }
+
     suspend fun getOnBehalfOfToken(
         token: String,
         scope: String

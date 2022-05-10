@@ -51,8 +51,6 @@ spec:
     paths:
       - kvPath: /azuread/data/dev/creds/syfosmmanuell-backend
         mountPath: /secrets/azuread/syfosmmanuell-backend
-      - kvPath: serviceuser/data/dev/srvsyfosmmanuell-backend
-        mountPath: /secrets/serviceuser
       - kvPath: /kv/preprod/fss/syfosmmanuell-backend/teamsykmelding
         mountPath: /secrets/default
   webproxy: true
@@ -75,3 +73,5 @@ spec:
       value: https://graph.microsoft.com/.default
     - name: MS_GRAPH_API_URL
       value: https://graph.microsoft.com/v1.0
+    - name: OPPGAVE_SCOPE
+      value: api://dev-fss.oppgavehandtering.oppgave-q1/.default
