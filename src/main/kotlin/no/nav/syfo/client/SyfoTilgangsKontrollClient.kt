@@ -35,8 +35,7 @@ class SyfoTilgangsKontrollClient(
             log.debug("Traff cache for syfotilgangskontroll")
             return it
         }
-        val oboToken = azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = scope)?.accessToken
-            ?: throw RuntimeException("Klarte ikke hente nytt accessToken for veileder ved tilgangssjekk")
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = scope).accessToken
 
         val httpResponse = httpClient.get("$syfoTilgangsKontrollClientUrl/api/tilgang/navident/person") {
             accept(ContentType.Application.Json)

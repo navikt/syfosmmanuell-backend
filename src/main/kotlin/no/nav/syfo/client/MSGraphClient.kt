@@ -37,7 +37,7 @@ class MSGraphClient(
 
         return try {
             val oboToken = azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = oboScope)
-            val subject = callMsGraphApi(oboToken!!.accessToken)
+            val subject = callMsGraphApi(oboToken.accessToken)
             subjectCache.put(accessToken, subject)
             subject
         } catch (e: Exception) {
