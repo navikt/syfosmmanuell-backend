@@ -29,6 +29,7 @@ val nimbusdsVersion = "9.22"
 val caffeineVersion = "3.1.0"
 val testContainerVersion = "1.17.1"
 val kotlinVersion = "1.6.21"
+val kafkaVersion = "3.1.0"
 
 plugins {
     kotlin("jvm") version "1.6.21"
@@ -75,6 +76,8 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
+
+    implementation ("org.apache.kafka:kafka_2.12:$kafkaVersion")
 
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
