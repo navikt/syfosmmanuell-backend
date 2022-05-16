@@ -86,6 +86,7 @@ fun main() {
 
     ApplicationServer(applicationEngine, applicationState).start()
 
+    log.info("Er klar")
     applicationState.ready = true
 
     RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()

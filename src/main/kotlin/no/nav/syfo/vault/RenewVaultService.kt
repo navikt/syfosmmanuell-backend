@@ -9,6 +9,7 @@ import no.nav.syfo.db.VaultCredentialService
 class RenewVaultService(private val vaultCredentialService: VaultCredentialService, private val applicationState: ApplicationState) {
     @DelicateCoroutinesApi
     fun startRenewTasks() {
+        no.nav.syfo.log.info("renew vault service")
         GlobalScope.launch {
             try {
                 Vault.renewVaultTokenTask(applicationState)
