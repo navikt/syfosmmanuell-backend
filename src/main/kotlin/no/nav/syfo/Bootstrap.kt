@@ -86,10 +86,11 @@ fun main() {
 
     ApplicationServer(applicationEngine, applicationState).start()
 
+    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
+
     log.info("Er klar")
     applicationState.ready = true
 
-    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     val mottattSykmeldingService = MottattSykmeldingService(
         kafkaAivenConsumer = kafkaConsumers.kafkaAivenConsumerManuellOppgave,
         applicationState = applicationState,
