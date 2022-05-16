@@ -80,6 +80,7 @@ fun createApplicationEngine(
             allowHost(env.syfosmmanuellUrl, schemes = listOf("http", "https"))
             allowCredentials = true
         }
+        log.info("Setter opp ruter")
         routing {
             registerNaisApi(applicationState)
             authenticate("jwt") {
