@@ -16,6 +16,7 @@ import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.runBlocking
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
+import java.net.URL
 
 val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
     install(ContentNegotiation) {
@@ -34,7 +35,7 @@ val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
 }
 
 fun getWellKnown(wellKnownUrl: String) =
-    runBlocking { HttpClient(Apache, proxyConfig).get(wellKnownUrl).body<WellKnown>() }
+    runBlocking { HttpClient(Apache, proxyConfig).get(URL(wellKnownUrl)).body<WellKnown>() }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnown(
