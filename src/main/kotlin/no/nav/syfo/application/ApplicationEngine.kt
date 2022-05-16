@@ -29,7 +29,6 @@ import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.IkkeTilgangException
 import no.nav.syfo.service.ManuellOppgaveService
-import java.util.concurrent.ExecutionException
 
 fun createApplicationEngine(
     env: Environment,
@@ -60,7 +59,7 @@ fun createApplicationEngine(
                 log.error("Caught exception", cause)
                 throw cause
             }
-            exception<Throwable> { call, cause ->
+            /*exception<Throwable> { call, cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                 log.error("Caught exception", cause)
                 if (cause is ExecutionException) {
@@ -69,7 +68,7 @@ fun createApplicationEngine(
                     applicationState.alive = false
                 }
                 throw cause
-            }
+            }*/
         }
         install(CORS) {
             allowMethod(HttpMethod.Get)
