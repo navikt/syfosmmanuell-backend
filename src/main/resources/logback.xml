@@ -12,7 +12,7 @@
     <logger name="io.ktor.auth" level="TRACE" />
     <logger name="io.ktor.server" level="TRACE" />
 
-    <root level="INFO">
+    <root level="TRACE">
         <appender-ref ref="stdout_json"/>
     </root>
 </configuration>
