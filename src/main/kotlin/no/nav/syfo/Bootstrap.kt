@@ -61,7 +61,7 @@ fun main() {
 
     val kafkaProducers = KafkaProducers(env)
     val kafkaConsumers = KafkaConsumers(env)
-    val httpClients = HttpClients(env, vaultSecrets)
+    val httpClients = HttpClients(env)
     val oppgaveService = OppgaveService(httpClients.oppgaveClient, kafkaProducers.kafkaProduceTaskProducer)
 
     val manuellOppgaveService = ManuellOppgaveService(
