@@ -8,7 +8,6 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
-import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.ApplicationEngine
@@ -25,7 +24,6 @@ import no.nav.syfo.aksessering.api.sykmeldingsApi
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
-import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.IkkeTilgangException
 import no.nav.syfo.service.ManuellOppgaveService
@@ -95,5 +93,5 @@ fun createApplicationEngine(
             }
         }
         log.info("ferdig med å sette opp ruter")
-        intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
+        // intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
