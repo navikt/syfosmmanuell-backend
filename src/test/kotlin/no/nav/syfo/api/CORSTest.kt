@@ -5,7 +5,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.install
-import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.server.plugins.cors.CORS
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
