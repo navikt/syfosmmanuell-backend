@@ -20,9 +20,9 @@ spec:
     failureThreshold: 30
   readiness:
     path: /is_ready
-    initialDelay: 90
+    initialDelay: 60
     periodSeconds: 5
-    timeout: 15
+    timeout: 5
   prometheus:
     enabled: true
     path: /prometheus

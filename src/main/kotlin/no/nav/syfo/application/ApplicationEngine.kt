@@ -94,5 +94,6 @@ fun createApplicationEngine(
                 sykmeldingsApi(manuellOppgaveService)
             }
         }
+        log.info("ferdig med å sette opp ruter")
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
