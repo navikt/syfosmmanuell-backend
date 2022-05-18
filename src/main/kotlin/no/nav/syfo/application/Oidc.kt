@@ -14,6 +14,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.log
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
 import java.net.URL
@@ -35,7 +36,7 @@ val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
 }
 
 fun getWellKnown(wellKnownUrl: String) =
-    runBlocking { HttpClient(Apache, proxyConfig).get(URL(wellKnownUrl)).body<WellKnown>() }
+    runBlocking { HttpClient(Apache, proxyConfig).get(URL(wellKnownUrl)).body<WellKnown>().also { log.info("Hentet wellknown") } }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnown(

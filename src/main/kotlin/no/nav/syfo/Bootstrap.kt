@@ -45,63 +45,67 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 @ExperimentalTime
 @DelicateCoroutinesApi
 fun main() {
-    val env = Environment()
-    val vaultSecrets = VaultSecrets()
+    try {
+        val env = Environment()
+        val vaultSecrets = VaultSecrets()
 
-    val wellKnown = getWellKnown(vaultSecrets.oidcWellKnownUri)
-    val jwkProvider = JwkProviderBuilder(URL(wellKnown.jwks_uri))
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
+        val wellKnown = getWellKnown(vaultSecrets.oidcWellKnownUri)
+        val jwkProvider = JwkProviderBuilder(URL(wellKnown.jwks_uri))
+            .cached(10, 24, TimeUnit.HOURS)
+            .rateLimited(10, 1, TimeUnit.MINUTES)
+            .build()
 
-    val vaultCredentialService = VaultCredentialService()
-    val database = Database(env, vaultCredentialService)
+        val vaultCredentialService = VaultCredentialService()
+        val database = Database(env, vaultCredentialService)
 
-    val applicationState = ApplicationState()
+        val applicationState = ApplicationState()
 
-    val kafkaProducers = KafkaProducers(env)
-    val kafkaConsumers = KafkaConsumers(env)
-    val httpClients = HttpClients(env)
-    val oppgaveService = OppgaveService(httpClients.oppgaveClient, kafkaProducers.kafkaProduceTaskProducer)
+        val kafkaProducers = KafkaProducers(env)
+        val kafkaConsumers = KafkaConsumers(env)
+        val httpClients = HttpClients(env)
+        val oppgaveService = OppgaveService(httpClients.oppgaveClient, kafkaProducers.kafkaProduceTaskProducer)
 
-    val manuellOppgaveService = ManuellOppgaveService(
-        database,
-        httpClients.syfoTilgangsKontrollClient,
-        kafkaProducers, oppgaveService
-    )
+        val manuellOppgaveService = ManuellOppgaveService(
+            database,
+            httpClients.syfoTilgangsKontrollClient,
+            kafkaProducers, oppgaveService
+        )
 
-    val authorizationService = AuthorizationService(
-        httpClients.syfoTilgangsKontrollClient,
-        httpClients.msGraphClient, database
-    )
+        val authorizationService = AuthorizationService(
+            httpClients.syfoTilgangsKontrollClient,
+            httpClients.msGraphClient, database
+        )
 
-    val applicationEngine = createApplicationEngine(
-        env,
-        applicationState,
-        manuellOppgaveService,
-        jwkProvider,
-        wellKnown.issuer,
-        authorizationService
-    )
+        val applicationEngine = createApplicationEngine(
+            env,
+            applicationState,
+            manuellOppgaveService,
+            jwkProvider,
+            wellKnown.issuer,
+            authorizationService
+        )
 
-    ApplicationServer(applicationEngine, applicationState).start()
+        ApplicationServer(applicationEngine, applicationState).start()
 
-    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
+        log.info("Er klar")
+        applicationState.ready = true
 
-    log.info("Er klar")
-    applicationState.ready = true
+        val mottattSykmeldingService = MottattSykmeldingService(
+            kafkaAivenConsumer = kafkaConsumers.kafkaAivenConsumerManuellOppgave,
+            applicationState = applicationState,
+            topicAiven = env.manuellTopic,
+            database = database,
+            oppgaveService = oppgaveService,
+            manuellOppgaveService = manuellOppgaveService
+        )
 
-    val mottattSykmeldingService = MottattSykmeldingService(
-        kafkaAivenConsumer = kafkaConsumers.kafkaAivenConsumerManuellOppgave,
-        applicationState = applicationState,
-        topicAiven = env.manuellTopic,
-        database = database,
-        oppgaveService = oppgaveService,
-        manuellOppgaveService = manuellOppgaveService
-    )
+        RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
 
-    createListener(applicationState) {
-        mottattSykmeldingService.startAivenConsumer()
+        createListener(applicationState) {
+            mottattSykmeldingService.startAivenConsumer()
+        }
+    } catch (e: Exception) {
+        log.error("Noe gikk galt: ${e.message}", e)
     }
 }
 

@@ -25,11 +25,6 @@ class HttpClients(env: Environment) {
 
     companion object {
         val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-            engine {
-                socketTimeout = 40_000
-                connectTimeout = 40_000
-                connectionRequestTimeout = 40_000
-            }
             install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
