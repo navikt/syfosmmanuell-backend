@@ -104,7 +104,6 @@ fun main() {
         createListener(applicationState) {
             mottattSykmeldingService.startAivenConsumer()
         }
-
     } catch (e: Exception) {
         log.error("Noe gikk galt: ${e.message}", e)
     }
