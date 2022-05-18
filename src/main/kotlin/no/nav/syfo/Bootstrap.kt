@@ -94,11 +94,8 @@ fun main() {
             manuellOppgaveService = manuellOppgaveService
         )
 
-        ApplicationServer(applicationEngine, applicationState).start()
-
-        applicationState.ready = true
-
         GlobalScope.launch {
+            applicationState.ready = true
             log.info("Starter jobber")
             RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
 
@@ -106,6 +103,8 @@ fun main() {
                 mottattSykmeldingService.startAivenConsumer()
             }
         }
+
+        ApplicationServer(applicationEngine, applicationState).start()
     } catch (e: Exception) {
         log.error("Noe gikk galt: ${e.message}", e)
     }
