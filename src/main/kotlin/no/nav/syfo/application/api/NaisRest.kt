@@ -11,7 +11,6 @@ import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
 import io.prometheus.client.exporter.common.TextFormat.write004
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.log
 
 fun Routing.registerNaisApi(
     applicationState: ApplicationState,
@@ -28,10 +27,8 @@ fun Routing.registerNaisApi(
     }
     get("/is_ready") {
         if (readynessCheck()) {
-            log.info("Er ready")
             call.respondText("I'm ready! :)")
         } else {
-            log.info("Er ikke ready")
             call.respondText("Please wait! I'm not ready :(", status = HttpStatusCode.InternalServerError)
         }
     }
