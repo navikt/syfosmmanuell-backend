@@ -22,7 +22,6 @@ class ApplicationServer(
     fun start() {
         log.info("Starter appen")
         applicationState.alive = true
-        applicationState.ready = true
         applicationServer.start(wait = true)
     }
 }

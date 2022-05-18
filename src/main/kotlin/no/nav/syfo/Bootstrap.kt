@@ -95,15 +95,16 @@ fun main() {
         )
 
         GlobalScope.launch {
-            ApplicationServer(applicationEngine, applicationState).start()
+            applicationState.ready = true
+            log.info("Starter jobber")
+            RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
+
+            createListener(applicationState) {
+                mottattSykmeldingService.startAivenConsumer()
+            }
         }
 
-        log.info("Går videre etter å ha startet opp")
-        RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
-
-        createListener(applicationState) {
-            mottattSykmeldingService.startAivenConsumer()
-        }
+        ApplicationServer(applicationEngine, applicationState).start()
     } catch (e: Exception) {
         log.error("Noe gikk galt: ${e.message}", e)
     }
