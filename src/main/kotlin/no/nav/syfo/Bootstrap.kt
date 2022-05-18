@@ -85,11 +85,6 @@ fun main() {
             authorizationService
         )
 
-        ApplicationServer(applicationEngine, applicationState).start()
-
-        log.info("Er klar")
-        applicationState.ready = true
-
         val mottattSykmeldingService = MottattSykmeldingService(
             kafkaAivenConsumer = kafkaConsumers.kafkaAivenConsumerManuellOppgave,
             applicationState = applicationState,
@@ -104,6 +99,8 @@ fun main() {
         createListener(applicationState) {
             mottattSykmeldingService.startAivenConsumer()
         }
+
+        ApplicationServer(applicationEngine, applicationState).start()
     } catch (e: Exception) {
         log.error("Noe gikk galt: ${e.message}", e)
     }

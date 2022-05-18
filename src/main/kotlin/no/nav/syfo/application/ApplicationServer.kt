@@ -21,7 +21,9 @@ class ApplicationServer(
 
     fun start() {
         log.info("Starter appen")
-        applicationServer.start(wait = false)
         applicationState.alive = true
+        applicationState.ready = true
+        applicationServer.start(wait = true)
+        log.info("dette blir ikke logget?")
     }
 }
