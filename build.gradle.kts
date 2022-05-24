@@ -6,7 +6,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.1"
-val ktorVersion = "2.0.0"
+val ktorVersion = "2.0.1"
 val logbackVersion = "1.2.11"
 val logstashEncoderVersion = "7.1.1"
 val prometheusVersion = "0.15.0"
@@ -14,24 +14,25 @@ val smCommonVersion = "1.c55f4d2"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
-val jacksonVersion = "2.13.2"
+val jacksonVersion = "2.13.3"
 val jacksonPatchVersion = "2.13.2.2"
 val jacksonBomVersion = "2.13.2.20220328"
 val kluentVersion = "1.68"
-val mockkVersion = "1.12.3"
+val mockkVersion = "1.12.4"
 val postgresVersion = "42.3.4"
 val flywayVersion = "8.5.10"
 val hikariVersion = "5.0.1"
 val vaultJavaDriveVersion = "3.1.0"
 val javaTimeAdapterVersion = "1.1.3"
-val kotestVersion = "5.2.3"
+val kotestVersion = "5.3.0"
 val nimbusdsVersion = "9.22"
 val caffeineVersion = "3.1.0"
 val testContainerVersion = "1.17.1"
-val kotlinVersion = "1.6.20"
+val kotlinVersion = "1.6.21"
+val kafkaVersion = "3.1.0"
 
 plugins {
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.6.21"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jmailen.kotlinter") version "3.10.0"
     id("com.diffplug.spotless") version "6.5.0"
@@ -76,6 +77,8 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
 
+    implementation ("org.apache.kafka:kafka_2.12:$kafkaVersion")
+
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
     implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
@@ -86,8 +89,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation("com.fasterxml.jackson:jackson-bom:$jacksonBomVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonPatchVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")

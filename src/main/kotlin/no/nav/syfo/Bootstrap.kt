@@ -61,7 +61,7 @@ fun main() {
 
     val kafkaProducers = KafkaProducers(env)
     val kafkaConsumers = KafkaConsumers(env)
-    val httpClients = HttpClients(env, vaultSecrets)
+    val httpClients = HttpClients(env)
     val oppgaveService = OppgaveService(httpClients.oppgaveClient, kafkaProducers.kafkaProduceTaskProducer)
 
     val manuellOppgaveService = ManuellOppgaveService(
@@ -84,11 +84,6 @@ fun main() {
         authorizationService
     )
 
-    ApplicationServer(applicationEngine, applicationState).start()
-
-    applicationState.ready = true
-
-    RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
     val mottattSykmeldingService = MottattSykmeldingService(
         kafkaAivenConsumer = kafkaConsumers.kafkaAivenConsumerManuellOppgave,
         applicationState = applicationState,
@@ -98,9 +93,17 @@ fun main() {
         manuellOppgaveService = manuellOppgaveService
     )
 
-    createListener(applicationState) {
-        mottattSykmeldingService.startAivenConsumer()
+    GlobalScope.launch {
+        applicationState.ready = true
+
+        RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
+
+        createListener(applicationState) {
+            mottattSykmeldingService.startAivenConsumer()
+        }
     }
+
+    ApplicationServer(applicationEngine, applicationState).start()
 }
 
 @DelicateCoroutinesApi
