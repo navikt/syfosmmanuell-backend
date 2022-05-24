@@ -14,11 +14,11 @@ val smCommonVersion = "1.c55f4d2"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
-val jacksonVersion = "2.13.2"
+val jacksonVersion = "2.13.3"
 val jacksonPatchVersion = "2.13.2.2"
 val jacksonBomVersion = "2.13.2.20220328"
 val kluentVersion = "1.68"
-val mockkVersion = "1.12.3"
+val mockkVersion = "1.12.4"
 val postgresVersion = "42.3.4"
 val flywayVersion = "8.5.10"
 val hikariVersion = "5.0.1"
@@ -89,8 +89,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation("com.fasterxml.jackson:jackson-bom:$jacksonBomVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonPatchVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")

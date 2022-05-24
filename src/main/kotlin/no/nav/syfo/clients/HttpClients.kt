@@ -13,7 +13,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import no.nav.syfo.Environment
-import no.nav.syfo.VaultSecrets
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -22,7 +21,7 @@ import no.nav.syfo.oppgave.client.OppgaveClient
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
 
-class HttpClients(env: Environment, vaultSecrets: VaultSecrets) {
+class HttpClients(env: Environment) {
 
     companion object {
         val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
