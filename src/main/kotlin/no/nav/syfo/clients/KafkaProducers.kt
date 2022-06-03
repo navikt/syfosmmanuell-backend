@@ -2,7 +2,6 @@ package no.nav.syfo.clients
 
 import no.nav.syfo.Environment
 import no.nav.syfo.kafka.aiven.KafkaUtils
-import no.nav.syfo.kafka.model.SyfoserviceSykmeldingKafkaMessage
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ReceivedSykmelding
@@ -21,7 +20,6 @@ class KafkaProducers(private val env: Environment) {
 
     val kafkaApprecProducer = KafkaApprecProducer()
     val kafkaRecievedSykmeldingProducer = KafkaRecievedSykmeldingProducer()
-    val kafkaSyfoserviceProducer = KafkaSyfoserviceProducer()
     val kafkaProduceTaskProducer = KafkaProduceTaskProducer()
 
     inner class KafkaApprecProducer {
@@ -32,11 +30,6 @@ class KafkaProducers(private val env: Environment) {
     inner class KafkaRecievedSykmeldingProducer {
         val producer = KafkaProducer<String, ReceivedSykmelding>(producerPropertiesAiven)
         val okSykmeldingTopic = env.okSykmeldingTopic
-    }
-
-    inner class KafkaSyfoserviceProducer {
-        val producer = KafkaProducer<String, SyfoserviceSykmeldingKafkaMessage>(producerPropertiesAiven)
-        val topic = env.smSyfoserviceMqTopic
     }
 
     inner class KafkaProduceTaskProducer {

@@ -1,8 +1,5 @@
 package no.nav.syfo.service
 
-import com.migesok.jaxb.adapter.javatime.LocalDateTimeXmlAdapter
-import com.migesok.jaxb.adapter.javatime.LocalDateXmlAdapter
-import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.finnesOppgave
@@ -33,13 +30,7 @@ import no.nav.syfo.persistering.db.oppdaterManuellOppgaveUtenOpprinneligValidati
 import no.nav.syfo.persistering.db.slettOppgave
 import no.nav.syfo.persistering.error.OppgaveNotFoundException
 import no.nav.syfo.util.LoggingMeta
-import no.nav.syfo.util.XMLDateAdapter
-import no.nav.syfo.util.XMLDateTimeAdapter
-import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
-import no.nav.syfo.util.fellesformatJaxBContext
 import org.apache.kafka.clients.producer.ProducerRecord
-import java.io.StringReader
-import javax.xml.bind.Unmarshaller
 
 class ManuellOppgaveService(
     private val database: DatabaseInterface,
@@ -86,7 +77,6 @@ class ManuellOppgaveService(
             sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
         }
 
-        sendToSyfoService(manuellOppgave.receivedSykmelding, loggingMeta)
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
 
         if (skalOppretteOppfolgingsOppgave(manuellOppgave)) {
@@ -151,25 +141,6 @@ class ManuellOppgaveService(
             val antallSlettedeOppgaver = database.slettOppgave(it.oppgaveid)
             log.info("Slettet $antallSlettedeOppgaver oppgaver")
         }
-    }
-
-    fun sendToSyfoService(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
-        val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller().apply {
-            setAdapter(LocalDateTimeXmlAdapter::class.java, XMLDateTimeAdapter())
-            setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
-        }
-        val fellesformat = fellesformatUnmarshaller.unmarshal(
-            StringReader(receivedSykmelding.fellesformat)
-        ) as XMLEIFellesformat
-
-        notifySyfoService(
-            syfoserviceProducer = kafkaProducers.kafkaSyfoserviceProducer,
-            ediLoggId = receivedSykmelding.navLogId,
-            sykmeldingId = receivedSykmelding.sykmelding.id,
-            msgId = receivedSykmelding.msgId,
-            healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat),
-            loggingMeta = loggingMeta
-        )
     }
 
     fun sendApprec(oppgaveId: Int, apprec: Apprec, loggingMeta: LoggingMeta) {
