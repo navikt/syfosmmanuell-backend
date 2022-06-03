@@ -85,7 +85,6 @@ class MotattSykmeldingServiceTest : FunSpec({
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
             coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
         }
 
         test("Apprec oppdateres") {
@@ -123,7 +122,6 @@ class MotattSykmeldingServiceTest : FunSpec({
             }
             database.erOpprettManuellOppgave(sykmeldingsId) shouldBeEqualTo false
             coVerify(exactly = 0) { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
-            coVerify(exactly = 0) { kafkaProducers.kafkaSyfoserviceProducer.producer.send(any()) }
         }
     }
 })

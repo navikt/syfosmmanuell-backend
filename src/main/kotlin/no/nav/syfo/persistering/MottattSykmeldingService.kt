@@ -120,7 +120,6 @@ class MottattSykmeldingService(
                 )
                 manuellOppgaveService.sendApprec(oppgaveId, oppdatertApprec, loggingMeta)
                 manuellOppgaveService.sendReceivedSykmelding(manuellOppgave.receivedSykmelding, loggingMeta)
-                manuellOppgaveService.sendToSyfoService(manuellOppgave.receivedSykmelding, loggingMeta)
                 MESSAGE_STORED_IN_DB_COUNTER.inc()
             }
         }

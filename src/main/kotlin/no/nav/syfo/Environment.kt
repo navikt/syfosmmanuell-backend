@@ -15,7 +15,6 @@ data class Environment(
     val syfosmmanuellUrl: String = getEnvVar("SYFOSMMANUELL_URL"),
     val oppgavebehandlingUrl: String = getEnvVar("OPPGAVEBEHANDLING_URL"),
     val syfoTilgangsKontrollClientUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
-    val smSyfoserviceMqTopic: String = "teamsykmelding.syfoservice-mq",
     val syfotilgangskontrollScope: String = getEnvVar("SYFOTILGANGSKONTROLL_SCOPE"),
     val msGraphApiScope: String = getEnvVar("MS_GRAPH_API_SCOPE"),
     val msGraphApiUrl: String = getEnvVar("MS_GRAPH_API_URL"),
