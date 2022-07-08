@@ -48,11 +48,6 @@ spec:
         - application: syfosminfotrygd
   vault:
     enabled: true
-    paths:
-      - kvPath: /azuread/data/dev/creds/syfosmmanuell-backend
-        mountPath: /secrets/azuread/syfosmmanuell-backend
-      - kvPath: /kv/preprod/fss/syfosmmanuell-backend/teamsykmelding
-        mountPath: /secrets/default
   webproxy: true
   ingresses:
     - "https://syfosmmanuell-backend.nais.preprod.local"

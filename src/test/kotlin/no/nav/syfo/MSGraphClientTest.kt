@@ -22,13 +22,10 @@ class MSGraphClientTest : FunSpec({
 
     val httpClient = HttpClientTest()
     val environment = mockk<Environment>()
-    val vault = mockk<VaultSecrets>()
     val azureAdV2Client = spyk(AzureAdV2Client("foo", "bar", "http://obo", httpClient.httpClient))
 
     coEvery { environment.msGraphApiScope } returns "scope.ms"
     coEvery { environment.msGraphApiUrl } returns "http://msgraphfoo"
-    coEvery { vault.syfosmmanuellBackendClientId } returns "1234"
-    coEvery { vault.syfosmmanuellBackendClientSecret } returns "secret"
 
     val msGraphClient = spyk(
         MSGraphClient(
@@ -39,7 +36,7 @@ class MSGraphClientTest : FunSpec({
     )
 
     beforeTest {
-        clearMocks(environment, vault, azureAdV2Client)
+        clearMocks(environment, azureAdV2Client)
         msGraphClient.subjectCache.invalidateAll()
     }
 
