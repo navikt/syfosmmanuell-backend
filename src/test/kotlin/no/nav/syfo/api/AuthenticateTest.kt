@@ -92,7 +92,9 @@ class AuthenticateTest : FunSpec({
             azureTokenEndpoint = "http://ms.token/",
             azureAppClientSecret = "secret",
             azureAppClientId = "clientId",
-            oppgaveScope = "oppgave"
+            oppgaveScope = "oppgave",
+            jwkKeysUrl = "keys",
+            jwtIssuer = "https://sts.issuer.net/myid"
         )
         with(TestApplicationEngine()) {
             start()

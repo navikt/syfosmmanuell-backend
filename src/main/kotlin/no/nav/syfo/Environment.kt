@@ -1,7 +1,5 @@
 package no.nav.syfo
 
-import no.nav.syfo.util.getFileAsString
-
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmmanuell-backend"),
@@ -21,13 +19,9 @@ data class Environment(
     val azureTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val azureAppClientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val azureAppClientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
+    val jwkKeysUrl: String = getEnvVar("AZURE_OPENID_CONFIG_JWKS_URI"),
+    val jwtIssuer: String = getEnvVar("AZURE_OPENID_CONFIG_ISSUER"),
     val oppgaveScope: String = getEnvVar("OPPGAVE_SCOPE")
-)
-
-data class VaultSecrets(
-    val oidcWellKnownUri: String = getFileAsString("/secrets/default/oidcWellKnownUri"),
-    val syfosmmanuellBackendClientId: String = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_id"),
-    val syfosmmanuellBackendClientSecret: String = getFileAsString("/secrets/azuread/syfosmmanuell-backend/client_secret")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

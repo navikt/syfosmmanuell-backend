@@ -16,7 +16,6 @@ import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
-import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
@@ -46,10 +45,8 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 @DelicateCoroutinesApi
 fun main() {
     val env = Environment()
-    val vaultSecrets = VaultSecrets()
 
-    val wellKnown = getWellKnown(vaultSecrets.oidcWellKnownUri)
-    val jwkProvider = JwkProviderBuilder(URL(wellKnown.jwks_uri))
+    val jwkProvider = JwkProviderBuilder(URL(env.jwkKeysUrl))
         .cached(10, 24, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
@@ -80,7 +77,7 @@ fun main() {
         applicationState,
         manuellOppgaveService,
         jwkProvider,
-        wellKnown.issuer,
+        env.jwtIssuer,
         authorizationService
     )
 

@@ -46,16 +46,15 @@ spec:
           namespace: teamsykmelding
           cluster: prod-fss
         - application: syfosminfotrygd
+        - application: syfosminfotrygd
+          namespace: teamsykmelding
+          cluster: prod-gcp
   vault:
     enabled: true
-    paths:
-      - kvPath: /azuread/data/prod/creds/syfosmmanuell-backend
-        mountPath: /secrets/azuread/syfosmmanuell-backend
-      - kvPath: /kv/prod/fss/syfosmmanuell-backend/teamsykmelding
-        mountPath: /secrets/default
   webproxy: true
   ingresses:
     - "https://syfosmmanuell-backend.nais.adeo.no"
+    - "https://syfosmmanuell-backend.prod-fss-pub.nais.io"
   env:
     - name: SYFOSMMANUELL_BACKEND_DB_URL
       value: jdbc:postgresql://A01DBVL010.adeo.no:5432/syfosmmanuell-backend
