@@ -46,11 +46,15 @@ spec:
           namespace: teamsykmelding
           cluster: dev-fss
         - application: syfosminfotrygd
+        - application: syfosminfotrygd
+          namespace: teamsykmelding
+          cluster: dev-gcp
   vault:
     enabled: true
   webproxy: true
   ingresses:
     - "https://syfosmmanuell-backend.nais.preprod.local"
+    - "https://syfosmmanuell-backend.dev-fss-pub.nais.io"
   env:
     - name: SYFOSMMANUELL_BACKEND_DB_URL
       value: jdbc:postgresql://b27dbvl009.preprod.local:5432/syfosmmanuell-backend
