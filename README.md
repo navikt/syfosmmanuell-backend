@@ -147,5 +147,13 @@ To get started:
 2. Create a local run config for syfosmmanuell-backend pointing to Bootstrap.tk
 3. Add the contents of dev-stack/dev-runtime-env as runtime environments in the run config. 
 
+### Upgrading the gradle wrapper
+Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
+
+```./gradlew wrapper --gradle-version $gradleVersjon```
+
+### Inquiries
+Questions related to the code or the project can be asked as issues here on GitHub
+
 ### For NAV employees
 We are available at the Slack channel #team-sykmelding
