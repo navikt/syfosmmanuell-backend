@@ -52,6 +52,12 @@ class SyfoTilgangsKontrollClient(
                 syfoTilgangskontrollCache.put(mapOf(Pair(accessToken, personFnr)), tilgang)
                 tilgang
             }
+            HttpStatusCode.Forbidden -> {
+                log.warn("syfo-tilgangskontroll svarte med ${httpResponse.status.value}")
+                Tilgang(
+                    harTilgang = false
+                )
+            }
             else -> {
                 log.error("syfo-tilgangskontroll svarte med ${httpResponse.status.value}")
                 Tilgang(
