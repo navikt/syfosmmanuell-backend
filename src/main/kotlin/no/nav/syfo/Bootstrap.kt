@@ -95,7 +95,6 @@ fun main() {
         }
     }
 
-
     ApplicationServer(applicationEngine, applicationState).start()
 }
 
