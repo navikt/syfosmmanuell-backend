@@ -21,12 +21,10 @@ import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.Database
-import no.nav.syfo.db.VaultCredentialService
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.MottattSykmeldingService
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.TrackableException
-import no.nav.syfo.vault.RenewVaultService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -51,8 +49,7 @@ fun main() {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
-    val vaultCredentialService = VaultCredentialService()
-    val database = Database(env, vaultCredentialService)
+    val database = Database(env)
 
     val applicationState = ApplicationState()
 
@@ -90,17 +87,19 @@ fun main() {
         manuellOppgaveService = manuellOppgaveService
     )
 
+    /*
     GlobalScope.launch {
         applicationState.ready = true
-
-        RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
 
         createListener(applicationState) {
             mottattSykmeldingService.startAivenConsumer()
         }
     }
 
+     */
+
     ApplicationServer(applicationEngine, applicationState).start()
+    applicationState.ready = true
 }
 
 @DelicateCoroutinesApi

@@ -5,46 +5,31 @@ import io.mockk.mockk
 import no.nav.syfo.Environment
 import no.nav.syfo.db.Database
 import no.nav.syfo.db.DatabaseInterface
-import no.nav.syfo.db.VaultCredentialService
-import no.nav.syfo.db.VaultCredentials
-import no.nav.syfo.log
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.toPGObject
 import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.Connection
 
-class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
-
 class TestDB private constructor() {
 
     companion object {
         var database: DatabaseInterface
-        val vaultCredentialService = mockk<VaultCredentialService>()
-        val env = mockk<Environment>()
-        val psqlContainer = PsqlContainer()
-            .withExposedPorts(5432)
-            .withUsername("user")
-            .withPassword("password")
-            .withDatabaseName("database")
-            .withInitScript("db/db-init.sql")
-
+        val mockEnv = mockk<Environment>(relaxed = true)
         init {
-            psqlContainer.start()
-            every { env.databaseName } returns "database"
-            every { env.mountPathVault } returns ""
-            every { env.syfosmmanuellbackendDBURL } returns psqlContainer.jdbcUrl
-            every { vaultCredentialService.renewCredentialsTaskData = any() } returns Unit
-            every { vaultCredentialService.getNewCredentials(any(), any(), any()) } returns VaultCredentials(
-                "1",
-                "user",
-                "password"
-            )
-            try {
-                database = Database(env, vaultCredentialService)
-            } catch (ex: Exception) {
-                log.error("error", ex)
-                database = Database(env, vaultCredentialService)
+            val postgres = PostgreSQLContainer<Nothing>("postgres:14").apply {
+                withUsername("username")
+                withPassword("password")
+                withDatabaseName("database")
+                withInitScript("db/db-init.sql")
+                start()
+                println("Database: jdbc:postgresql://localhost:$firstMappedPort/test startet opp, credentials: test og test")
             }
+
+            every { mockEnv.databaseUsername } returns postgres.username
+            every { mockEnv.databasePassword } returns postgres.password
+            every { mockEnv.dbName } returns postgres.databaseName
+            every { mockEnv.dbPort } returns postgres.firstMappedPort.toString()
+            database = Database(mockEnv)
         }
     }
 }

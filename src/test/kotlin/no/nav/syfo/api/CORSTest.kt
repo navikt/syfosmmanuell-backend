@@ -28,7 +28,7 @@ class CORSTest : FunSpec({
             application.routing { registerNaisApi(applicationState) }
 
             test("No origin header") {
-                with(handleRequest(HttpMethod.Get, "/is_alive")) {
+                with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo null
                     response.content shouldBeEqualTo "I'm alive! :)"
@@ -36,7 +36,7 @@ class CORSTest : FunSpec({
             }
             test("Wrong origin header") {
                 with(
-                    handleRequest(HttpMethod.Get, "/is_ready") {
+                    handleRequest(HttpMethod.Get, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "invalid-host")
                     }
                 ) {
@@ -47,7 +47,7 @@ class CORSTest : FunSpec({
             }
             test("Wrong origin header is empty") {
                 with(
-                    handleRequest(HttpMethod.Get, "/is_ready") {
+                    handleRequest(HttpMethod.Get, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "")
                     }
                 ) {
@@ -58,7 +58,7 @@ class CORSTest : FunSpec({
             }
             test("Simple credentials") {
                 with(
-                    handleRequest(HttpMethod.Options, "/is_ready") {
+                    handleRequest(HttpMethod.Options, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
                         addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
                     }
@@ -85,7 +85,7 @@ class CORSTest : FunSpec({
                 application.routing { registerNaisApi(applicationState) }
 
                 with(
-                    handleRequest(HttpMethod.Get, "/is_ready") {
+                    handleRequest(HttpMethod.Get, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
                     }
                 ) {
@@ -107,7 +107,7 @@ class CORSTest : FunSpec({
                 application.routing { registerNaisApi(applicationState) }
 
                 with(
-                    handleRequest(HttpMethod.Get, "/is_ready") {
+                    handleRequest(HttpMethod.Get, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "null")
                     }
                 ) {
@@ -130,7 +130,7 @@ class CORSTest : FunSpec({
                 application.routing { registerNaisApi(applicationState) }
 
                 with(
-                    handleRequest(HttpMethod.Options, "/is_ready") {
+                    handleRequest(HttpMethod.Options, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
                         addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
                     }
