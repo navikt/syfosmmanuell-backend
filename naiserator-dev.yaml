@@ -63,7 +63,7 @@ spec:
           cluster: dev-gcp
   vault:
     enabled: false
-  webproxy: true
+  webproxy: false
   ingresses:
     - "https://syfosmmanuell-backend.dev.nav.no"
     - "https://syfosmmanuell-backend.dev.intern.nav.no"
