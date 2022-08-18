@@ -87,7 +87,6 @@ fun main() {
         manuellOppgaveService = manuellOppgaveService
     )
 
-    /*
     GlobalScope.launch {
         applicationState.ready = true
 
@@ -96,10 +95,8 @@ fun main() {
         }
     }
 
-     */
 
     ApplicationServer(applicationEngine, applicationState).start()
-    applicationState.ready = true
 }
 
 @DelicateCoroutinesApi
