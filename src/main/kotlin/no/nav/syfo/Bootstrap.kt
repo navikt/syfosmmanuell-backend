@@ -88,7 +88,7 @@ fun main() {
     )
 
     applicationState.ready = true
-    /*
+
     GlobalScope.launch {
         applicationState.ready = true
 
@@ -96,8 +96,6 @@ fun main() {
             mottattSykmeldingService.startAivenConsumer()
         }
     }
-
-     */
 
     ApplicationServer(applicationEngine, applicationState).start()
 }
