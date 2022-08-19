@@ -80,9 +80,6 @@ class AuthenticateTest : FunSpec({
 
     context("Autentiseringstest for api") {
         val config = Environment(
-            mountPathVault = "",
-            databaseName = "",
-            syfosmmanuellbackendDBURL = "url",
             syfosmmanuellUrl = "https://syfosmmanuell",
             syfotilgangskontrollScope = "scope",
             oppgavebehandlingUrl = "oppgave",
@@ -94,7 +91,12 @@ class AuthenticateTest : FunSpec({
             azureAppClientId = "clientId",
             oppgaveScope = "oppgave",
             jwkKeysUrl = "keys",
-            jwtIssuer = "https://sts.issuer.net/myid"
+            jwtIssuer = "https://sts.issuer.net/myid",
+            databasePassword = "asd",
+            databaseUsername = "asda",
+            dbHost = "",
+            dbName = "",
+            dbPort = ""
         )
         with(TestApplicationEngine()) {
             start()

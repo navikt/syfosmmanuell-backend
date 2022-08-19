@@ -3,9 +3,6 @@ package no.nav.syfo
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmmanuell-backend"),
-    val syfosmmanuellbackendDBURL: String = getEnvVar("SYFOSMMANUELL_BACKEND_DB_URL"),
-    val mountPathVault: String = getEnvVar("MOUNT_PATH_VAULT"),
-    val databaseName: String = getEnvVar("DATABASE_NAME", "syfosmmanuell-backend"),
     val manuellTopic: String = "teamsykmelding.sykmelding-manuell",
     val apprecTopic: String = "teamsykmelding.sykmelding-apprec",
     val okSykmeldingTopic: String = "teamsykmelding.ok-sykmelding",
@@ -21,7 +18,12 @@ data class Environment(
     val azureAppClientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val jwkKeysUrl: String = getEnvVar("AZURE_OPENID_CONFIG_JWKS_URI"),
     val jwtIssuer: String = getEnvVar("AZURE_OPENID_CONFIG_ISSUER"),
-    val oppgaveScope: String = getEnvVar("OPPGAVE_SCOPE")
+    val oppgaveScope: String = getEnvVar("OPPGAVE_SCOPE"),
+    val databaseUsername: String = getEnvVar("DB_USERNAME"),
+    val databasePassword: String = getEnvVar("DB_PASSWORD"),
+    val dbHost: String = getEnvVar("DB_HOST"),
+    val dbPort: String = getEnvVar("DB_PORT"),
+    val dbName: String = getEnvVar("DB_DATABASE")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

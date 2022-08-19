@@ -18,8 +18,6 @@ import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.exception.ServiceUnavailableException
 import no.nav.syfo.oppgave.client.OppgaveClient
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner
-import java.net.ProxySelector
 
 class HttpClients(env: Environment) {
 
@@ -44,23 +42,13 @@ class HttpClients(env: Environment) {
         }
     }
 
-    private val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        config()
-        engine {
-            customizeClient {
-                setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
-            }
-        }
-    }
-
-    private val httpClientWithProxy = HttpClient(Apache, proxyConfig)
     private val httpClient = HttpClient(Apache, config)
 
     private val azureAdV2Client = AzureAdV2Client(
         azureAppClientId = env.azureAppClientId,
         azureAppClientSecret = env.azureAppClientSecret,
         azureTokenEndpoint = env.azureTokenEndpoint,
-        httpClient = httpClientWithProxy
+        httpClient = httpClient
     )
 
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, azureAdV2Client, httpClient, env.oppgaveScope)
@@ -68,12 +56,12 @@ class HttpClients(env: Environment) {
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
         environment = env,
         azureAdV2Client = azureAdV2Client,
-        httpClient = httpClientWithProxy
+        httpClient = httpClient
     )
 
     val msGraphClient = MSGraphClient(
         environment = env,
         azureAdV2Client = azureAdV2Client,
-        httpClient = httpClientWithProxy
+        httpClient = httpClient
     )
 }
