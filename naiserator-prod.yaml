@@ -64,6 +64,9 @@ spec:
         - application: syfosminfotrygd
           namespace: teamsykmelding
           cluster: prod-gcp
+        - application: syfosmmanuell
+          namespace: teamsykmelding
+          cluster: prod-gcp
   vault:
     enabled: false
   webproxy: false
