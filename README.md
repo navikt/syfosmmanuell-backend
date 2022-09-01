@@ -20,6 +20,19 @@ kode: https://github.com/navikt/syfosmmanuell
 * JDK 17
 * Docker
 
+## FlowChart
+This the high level flow for the application
+```mermaid
+  graph LR;
+        
+      syfosmmanuell-bakcend --- syfosmmanuell;
+      syfosmmanuell-bakcend -- check caseworker access --- syfo-tilgangskontroll;
+      syfosmmanuell-bakcend -- create,get,complete oppgave --- oppgave;
+      syfosmmanuell-bakcend -- verify token --- azure-AD;
+      syfosmmanuell-bakcend --- id1[(Database)];
+ 
+```
+
 ## Getting started
 
 ### Getting github-package-registry packages NAV-IT
@@ -50,6 +63,8 @@ githubPassword=[token]
 ```
 
 Replace `[token]` with a personal access token with scope `read:packages`.
+See githubs guide [creating-a-personal-access-token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) on
+how to create a personal access token.
 
 Alternatively, the variables can be configured via environment variables:
 
