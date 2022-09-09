@@ -37,8 +37,8 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
+import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
-import org.junit.jupiter.api.Assertions.fail
 
 class HenteManuellOppgaverTest : FunSpec({
 
@@ -113,12 +113,8 @@ class HenteManuellOppgaverTest : FunSpec({
                     }
                 }
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
-                try {
+                assertFailsWith<NumberFormatException> {
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
-                } catch (exception: NumberFormatException) {
-                    exception.message shouldBeEqualTo "For input string: \"1h2j32k\""
-                } catch (ex: Exception) {
-                    fail("Should throw NumberFormatException")
                 }
             }
         }
