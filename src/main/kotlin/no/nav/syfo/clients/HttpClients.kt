@@ -6,8 +6,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.CIOEngineConfig
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
@@ -22,7 +23,7 @@ import no.nav.syfo.oppgave.client.OppgaveClient
 class HttpClients(env: Environment) {
 
     companion object {
-        val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+        val config: HttpClientConfig<CIOEngineConfig>.() -> Unit = {
             install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -39,10 +40,16 @@ class HttpClients(env: Environment) {
                     }
                 }
             }
+            install(HttpRequestRetry) {
+                maxRetries = 3
+                delayMillis { retry ->
+                    retry * 500L
+                }
+            }
         }
     }
 
-    private val httpClient = HttpClient(Apache, config)
+    private val httpClient = HttpClient(CIO, config)
 
     private val azureAdV2Client = AzureAdV2Client(
         azureAppClientId = env.azureAppClientId,

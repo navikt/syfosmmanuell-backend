@@ -6,23 +6,23 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val ktorVersion = "2.0.3"
-val logbackVersion = "1.2.11"
+val ktorVersion = "2.1.1"
+val logbackVersion = "1.4.0"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.f132f2b"
+val smCommonVersion = "1.cbb3aed"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
-val jacksonVersion = "2.13.3"
+val jacksonVersion = "2.13.4"
 val kluentVersion = "1.68"
-val mockkVersion = "1.12.5"
+val mockkVersion = "1.12.7"
 val postgresVersion = "42.4.1"
 val flywayVersion = "9.0.4"
 val hikariVersion = "5.0.1"
 val javaTimeAdapterVersion = "1.1.3"
-val kotestVersion = "5.4.1"
-val nimbusdsVersion = "9.23"
+val kotestVersion = "5.4.2"
+val nimbusdsVersion = "9.24.3"
 val caffeineVersion = "3.1.1"
 val testContainerVersion = "1.17.3"
 val kotlinVersion = "1.7.10"
@@ -63,7 +63,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
@@ -73,7 +73,7 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
 
-    implementation ("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
 
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")

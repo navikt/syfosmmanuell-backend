@@ -38,7 +38,7 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.amshove.kluent.shouldBeEqualTo
-import kotlin.test.assertFailsWith
+import org.junit.jupiter.api.Assertions.fail
 
 class HenteManuellOppgaverTest : FunSpec({
 
@@ -48,7 +48,8 @@ class HenteManuellOppgaverTest : FunSpec({
     val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
     val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
-    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+    val manuellOppgaveService =
+        ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
     val manuelloppgaveId = "1314"
     val manuellOppgave = ManuellOppgave(
@@ -64,7 +65,12 @@ class HenteManuellOppgaverTest : FunSpec({
 
     beforeTest {
         clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
-        coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
+        coEvery {
+            syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                any(),
+                any()
+            )
+        } returns Tilgang(true)
     }
 
     afterTest {
@@ -72,18 +78,18 @@ class HenteManuellOppgaverTest : FunSpec({
     }
 
     context("Test av henting av manuelle oppgaver") {
-        with(TestApplicationEngine()) {
-            start()
-            application.routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
-            application.install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                }
-            }
 
-            test("Skal hente ut manuell oppgave basert på oppgaveid") {
+        test("Skal hente ut manuell oppgave basert på oppgaveid") {
+            with(TestApplicationEngine()) {
+                start()
+                application.routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                application.install(ContentNegotiation) {
+                    jackson {
+                        registerKotlinModule()
+                        registerModule(JavaTimeModule())
+                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    }
+                }
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
@@ -94,14 +100,40 @@ class HenteManuellOppgaverTest : FunSpec({
                     objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldBeEqualTo oppgaveid
                 }
             }
-            test("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
+        }
+        test("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
+            with(TestApplicationEngine()) {
+                start()
+                application.routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                application.install(ContentNegotiation) {
+                    jackson {
+                        registerKotlinModule()
+                        registerModule(JavaTimeModule())
+                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    }
+                }
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
-                assertFailsWith<NumberFormatException> {
+                try {
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
+                } catch (exception: NumberFormatException) {
+                    exception.message shouldBeEqualTo "For input string: \"1h2j32k\""
+                } catch (ex: Exception) {
+                    fail("Should throw NumberFormatException")
                 }
             }
+        }
 
-            test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
+        test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
+            with(TestApplicationEngine()) {
+                start()
+                application.routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                application.install(ContentNegotiation) {
+                    jackson {
+                        registerKotlinModule()
+                        registerModule(JavaTimeModule())
+                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    }
+                }
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")

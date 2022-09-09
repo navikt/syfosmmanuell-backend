@@ -10,7 +10,7 @@ kode: https://github.com/navikt/syfosmmanuell
 * Kotlin
 * Ktor
 * Gradle
-* Junit
+* Kotest
 * Jackson
 * Postgres
 * Docker

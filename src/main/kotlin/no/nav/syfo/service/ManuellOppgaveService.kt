@@ -105,9 +105,13 @@ class ManuellOppgaveService(
     }
 
     private fun incrementCounters(validationResult: ValidationResult, manuellOppgaveWithMerknad: ManuellOppgaveKomplett) {
-        validationResult.ruleHits.onEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
+        validationResult.ruleHits.forEach {
+            RULE_HIT_COUNTER.labels(it.ruleName).inc()
+        }
+        manuellOppgaveWithMerknad.receivedSykmelding.merknader?.forEach {
+            MERKNAD_COUNTER.labels(it.type).inc()
+        }
         RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
-        manuellOppgaveWithMerknad.receivedSykmelding.merknader?.onEach { MERKNAD_COUNTER.labels(it.type).inc() }
     }
 
     private suspend fun hentManuellOppgave(oppgaveId: Int, accessToken: String): ManuellOppgaveKomplett {

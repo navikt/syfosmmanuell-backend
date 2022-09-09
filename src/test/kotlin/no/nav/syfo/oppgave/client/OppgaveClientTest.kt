@@ -2,7 +2,7 @@ package no.nav.syfo.oppgave.client
 
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.cio.CIO
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.call
@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.test.assertFailsWith
 
 class OppgaveClientTest : FunSpec({
-    val httpClient = HttpClient(Apache) {
+    val httpClient = HttpClient(CIO) {
         config()
     }
     val azureAdV2Client = mockk<AzureAdV2Client>()
