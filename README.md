@@ -24,12 +24,16 @@ kode: https://github.com/navikt/syfosmmanuell
 This the high level flow for the application
 ```mermaid
   graph LR;
-        
+      A[\teamsykmelding.sykmelding-manuell/] --- syfosmmanuell-bakcend;  
       syfosmmanuell-bakcend --- syfosmmanuell;
       syfosmmanuell-bakcend -- check caseworker access --- syfo-tilgangskontroll;
       syfosmmanuell-bakcend -- create,get,complete oppgave --- oppgave;
       syfosmmanuell-bakcend -- verify token --- azure-AD;
       syfosmmanuell-bakcend --- id1[(Database)];
+      
+      syfosmmanuell-bakcend --- B[\teamsykmelding.sykmelding-apprec/]
+      syfosmmanuell-bakcend --- C[\teamsykmelding.ok-sykmelding/];
+      syfosmmanuell-bakcend --- D[\teamsykmelding.oppgave-produser-oppgave/];  
  
 ```
 
