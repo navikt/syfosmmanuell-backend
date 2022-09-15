@@ -63,7 +63,7 @@ class SykmeldingsApiTest : FunSpec({
         database.connection.dropData()
     }
 
-    context("Test av henting av manuelle oppgaver") {
+    context("Test av henting av manuelle oppgaver api") {
         with(TestApplicationEngine()) {
             start()
             application.routing { sykmeldingsApi(manuellOppgaveService) }
