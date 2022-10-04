@@ -38,6 +38,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
     .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
+val sikkerlogg = LoggerFactory.getLogger("securelog")
 
 @ExperimentalTime
 @DelicateCoroutinesApi

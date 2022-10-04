@@ -21,9 +21,10 @@ const val keyId = "localhost-signer"
 fun generateJWT(
     consumerClientId: String,
     audience: String,
+    customClaim: Claim? = Claim("fnr", "12313145"),
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1),
     subject: String = "subject",
-    issuer: String = "https://sts.issuer.net/myid"
+    issuer: String = "https://sts.issuer.net/myid",
 ): String? {
     val now = Date()
     val key = getDefaultRSAKey()
@@ -37,6 +38,7 @@ fun generateJWT(
         .withJWTId(UUID.randomUUID().toString())
         .withClaim("ver", "1.0")
         .withClaim("nonce", "myNonce")
+        .withClaim(customClaim!!.name, customClaim.value)
         .withClaim("auth_time", now)
         .withClaim("nbf", now)
         .withClaim("azp", consumerClientId)
@@ -59,4 +61,8 @@ private fun getJWKSet(): JWKSet {
     }
 }
 
+data class Claim(
+    val name: String,
+    val value: String
+)
 fun getFileAsString(filePath: String) = String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8)
