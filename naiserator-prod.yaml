@@ -70,6 +70,8 @@ spec:
   vault:
     enabled: false
   webproxy: false
+  secureLogs:
+    enabled: true
   ingresses:
     - "https://syfosmmanuell-backend.nav.no"
     - "https://syfosmmanuell-backend.intern.nav.no"

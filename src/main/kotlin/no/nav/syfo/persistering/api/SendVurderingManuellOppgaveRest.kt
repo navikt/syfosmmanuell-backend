@@ -12,6 +12,7 @@ import no.nav.syfo.log
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
+import no.nav.syfo.util.logNAVEpostFromTokenWhenNoAccessToSecureLogs
 
 fun Route.sendVurderingManuellOppgave(
     manuellOppgaveService: ManuellOppgaveService,
@@ -39,6 +40,7 @@ fun Route.sendVurderingManuellOppgave(
 
             when (hasAccess) {
                 false -> {
+                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/vurderingmanuelloppgave/{oppgaveid}")
                     call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
                 }
                 true -> {

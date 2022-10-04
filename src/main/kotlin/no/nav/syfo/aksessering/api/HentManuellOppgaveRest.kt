@@ -10,6 +10,7 @@ import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
+import no.nav.syfo.util.logNAVEpostFromTokenWhenNoAccessToSecureLogs
 
 fun Route.hentManuellOppgaver(
     manuellOppgaveService: ManuellOppgaveService,
@@ -30,6 +31,7 @@ fun Route.hentManuellOppgaver(
 
             when (hasAccess) {
                 false -> {
+                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/manuellOppgave/{oppgaveid}")
                     call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
                 }
                 true -> {
