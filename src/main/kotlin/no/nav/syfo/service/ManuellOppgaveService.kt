@@ -170,7 +170,8 @@ class ManuellOppgaveService(
             tekstTilSykmelder = "Sykmeldingen er til manuell vurdering for tilbakedatering",
             senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
             mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
-            validationResult = manuellOppgave.validationResult
+            validationResult = manuellOppgave.validationResult,
+            ebService = manuellOppgave.apprec.ebService
         )
 
     fun sendReceivedSykmelding(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
