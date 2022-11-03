@@ -21,7 +21,7 @@ data class Apprec(
     val senderOrganisasjon: Organisation,
     val mottakerOrganisasjon: Organisation,
     val validationResult: ValidationResult?,
-    val ebService: String?
+    val ebService: String? = null
 )
 
 data class Organisation(
