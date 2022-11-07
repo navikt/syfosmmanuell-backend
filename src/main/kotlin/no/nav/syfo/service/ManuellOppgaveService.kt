@@ -171,7 +171,11 @@ class ManuellOppgaveService(
             senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
             mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
             validationResult = manuellOppgave.validationResult,
-            ebService = manuellOppgave.apprec.ebService
+            ebService = if (manuellOppgave.apprec.ebService.isNullOrEmpty()) {
+                manuellOppgave.apprec.ebService
+            } else {
+                "Sykmelding"
+            }
         )
 
     fun sendReceivedSykmelding(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
