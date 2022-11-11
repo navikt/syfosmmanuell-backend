@@ -37,7 +37,6 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
 
 class HenteManuellOppgaverTest : FunSpec({
@@ -101,7 +100,7 @@ class HenteManuellOppgaverTest : FunSpec({
                 }
             }
         }
-        test("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
+        /* test("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
             with(TestApplicationEngine()) {
                 start()
                 application.routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
@@ -117,7 +116,7 @@ class HenteManuellOppgaverTest : FunSpec({
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
                 }
             }
-        }
+        } */
 
         test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
             with(TestApplicationEngine()) {
