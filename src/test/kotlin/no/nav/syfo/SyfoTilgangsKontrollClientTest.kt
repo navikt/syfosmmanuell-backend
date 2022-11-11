@@ -34,12 +34,11 @@ class SyfoTilgangsKontrollClientTest : FunSpec({
         )
     )
 
-    beforeTest {
-        clearMocks(environment, azureAdV2Client)
-        syfoTilgangsKontrollClient.syfoTilgangskontrollCache.invalidateAll()
-    }
-
     context("Tilgangskontroll-test") {
+        beforeTest {
+            clearMocks(environment, azureAdV2Client)
+            syfoTilgangsKontrollClient.syfoTilgangskontrollCache.invalidateAll()
+        }
         test("Skal returnere harTilgang = true") {
             httpClient.responseDataOboToken = ResponseData(
                 HttpStatusCode.OK,
@@ -61,6 +60,10 @@ class SyfoTilgangsKontrollClientTest : FunSpec({
     }
 
     context("Test av cache") {
+        beforeTest {
+            clearMocks(environment, azureAdV2Client)
+            syfoTilgangsKontrollClient.syfoTilgangskontrollCache.invalidateAll()
+        }
         test("Henter fra cache hvis kallet er cachet") {
             syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
             syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)

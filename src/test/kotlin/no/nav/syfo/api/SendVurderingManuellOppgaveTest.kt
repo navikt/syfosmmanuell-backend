@@ -73,15 +73,14 @@ class SendVurderingManuellOppgaveTest : FunSpec({
     val oppgaveService = mockk<OppgaveService>(relaxed = true)
     val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
 
-    beforeTest {
-        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
-    }
-
-    afterTest {
-        database.connection.dropData()
-    }
-
     context("Test av api for sending av vurdering") {
+        beforeTest {
+            clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+        }
+        afterTest {
+            database.connection.dropData()
+        }
+
         test("Skal returnere InternalServerError når oppdatering av manuelloppgave sitt ValidationResults feilet fordi oppgave ikke finnes") {
             with(TestApplicationEngine()) {
                 start()

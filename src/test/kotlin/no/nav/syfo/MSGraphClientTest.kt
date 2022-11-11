@@ -35,14 +35,13 @@ class MSGraphClientTest : FunSpec({
         )
     )
 
-    beforeTest {
-        clearMocks(environment, azureAdV2Client)
-        msGraphClient.subjectCache.invalidateAll()
-    }
-
     val accountName = "USERFOO123"
 
     context("Get subject test") {
+        beforeTest {
+            clearMocks(environment, azureAdV2Client)
+            msGraphClient.subjectCache.invalidateAll()
+        }
 
         test("Skal returnere subject") {
             httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
@@ -73,6 +72,10 @@ class MSGraphClientTest : FunSpec({
         }
     }
     context("Test av cache") {
+        beforeTest {
+            clearMocks(environment, azureAdV2Client)
+            msGraphClient.subjectCache.invalidateAll()
+        }
         test("Henter fra cache hvis kallet er cachet") {
             httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
             httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphResponse(accountName)))
