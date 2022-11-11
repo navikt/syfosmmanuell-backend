@@ -71,13 +71,14 @@ class AuthenticateTest : FunSpec({
     )
     val oppgaveid = 308076319
 
+    beforeTest {
+        database.connection.dropData()
+        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+        database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
+        coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
+    }
+
     context("Autentiseringstest for api") {
-        beforeTest {
-            database.connection.dropData()
-            clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
-            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
-            coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
-        }
         val config = Environment(
             syfosmmanuellUrl = "https://syfosmmanuell",
             syfotilgangskontrollScope = "scope",

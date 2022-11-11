@@ -45,13 +45,14 @@ class ManuellOppgaveServiceTest : FunSpec({
 
     val manuellOppgaveService = ManuellOppgaveService(database, syfotilgangskontrollClient, kafkaProducers, oppgaveService)
 
+    beforeTest {
+        database.connection.dropData()
+        database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
+        clearMocks(kafkaProducers, oppgaveService, syfotilgangskontrollClient)
+        coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
+    }
+
     context("Test av ferdigstilling av manuell behandling") {
-        beforeTest {
-            database.connection.dropData()
-            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
-            clearMocks(kafkaProducers, oppgaveService, syfotilgangskontrollClient)
-            coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
-        }
         test("Happy case OK") {
             manuellOppgaveService.ferdigstillManuellBehandling(
                 oppgaveid, "1234",

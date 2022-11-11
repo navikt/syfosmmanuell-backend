@@ -64,20 +64,20 @@ class MotattSykmeldingServiceTest : FunSpec({
     val oppgaveid = 308076319
     val loggingMeta = LoggingMeta("", null, msgId, sykmeldingsId)
 
+    beforeTest {
+        clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+        coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgaveid
+        coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
+        coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "apprectopic"
+        coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+    }
+
+    afterTest {
+        database.connection.dropData()
+    }
+
     context("Test av mottak av ny melding") {
-        beforeTest {
-            clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-            coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgaveid
-            coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
-            coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "apprectopic"
-            coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-            coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        }
-
-        afterTest {
-            database.connection.dropData()
-        }
-
         test("Happy-case") {
             mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 

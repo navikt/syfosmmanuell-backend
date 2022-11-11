@@ -63,20 +63,21 @@ class HenteManuellOppgaverTest : FunSpec({
     )
     val oppgaveid = 308076319
 
-    context("Test av henting av manuelle oppgaver") {
-        beforeTest {
-            clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
-            coEvery {
-                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                    any(),
-                    any()
-                )
-            } returns Tilgang(true)
-        }
+    beforeTest {
+        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+        coEvery {
+            syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                any(),
+                any()
+            )
+        } returns Tilgang(true)
+    }
 
-        afterTest {
-            database.connection.dropData()
-        }
+    afterTest {
+        database.connection.dropData()
+    }
+
+    context("Test av henting av manuelle oppgaver") {
 
         test("Skal hente ut manuell oppgave basert på oppgaveid") {
             with(TestApplicationEngine()) {

@@ -32,11 +32,11 @@ class OpprettManuellOppgaveTest : FunSpec({
         apprec = apprec
     )
 
-    context("Test av oppretting av manuelle oppgaver") {
-        afterTest {
-            database.connection.dropData()
-        }
+    afterTest {
+        database.connection.dropData()
+    }
 
+    context("Test av oppretting av manuelle oppgaver") {
         test("Skal lagre manuellOppgave i databasen og kunne hente den opp som forventet") {
             database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)
 

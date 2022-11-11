@@ -55,15 +55,15 @@ class SykmeldingsApiTest : FunSpec({
     )
     val oppgaveid = 308076319
 
+    beforeTest {
+        clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+    }
+
+    afterTest {
+        database.connection.dropData()
+    }
+
     context("Test av henting av manuelle oppgaver api") {
-        beforeTest {
-            clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-        }
-
-        afterTest {
-            database.connection.dropData()
-        }
-
         with(TestApplicationEngine()) {
             start()
             application.routing { sykmeldingsApi(manuellOppgaveService) }
