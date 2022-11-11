@@ -1,5 +1,6 @@
 package no.nav.syfo.api
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -11,6 +12,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
@@ -19,11 +22,13 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
+import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.Status
@@ -31,17 +36,20 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
+import no.nav.syfo.service.IkkeTilgangException
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
+import java.util.concurrent.ExecutionException
+import kotlin.test.assertFailsWith
 
 class HenteManuellOppgaverTest : FunSpec({
 
+    val applicationState = ApplicationState(alive = true, ready = true)
     val database = TestDB.database
     val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
     val msGraphClient = mockk<MSGraphClient>()
@@ -88,6 +96,29 @@ class HenteManuellOppgaverTest : FunSpec({
                         registerKotlinModule()
                         registerModule(JavaTimeModule())
                         configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    }
+                }
+                application.install(StatusPages) {
+                    exception<NumberFormatException> { call, cause ->
+                        call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<IkkeTilgangException> { call, cause ->
+                        call.respond(HttpStatusCode.Forbidden)
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<Throwable> { call, cause ->
+                        call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                        log.error("Caught exception", cause)
+                        if (cause is ExecutionException) {
+                            log.error("Exception is ExecutionException, restarting..")
+                            applicationState.ready = false
+                            applicationState.alive = false
+                        }
+                        throw cause
                     }
                 }
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
@@ -110,6 +141,29 @@ class HenteManuellOppgaverTest : FunSpec({
                         registerKotlinModule()
                         registerModule(JavaTimeModule())
                         configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    }
+                }
+                application.install(StatusPages) {
+                    exception<NumberFormatException> { call, cause ->
+                        call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<IkkeTilgangException> { call, cause ->
+                        call.respond(HttpStatusCode.Forbidden)
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<Throwable> { call, cause ->
+                        call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                        log.error("Caught exception", cause)
+                        if (cause is ExecutionException) {
+                            log.error("Exception is ExecutionException, restarting..")
+                            applicationState.ready = false
+                            applicationState.alive = false
+                        }
+                        throw cause
                     }
                 }
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
@@ -128,6 +182,29 @@ class HenteManuellOppgaverTest : FunSpec({
                         registerKotlinModule()
                         registerModule(JavaTimeModule())
                         configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    }
+                }
+                application.install(StatusPages) {
+                    exception<NumberFormatException> { call, cause ->
+                        call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<IkkeTilgangException> { call, cause ->
+                        call.respond(HttpStatusCode.Forbidden)
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<Throwable> { call, cause ->
+                        call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                        log.error("Caught exception", cause)
+                        if (cause is ExecutionException) {
+                            log.error("Exception is ExecutionException, restarting..")
+                            applicationState.ready = false
+                            applicationState.alive = false
+                        }
+                        throw cause
                     }
                 }
                 with(
