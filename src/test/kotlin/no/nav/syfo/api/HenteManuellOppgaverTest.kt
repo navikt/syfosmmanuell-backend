@@ -96,6 +96,29 @@ class HenteManuellOppgaverTest : FunSpec({
                         registerKotlinModule()
                         registerModule(JavaTimeModule())
                         configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    }
+                }
+                application.install(StatusPages) {
+                    exception<NumberFormatException> { call, cause ->
+                        call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<IkkeTilgangException> { call, cause ->
+                        call.respond(HttpStatusCode.Forbidden)
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<Throwable> { call, cause ->
+                        call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                        log.error("Caught exception", cause)
+                        if (cause is ExecutionException) {
+                            log.error("Exception is ExecutionException, restarting..")
+                            applicationState.ready = false
+                            applicationState.alive = false
+                        }
+                        throw cause
                     }
                 }
                 database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
@@ -159,6 +182,29 @@ class HenteManuellOppgaverTest : FunSpec({
                         registerKotlinModule()
                         registerModule(JavaTimeModule())
                         configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    }
+                }
+                application.install(StatusPages) {
+                    exception<NumberFormatException> { call, cause ->
+                        call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<IkkeTilgangException> { call, cause ->
+                        call.respond(HttpStatusCode.Forbidden)
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
+                    exception<Throwable> { call, cause ->
+                        call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+                        log.error("Caught exception", cause)
+                        if (cause is ExecutionException) {
+                            log.error("Exception is ExecutionException, restarting..")
+                            applicationState.ready = false
+                            applicationState.alive = false
+                        }
+                        throw cause
                     }
                 }
                 with(
