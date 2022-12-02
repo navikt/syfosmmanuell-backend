@@ -14,7 +14,7 @@ fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT *
+                SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE oppgaveid=?;
                 """
@@ -28,7 +28,7 @@ fun DatabaseInterface.finnesSykmelding(id: String) =
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT *
+                SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE id=?;
                 """
@@ -42,7 +42,7 @@ fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT *
+                SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE oppgaveid=?
                 AND sendt_apprec=?;

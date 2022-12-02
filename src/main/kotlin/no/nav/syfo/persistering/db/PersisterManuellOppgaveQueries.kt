@@ -45,7 +45,7 @@ fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
     connection.use { connection ->
         connection.prepareStatement(
             """
-                SELECT *
+                SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE id=?;
                 """
