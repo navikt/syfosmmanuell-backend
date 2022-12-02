@@ -3,7 +3,7 @@
 # SYFO Manuell Backend
 
 This project contains the backend for handling manual sykmelding, front end
-kode: https://github.com/navikt/syfosmmanuell
+code: https://github.com/navikt/syfosmmanuell
 
 ## Technologies used
 
