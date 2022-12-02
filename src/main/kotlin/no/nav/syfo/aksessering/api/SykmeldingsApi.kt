@@ -20,13 +20,10 @@ fun Route.sykmeldingsApi(
 
             val finnesSykmelding = manuellOppgaveService.finnesSykmelding(sykmeldingsId)
 
-            if (finnesSykmelding) {
-                call.respond(HttpStatusCode.OK)
-            } else {
-                call.respond(HttpStatusCode.NotFound)
+            when (finnesSykmelding) {
+                true -> call.respond(HttpStatusCode.OK)
+                else -> call.respond(HttpStatusCode.NotFound)
             }
-
-            return@get
         }
     }
 }
