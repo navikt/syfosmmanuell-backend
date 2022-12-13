@@ -25,7 +25,7 @@ import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.okApprec
 import no.nav.syfo.testutil.opprettManuellOppgaveUtenOpprinneligValidationResult
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
@@ -64,12 +64,12 @@ class ManuellOppgaveServiceTest : FunSpec({
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-            oppgaveliste.size shouldBeEqualTo 1
+            assertEquals(1, oppgaveliste.size)
             val oppgaveFraDb = oppgaveliste.first()
-            oppgaveFraDb.ferdigstilt shouldBeEqualTo true
-            oppgaveFraDb.opprinneligValidationResult shouldBeEqualTo manuellOppgave.validationResult
-            oppgaveFraDb.validationResult shouldBeEqualTo ValidationResult(Status.OK, emptyList())
-            oppgaveFraDb.apprec shouldBeEqualTo okApprec()
+            assertEquals(true, oppgaveFraDb.ferdigstilt)
+            assertEquals(manuellOppgave.validationResult, oppgaveFraDb.opprinneligValidationResult)
+            assertEquals(ValidationResult(Status.OK, emptyList()), oppgaveFraDb.validationResult)
+            assertEquals(okApprec(), oppgaveFraDb.apprec)
         }
         test("Happy case OK med merknad") {
             val merknader = listOf(Merknad("UGYLDIG_TILBAKEDATERING", "ikke godkjent"))
@@ -86,13 +86,13 @@ class ManuellOppgaveServiceTest : FunSpec({
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             coVerify { oppgaveService.opprettOppfoligingsOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-            oppgaveliste.size shouldBeEqualTo 1
+            assertEquals(1, oppgaveliste.size)
             val oppgaveFraDb = oppgaveliste.first()
-            oppgaveFraDb.ferdigstilt shouldBeEqualTo true
-            oppgaveFraDb.opprinneligValidationResult shouldBeEqualTo manuellOppgave.validationResult
-            oppgaveFraDb.validationResult shouldBeEqualTo ValidationResult(Status.OK, emptyList())
-            oppgaveFraDb.receivedSykmelding.merknader shouldBeEqualTo merknader
-            oppgaveFraDb.apprec shouldBeEqualTo okApprec()
+            assertEquals(true, oppgaveFraDb.ferdigstilt)
+            assertEquals(manuellOppgave.validationResult, oppgaveFraDb.opprinneligValidationResult)
+            assertEquals(ValidationResult(Status.OK, emptyList()), oppgaveFraDb.validationResult)
+            assertEquals(merknader, oppgaveFraDb.receivedSykmelding.merknader)
+            assertEquals(okApprec(), oppgaveFraDb.apprec)
         }
         test("Feiler hvis veileder ikke har tilgang til oppgave") {
             coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(false)
@@ -140,19 +140,19 @@ class ManuellOppgaveServiceTest : FunSpec({
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveId2)
-            oppgaveliste.size shouldBeEqualTo 1
+            assertEquals(1, oppgaveliste.size)
             val oppgaveFraDb = oppgaveliste.first()
-            oppgaveFraDb.ferdigstilt shouldBeEqualTo true
-            oppgaveFraDb.opprinneligValidationResult shouldBeEqualTo manuellOppgave.validationResult
-            oppgaveFraDb.validationResult shouldBeEqualTo ValidationResult(Status.OK, emptyList())
-            oppgaveFraDb.apprec shouldBeEqualTo okApprec()
-            database.erApprecSendt(oppgaveId2) shouldBeEqualTo true
+            assertEquals(true, oppgaveFraDb.ferdigstilt)
+            assertEquals(manuellOppgave.validationResult, oppgaveFraDb.opprinneligValidationResult)
+            assertEquals(ValidationResult(Status.OK, emptyList()), oppgaveFraDb.validationResult)
+            assertEquals(oppgaveFraDb.apprec, okApprec())
+            assertEquals(true, database.erApprecSendt(oppgaveId2))
         }
         test("Sletter manuell oppgave og ferdigstiller åpen oppgave") {
             manuellOppgaveService.slettOppgave(sykmeldingsId)
 
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-            oppgaveliste.size shouldBeEqualTo 0
+            assertEquals(0, oppgaveliste.size)
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), matchNullable { it == null }, matchNullable { it == null }) }
         }
         test("Sletter manuell oppgave og ferdigstiller ikke ferdigstilt oppgave") {
@@ -167,7 +167,7 @@ class ManuellOppgaveServiceTest : FunSpec({
             manuellOppgaveService.slettOppgave(sykmeldingsId)
 
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-            oppgaveliste.size shouldBeEqualTo 0
+            assertEquals(0, oppgaveliste.size)
             coVerify { oppgaveService.ferdigstillOppgave(any(), any(), eq("1234"), eq("4321")) }
             coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), matchNullable { it == null }, matchNullable { it == null }) }
         }
@@ -175,7 +175,7 @@ class ManuellOppgaveServiceTest : FunSpec({
             manuellOppgaveService.slettOppgave(UUID.randomUUID().toString())
 
             val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
-            oppgaveliste.size shouldBeEqualTo 1
+            assertEquals(1, oppgaveliste.size)
             coVerify(exactly = 0) { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
         }
     }

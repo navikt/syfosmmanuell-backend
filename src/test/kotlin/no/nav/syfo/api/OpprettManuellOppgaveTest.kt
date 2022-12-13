@@ -14,14 +14,14 @@ import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 
 class OpprettManuellOppgaveTest : FunSpec({
     val database = TestDB.database
     val manuelloppgaveId = "1314"
     val receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding())
     val apprec: Apprec = objectMapper.readValue(
-        Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+        Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
             Charsets.UTF_8
         )
     )
@@ -42,16 +42,16 @@ class OpprettManuellOppgaveTest : FunSpec({
 
             val oppgaveliste = database.hentKomplettManuellOppgave(123144)
 
-            oppgaveliste.size shouldBeEqualTo 1
-            oppgaveliste[0].apprec shouldBeEqualTo apprec
-            oppgaveliste[0].receivedSykmelding shouldBeEqualTo receivedSykmelding
-            oppgaveliste[0].validationResult shouldBeEqualTo validationResult
-            oppgaveliste[0].sendtApprec shouldBeEqualTo false
+            assertEquals(1, oppgaveliste.size)
+            assertEquals(apprec, oppgaveliste[0].apprec)
+            assertEquals(receivedSykmelding, oppgaveliste[0].receivedSykmelding)
+            assertEquals(validationResult, oppgaveliste[0].validationResult)
+            assertEquals(false, oppgaveliste[0].sendtApprec)
         }
         test("Hvis oppgave er lagret for sykmeldingsid skal erOpprettManuellOppgave returnere true") {
             database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)
 
-            database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id) shouldBeEqualTo true
+            assertEquals(true, database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id))
         }
     }
 })

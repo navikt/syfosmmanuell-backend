@@ -26,9 +26,9 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import no.nav.syfo.util.LoggingMeta
-import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.RecordMetadata
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
@@ -56,7 +56,7 @@ class MotattSykmeldingServiceTest : FunSpec({
         receivedSykmelding = receivedSykmelding(msgId, generateSykmelding(id = sykmeldingsId)),
         validationResult = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))),
         apprec = objectMapper.readValue(
-            Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+            Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
                 Charsets.UTF_8
             )
         )
@@ -81,20 +81,20 @@ class MotattSykmeldingServiceTest : FunSpec({
         test("Happy-case") {
             mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
-            database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
+            assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
             coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
         }
 
         test("Apprec oppdateres") {
-            database.erApprecSendt(oppgaveid) shouldBeEqualTo false
+            assertEquals(false, database.erApprecSendt(oppgaveid))
 
             mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
             val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
-            hentKomplettManuellOppgave.first().sendtApprec shouldBeEqualTo true
-            database.erApprecSendt(oppgaveid) shouldBeEqualTo true
+            assertEquals(true, hentKomplettManuellOppgave.first().sendtApprec)
+            assertEquals(true, database.erApprecSendt(oppgaveid))
 
             coVerify { oppgaveService.opprettOppgave(any(), any()) }
         }
@@ -103,14 +103,14 @@ class MotattSykmeldingServiceTest : FunSpec({
             mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
             val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
-            komplettManuellOppgave.opprinneligValidationResult shouldBeEqualTo komplettManuellOppgave.validationResult
+            assertEquals(komplettManuellOppgave.validationResult, komplettManuellOppgave.opprinneligValidationResult)
         }
 
         test("Lagrer ikke melding som allerede finnes") {
             mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
             mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
-            database.hentKomplettManuellOppgave(oppgaveid).size shouldBeEqualTo 1
+            assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
             coVerify(exactly = 1) { oppgaveService.opprettOppgave(any(), any()) }
         }
         test("Kaster feil hvis opprettOppgave feilet") {
@@ -120,7 +120,7 @@ class MotattSykmeldingServiceTest : FunSpec({
                     mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
                 }
             }
-            database.erOpprettManuellOppgave(sykmeldingsId) shouldBeEqualTo false
+            assertEquals(false, database.erOpprettManuellOppgave(sykmeldingsId))
             coVerify(exactly = 0) { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
         }
     }

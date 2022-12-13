@@ -15,7 +15,7 @@ import no.nav.syfo.client.GraphResponse
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.testutil.HttpClientTest
 import no.nav.syfo.testutil.ResponseData
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 import kotlin.test.assertFailsWith
 
 class MSGraphClientTest : FunSpec({
@@ -49,7 +49,8 @@ class MSGraphClientTest : FunSpec({
             httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(GraphResponse(accountName)))
 
             val subjectFromMsGraph = msGraphClient.getSubjectFromMsGraph("usertoken")
-            subjectFromMsGraph shouldBeEqualTo accountName
+
+            assertEquals(accountName, subjectFromMsGraph)
         }
         test("Skal kaste RuntimeException hvis MS Graph API returnerer noe annet enn et gyldig GraphResponse") {
             httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))

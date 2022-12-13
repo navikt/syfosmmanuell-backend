@@ -11,7 +11,7 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.api.registerNaisApi
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 
 class CORSTest : FunSpec({
 
@@ -29,9 +29,9 @@ class CORSTest : FunSpec({
 
             test("No origin header") {
                 with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo null
-                    response.content shouldBeEqualTo "I'm alive! :)"
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals(null, response.headers[HttpHeaders.AccessControlAllowOrigin])
+                    assertEquals("I'm alive! :)", response.content)
                 }
             }
             test("Wrong origin header") {
@@ -40,9 +40,9 @@ class CORSTest : FunSpec({
                         addHeader(HttpHeaders.Origin, "invalid-host")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo null
-                    response.content shouldBeEqualTo "I'm ready! :)"
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals(null, response.headers[HttpHeaders.AccessControlAllowOrigin])
+                    assertEquals("I'm ready! :)", response.content)
                 }
             }
             test("Wrong origin header is empty") {
@@ -51,9 +51,9 @@ class CORSTest : FunSpec({
                         addHeader(HttpHeaders.Origin, "")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo null
-                    response.content shouldBeEqualTo "I'm ready! :)"
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals(null, response.headers[HttpHeaders.AccessControlAllowOrigin])
+                    assertEquals("I'm ready! :)", response.content)
                 }
             }
             test("Simple credentials") {
@@ -63,10 +63,10 @@ class CORSTest : FunSpec({
                         addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo "https://syfosmmanuell.nais.preprod.local"
-                    response.headers[HttpHeaders.Vary] shouldBeEqualTo HttpHeaders.Origin
-                    response.headers[HttpHeaders.AccessControlAllowCredentials] shouldBeEqualTo "true"
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals("https://syfosmmanuell.nais.preprod.local", response.headers[HttpHeaders.AccessControlAllowOrigin])
+                    assertEquals(HttpHeaders.Origin, response.headers[HttpHeaders.Vary])
+                    assertEquals("true", response.headers[HttpHeaders.AccessControlAllowCredentials])
                 }
             }
         }
@@ -89,9 +89,9 @@ class CORSTest : FunSpec({
                         addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo "https://syfosmmanuell.nais.preprod.local"
-                    response.content shouldBeEqualTo "I'm ready! :)"
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals("https://syfosmmanuell.nais.preprod.local", response.headers[HttpHeaders.AccessControlAllowOrigin])
+                    assertEquals("I'm ready! :)", response.content)
                 }
             }
         }
@@ -111,9 +111,9 @@ class CORSTest : FunSpec({
                         addHeader(HttpHeaders.Origin, "null")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo "*"
-                    response.content shouldBeEqualTo "I'm ready! :)"
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals("*", response.headers[HttpHeaders.AccessControlAllowOrigin])
+                    assertEquals("I'm ready! :)", response.content)
                 }
             }
         }
@@ -135,10 +135,10 @@ class CORSTest : FunSpec({
                         addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    response.headers[HttpHeaders.AccessControlAllowOrigin] shouldBeEqualTo "https://syfosmmanuell.nais.preprod.local"
-                    response.headers[HttpHeaders.AccessControlAllowHeaders] shouldBeEqualTo "Content-Type"
-                    response.headers[HttpHeaders.Vary] shouldBeEqualTo HttpHeaders.Origin
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals("https://syfosmmanuell.nais.preprod.local", response.headers[HttpHeaders.AccessControlAllowOrigin])
+                    assertEquals("Content-Type", response.headers[HttpHeaders.AccessControlAllowHeaders])
+                    assertEquals(HttpHeaders.Origin, response.headers[HttpHeaders.Vary])
                 }
             }
         }

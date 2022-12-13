@@ -13,7 +13,7 @@ import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.testutil.HttpClientTest
 import no.nav.syfo.testutil.ResponseData
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 
 class SyfoTilgangsKontrollClientTest : FunSpec({
 
@@ -49,14 +49,16 @@ class SyfoTilgangsKontrollClientTest : FunSpec({
                 ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(true)))
 
             val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
-            tilgang.harTilgang shouldBeEqualTo true
+
+            assertEquals(true, tilgang.harTilgang)
         }
         test("Skal returnere harTilgang = false hvis syfotilgangskontroll svarer med feilmelding") {
             httpClient.responseDataOboToken = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(AzureAdV2TokenResponse("token", 1000000, "token_type")))
             httpClient.responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(false)))
 
             val tilgang = syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure("sdfsdfsfs", pasientFnr)
-            tilgang.harTilgang shouldBeEqualTo false
+
+            assertEquals(false, tilgang.harTilgang)
         }
     }
 

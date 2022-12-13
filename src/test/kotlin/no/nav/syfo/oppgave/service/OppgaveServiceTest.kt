@@ -13,8 +13,7 @@ import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.testutil.generatePeriode
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldNotBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.time.LocalDate
 
 class OppgaveServiceTest : FunSpec({
@@ -35,7 +34,7 @@ class OppgaveServiceTest : FunSpec({
         )
     )
     val apprec: Apprec = objectMapper.readValue(
-        Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(Charsets.UTF_8)
+        Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(Charsets.UTF_8)
     )
     val validationResult = ValidationResult(Status.OK, emptyList())
     val manuellOppgave = ManuellOppgave(
@@ -48,16 +47,16 @@ class OppgaveServiceTest : FunSpec({
         test("Oppgave opprettes med riktige parametre") {
             val opprettOppgave = oppgaveService.tilOpprettOppgave(manuellOppgave)
 
-            opprettOppgave.aktoerId shouldBeEqualTo "5555"
-            opprettOppgave.opprettetAvEnhetsnr shouldBeEqualTo "9999"
-            opprettOppgave.behandlesAvApplikasjon shouldBeEqualTo "SMM"
-            opprettOppgave.beskrivelse shouldBeEqualTo "Manuell vurdering av sykmelding for periode: 01.08.2020 - 15.08.2020"
-            opprettOppgave.tema shouldBeEqualTo "SYM"
-            opprettOppgave.oppgavetype shouldBeEqualTo "BEH_EL_SYM"
-            opprettOppgave.behandlingstype shouldBeEqualTo "ae0239"
-            opprettOppgave.aktivDato shouldBeEqualTo LocalDate.now()
-            opprettOppgave.fristFerdigstillelse shouldNotBeEqualTo null
-            opprettOppgave.prioritet shouldBeEqualTo "HOY"
+            assertEquals("5555", opprettOppgave.aktoerId)
+            assertEquals("9999", opprettOppgave.opprettetAvEnhetsnr)
+            assertEquals("SMM", opprettOppgave.behandlesAvApplikasjon)
+            assertEquals("Manuell vurdering av sykmelding for periode: 01.08.2020 - 15.08.2020", opprettOppgave.beskrivelse)
+            assertEquals("SYM", opprettOppgave.tema)
+            assertEquals("BEH_EL_SYM", opprettOppgave.oppgavetype)
+            assertEquals("ae0239", opprettOppgave.behandlingstype)
+            assertEquals(LocalDate.now(), opprettOppgave.aktivDato)
+            assertEquals(LocalDate.now().plusDays(3), opprettOppgave.fristFerdigstillelse)
+            assertEquals("HOY", opprettOppgave.prioritet)
         }
     }
 
@@ -65,37 +64,37 @@ class OppgaveServiceTest : FunSpec({
         test("Frist blir torsdag hvis oppgaven opprettes på mandag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 7))
 
-            frist shouldBeEqualTo LocalDate.of(2020, 9, 10)
+            assertEquals(LocalDate.of(2020, 9, 10), frist)
         }
         test("Frist blir fredag hvis oppgaven opprettes på tirsdag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 8))
 
-            frist shouldBeEqualTo LocalDate.of(2020, 9, 11)
+            assertEquals(LocalDate.of(2020, 9, 11), frist)
         }
         test("Frist blir mandag hvis oppgaven opprettes på onsdag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 9))
 
-            frist shouldBeEqualTo LocalDate.of(2020, 9, 14)
+            assertEquals(LocalDate.of(2020, 9, 14), frist)
         }
         test("Frist blir tirsdag hvis oppgaven opprettes på torsdag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 10))
 
-            frist shouldBeEqualTo LocalDate.of(2020, 9, 15)
+            assertEquals(LocalDate.of(2020, 9, 15), frist)
         }
         test("Frist blir onsdag hvis oppgaven opprettes på fredag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 11))
 
-            frist shouldBeEqualTo LocalDate.of(2020, 9, 16)
+            assertEquals(LocalDate.of(2020, 9, 16), frist)
         }
         test("Frist blir torsdag hvis oppgaven opprettes på lørdag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 12))
 
-            frist shouldBeEqualTo LocalDate.of(2020, 9, 17)
+            assertEquals(LocalDate.of(2020, 9, 17), frist)
         }
         test("Frist blir torsdag hvis oppgaven opprettes på søndag") {
             val frist = oppgaveService.omTreUkedager(LocalDate.of(2020, 9, 13))
 
-            frist shouldBeEqualTo LocalDate.of(2020, 9, 17)
+            assertEquals(LocalDate.of(2020, 9, 17), frist)
         }
     }
 })

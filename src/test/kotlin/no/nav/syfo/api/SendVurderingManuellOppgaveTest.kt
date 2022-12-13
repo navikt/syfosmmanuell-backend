@@ -46,8 +46,8 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.RecordMetadata
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 
@@ -58,7 +58,7 @@ val manuellOppgave = ManuellOppgave(
     receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
     validationResult = ValidationResult(Status.OK, emptyList()),
     apprec = objectMapper.readValue(
-        Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+        Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
             Charsets.UTF_8
         )
     )
@@ -119,7 +119,7 @@ class SendVurderingManuellOppgaveTest : FunSpec({
                         setBody(objectMapper.writeValueAsString(result))
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                    assertEquals(HttpStatusCode.NotFound, response.status())
                 }
             }
         }
@@ -161,7 +161,7 @@ class SendVurderingManuellOppgaveTest : FunSpec({
             val result = Result(status = ResultStatus.GODKJENT, merknad = null)
             val merknader = result.toMerknad()
 
-            merknader shouldBeEqualTo null
+            assertEquals(null, merknader)
         }
 
         test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
@@ -169,9 +169,12 @@ class SendVurderingManuellOppgaveTest : FunSpec({
                 Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.UGYLDIG_TILBAKEDATERING)
             val merknad = result.toMerknad()
 
-            merknad shouldBeEqualTo Merknad(
-                type = "UGYLDIG_TILBAKEDATERING",
-                beskrivelse = null
+            assertEquals(
+                Merknad(
+                    type = "UGYLDIG_TILBAKEDATERING",
+                    beskrivelse = null
+                ),
+                merknad
             )
         }
 
@@ -182,9 +185,12 @@ class SendVurderingManuellOppgaveTest : FunSpec({
             )
             val merknad = result.toMerknad()
 
-            merknad shouldBeEqualTo Merknad(
-                type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER",
-                beskrivelse = null
+            assertEquals(
+                Merknad(
+                    type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER",
+                    beskrivelse = null
+                ),
+                merknad
             )
         }
 
@@ -206,7 +212,7 @@ fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode
             setBody(objectMapper.writeValueAsString(result))
         }
     ) {
-        response.status() shouldBeEqualTo statusCode
+        assertEquals(statusCode, response.status())
     }
 }
 

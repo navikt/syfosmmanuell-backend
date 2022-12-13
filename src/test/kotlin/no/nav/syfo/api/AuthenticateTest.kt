@@ -44,7 +44,7 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.nio.file.Paths
 
 class AuthenticateTest : FunSpec({
@@ -127,8 +127,8 @@ class AuthenticateTest : FunSpec({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldBeEqualTo oppgaveid
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals(oppgaveid, objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid)
                 }
             }
             test("Gyldig JWT med feil audience gir Unauthorized") {
@@ -137,8 +137,8 @@ class AuthenticateTest : FunSpec({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                    response.content shouldBeEqualTo null
+                    assertEquals(HttpStatusCode.Unauthorized, response.status())
+                    assertEquals(null, response.content)
                 }
             }
         }

@@ -32,7 +32,7 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.util.UUID
 
 class SykmeldingsApiTest : FunSpec({
@@ -48,7 +48,7 @@ class SykmeldingsApiTest : FunSpec({
         receivedSykmelding = receivedSykmelding(sykmeldingsId, generateSykmelding(sykmeldingsId)),
         validationResult = ValidationResult(Status.OK, emptyList()),
         apprec = objectMapper.readValue(
-            Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+            Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
                 Charsets.UTF_8
             )
         )
@@ -82,7 +82,7 @@ class SykmeldingsApiTest : FunSpec({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    assertEquals(HttpStatusCode.OK, response.status())
                 }
             }
             test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
@@ -91,7 +91,7 @@ class SykmeldingsApiTest : FunSpec({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                    assertEquals(HttpStatusCode.NotFound, response.status())
                 }
             }
         }

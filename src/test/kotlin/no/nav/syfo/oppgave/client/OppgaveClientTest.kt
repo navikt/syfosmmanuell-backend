@@ -25,7 +25,7 @@ import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
 import no.nav.syfo.oppgave.OpprettOppgaveResponse
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.net.ServerSocket
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
@@ -93,8 +93,8 @@ class OppgaveClientTest : FunSpec({
         test("Oppretter oppgave") {
             val opprettOppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, "123")
 
-            opprettOppgaveResponse.id shouldBeEqualTo 1
-            opprettOppgaveResponse.versjon shouldBeEqualTo 1
+            assertEquals(1, opprettOppgaveResponse.id)
+            assertEquals(1, opprettOppgaveResponse.versjon)
         }
         test("Kaster feil hvis oppretting feiler") {
             assertFailsWith<RuntimeException> {
@@ -119,8 +119,8 @@ class OppgaveClientTest : FunSpec({
                 "123"
             )
 
-            opprettOppgaveResponse.id shouldBeEqualTo 2
-            opprettOppgaveResponse.versjon shouldBeEqualTo 2
+            assertEquals(2, opprettOppgaveResponse.id)
+            assertEquals(2, opprettOppgaveResponse.versjon)
         }
         test("Kaster feil hvis ferdigstilling feiler") {
             assertFailsWith<RuntimeException> {
@@ -135,8 +135,8 @@ class OppgaveClientTest : FunSpec({
         test("Henter oppgave") {
             val opprettOppgaveResponse = oppgaveClient.hentOppgave(4, "123")
 
-            opprettOppgaveResponse.id shouldBeEqualTo 4
-            opprettOppgaveResponse.versjon shouldBeEqualTo 1
+            assertEquals(4, opprettOppgaveResponse.id)
+            assertEquals(1, opprettOppgaveResponse.versjon)
         }
         test("Kaster feil hvis henting feiler") {
             assertFailsWith<RuntimeException> {

@@ -77,7 +77,7 @@ Alternatively, the variables can be configured via environment variables:
 
 or the command line:
 
-```
+``` bash
 ./gradlew -PgithubUser=x-access-token -PgithubPassword=[token]
 ```
 
@@ -85,7 +85,11 @@ or the command line:
 
 #### Compile and package application
 
-To build locally and run the integration tests you can simply run `./gradlew shadowJar` or on windows
+To build locally and run the integration tests you can simply run
+``` bash 
+./gradlew shadowJar
+ ```
+or on windows
 `gradlew.bat shadowJar`
 
 #### Creating a docker image
@@ -94,7 +98,9 @@ Creating a docker image should be as simple as `docker build -t syfosmmanuell-ba
 
 #### Running a docker image
 
-`docker run --rm -it -p 8080:8080 syfosmmanuell-backend`
+``` bash
+docker run --rm -it -p 8080:8080 syfosmmanuell-backend
+```
 
 ### Access to the Postgres database
 
@@ -104,14 +110,15 @@ For information on connecting to dev og prod database see: [Postgres GCP](https:
 
 Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
 
-```./gradlew wrapper --gradle-version $gradleVersjon```
+``` bash
+./gradlew wrapper --gradle-version $gradleVersjon
+```
 
 ### Contact
 
 This project is maintained by navikt/teamsykmelding
 
-Questions and/or feature requests? Please create an [issue](https://github.com/navikt/syfosmmanuell-backend/issues).
+Questions and/or feature requests? Please create an [issue](https://github.com/navikt/syfosmmanuell-backend/issues)
 
 If you work in [@navikt](https://github.com/navikt) you can reach us at the Slack
-channel [#team-sykmelding](https://nav-it.slack.com/archives/CMA3XV997).
-
+channel [#team-sykmelding](https://nav-it.slack.com/archives/CMA3XV997)

@@ -1,7 +1,7 @@
 package no.nav.syfo.metrics
 
 import io.kotest.core.spec.style.FunSpec
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 
 class HttpRequestMonitorInterceptorKtTest : FunSpec({
     context("Regex for metrikker") {
@@ -10,7 +10,7 @@ class HttpRequestMonitorInterceptorKtTest : FunSpec({
 
             val oppdatertPath = REGEX.replace(path, ":oppgaveId")
 
-            oppdatertPath shouldBeEqualTo "/manuellOppgave/:oppgaveId"
+            assertEquals("/manuellOppgave/:oppgaveId", oppdatertPath)
         }
     }
 })

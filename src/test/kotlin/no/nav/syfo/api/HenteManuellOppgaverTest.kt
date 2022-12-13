@@ -43,7 +43,7 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.util.concurrent.ExecutionException
 import kotlin.test.assertFailsWith
 
@@ -64,7 +64,7 @@ class HenteManuellOppgaverTest : FunSpec({
         receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
         validationResult = ValidationResult(Status.OK, emptyList()),
         apprec = objectMapper.readValue(
-            Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
+            Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
                 Charsets.UTF_8
             )
         )
@@ -127,8 +127,8 @@ class HenteManuellOppgaverTest : FunSpec({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid shouldBeEqualTo oppgaveid
+                    assertEquals(HttpStatusCode.OK, response.status())
+                    assertEquals(oppgaveid, objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid)
                 }
             }
         }
@@ -212,7 +212,7 @@ class HenteManuellOppgaverTest : FunSpec({
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                     }
                 ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                    assertEquals(HttpStatusCode.NotFound, response.status())
                 }
             }
         }
