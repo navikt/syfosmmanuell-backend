@@ -26,6 +26,8 @@ val caffeineVersion = "3.1.1"
 val testContainerVersion = "1.17.6"
 val kotlinVersion = "1.7.22"
 val kafkaVersion = "3.3.1"
+val nettyCodecVersion = "4.1.86.Final"
+
 
 plugins {
     kotlin("jvm") version "1.7.22"
@@ -55,6 +57,9 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    //This is to override version that is in io.ktor:ktor-server-netty
+    //https://www.cve.org/CVERecord?id=CVE-2022-41915
+    implementation("io.netty:netty-codec:$nettyCodecVersion")
 
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
