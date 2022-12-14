@@ -55,7 +55,7 @@ class OppgaveServiceTest : FunSpec({
             assertEquals("BEH_EL_SYM", opprettOppgave.oppgavetype)
             assertEquals("ae0239", opprettOppgave.behandlingstype)
             assertEquals(LocalDate.now(), opprettOppgave.aktivDato)
-            assertEquals(LocalDate.now().plusDays(3), opprettOppgave.fristFerdigstillelse)
+            assertEquals(oppgaveService.omTreUkedager(LocalDate.now()), opprettOppgave.fristFerdigstillelse)
             assertEquals("HOY", opprettOppgave.prioritet)
         }
     }
