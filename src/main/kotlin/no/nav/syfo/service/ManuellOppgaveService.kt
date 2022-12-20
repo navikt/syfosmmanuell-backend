@@ -1,5 +1,7 @@
 package no.nav.syfo.service
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.finnesOppgave
@@ -44,7 +46,7 @@ class ManuellOppgaveService(
     fun finnesOppgave(oppgaveId: Int): Boolean =
         database.finnesOppgave(oppgaveId)
 
-    fun finnesSykmelding(sykmeldingId: String): Boolean =
+    suspend fun finnesSykmelding(sykmeldingId: String): Boolean =
         database.finnesSykmelding(sykmeldingId)
 
     fun erApprecSendt(oppgaveId: Int): Boolean =

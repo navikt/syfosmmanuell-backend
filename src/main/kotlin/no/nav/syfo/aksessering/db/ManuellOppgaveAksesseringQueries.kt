@@ -9,6 +9,8 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import java.sql.ResultSet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
     connection.use { connection ->
@@ -24,7 +26,8 @@ fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
         }
     }
 
-fun DatabaseInterface.finnesSykmelding(id: String) =
+suspend fun DatabaseInterface.finnesSykmelding(id: String) =
+    withContext(Dispatchers.IO){
     connection.use { connection ->
         connection.prepareStatement(
             """
@@ -36,6 +39,7 @@ fun DatabaseInterface.finnesSykmelding(id: String) =
             it.setString(1, id)
             it.executeQuery().next()
         }
+    }
     }
 
 fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
