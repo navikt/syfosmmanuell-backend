@@ -39,7 +39,10 @@ fun createApplicationEngine(
     issuer: String,
     authorizationService: AuthorizationService
 ): ApplicationEngine =
-    embeddedServer(Netty, env.applicationPort) {
+    embeddedServer(Netty, env.applicationPort, configure = {
+        // Increase timeout of Netty to handle large content bodies
+        responseWriteTimeoutSeconds = 40
+    }) {
         setupAuth(env, jwkProvider, issuer)
         install(ContentNegotiation) {
             jackson {

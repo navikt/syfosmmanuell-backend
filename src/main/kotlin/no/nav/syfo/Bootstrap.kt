@@ -62,12 +62,14 @@ fun main() {
     val manuellOppgaveService = ManuellOppgaveService(
         database,
         httpClients.syfoTilgangsKontrollClient,
-        kafkaProducers, oppgaveService
+        kafkaProducers,
+        oppgaveService
     )
 
     val authorizationService = AuthorizationService(
         httpClients.syfoTilgangsKontrollClient,
-        httpClients.msGraphClient, database
+        httpClients.msGraphClient,
+        database
     )
 
     val applicationEngine = createApplicationEngine(
@@ -107,7 +109,8 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         } catch (e: TrackableException) {
             log.error(
                 "En uhåndtert feil oppstod, applikasjonen restarter {}",
-                fields(e.loggingMeta), e.cause
+                fields(e.loggingMeta),
+                e.cause
             )
         } finally {
             applicationState.alive = false
