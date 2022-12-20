@@ -1,6 +1,8 @@
 package no.nav.syfo.aksessering.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
@@ -24,17 +26,19 @@ fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
         }
     }
 
-fun DatabaseInterface.finnesSykmelding(id: String) =
-    connection.use { connection ->
-        connection.prepareStatement(
-            """
+suspend fun DatabaseInterface.finnesSykmelding(id: String) =
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection.prepareStatement(
+                """
                 SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE id=?;
                 """
-        ).use {
-            it.setString(1, id)
-            it.executeQuery().next()
+            ).use {
+                it.setString(1, id)
+                it.executeQuery().next()
+            }
         }
     }
 

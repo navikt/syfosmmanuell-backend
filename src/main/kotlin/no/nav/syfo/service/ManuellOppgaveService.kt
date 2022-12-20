@@ -44,7 +44,7 @@ class ManuellOppgaveService(
     fun finnesOppgave(oppgaveId: Int): Boolean =
         database.finnesOppgave(oppgaveId)
 
-    fun finnesSykmelding(sykmeldingId: String): Boolean =
+    suspend fun finnesSykmelding(sykmeldingId: String): Boolean =
         database.finnesSykmelding(sykmeldingId)
 
     fun erApprecSendt(oppgaveId: Int): Boolean =

@@ -57,9 +57,6 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        - application: syfosmmanuell
-          namespace: teamsykmelding
-          cluster: dev-fss
         - application: syfosminfotrygd
           namespace: teamsykmelding
           cluster: dev-gcp
@@ -71,12 +68,9 @@ spec:
   webproxy: false
   secureLogs:
     enabled: true
-  ingresses:
-    - "https://syfosmmanuell-backend.dev.nav.no"
-    - "https://syfosmmanuell-backend.dev.intern.nav.no"
   env:
     - name: SYFOSMMANUELL_URL
-      value: syfosmmanuell.dev.adeo.no
+      value: syfosmmanuell.dev.intern.nav.no
     - name: SYFOTILGANGSKONTROLL_SCOPE
       value: api://dev-fss.teamsykefravr.syfo-tilgangskontroll/.default
     - name: SYFOTILGANGSKONTROLL_URL
