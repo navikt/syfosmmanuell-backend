@@ -1,6 +1,8 @@
 package no.nav.syfo.aksessering.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
@@ -9,8 +11,6 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import java.sql.ResultSet
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
     connection.use { connection ->
@@ -27,19 +27,19 @@ fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
     }
 
 suspend fun DatabaseInterface.finnesSykmelding(id: String) =
-    withContext(Dispatchers.IO){
-    connection.use { connection ->
-        connection.prepareStatement(
-            """
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection.prepareStatement(
+                """
                 SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE id=?;
                 """
-        ).use {
-            it.setString(1, id)
-            it.executeQuery().next()
+            ).use {
+                it.setString(1, id)
+                it.executeQuery().next()
+            }
         }
-    }
     }
 
 fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
