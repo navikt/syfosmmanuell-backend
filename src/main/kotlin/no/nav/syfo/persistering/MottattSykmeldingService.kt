@@ -106,7 +106,8 @@ class MottattSykmeldingService(
             if (database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
                 log.warn(
                     "Manuell oppgave med sykmeldingsid {}, er allerede lagret i databasen, {}",
-                    manuellOppgave.receivedSykmelding.sykmelding.id, fields(loggingMeta)
+                    manuellOppgave.receivedSykmelding.sykmelding.id,
+                    fields(loggingMeta)
                 )
             } else {
                 val oppgaveId = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)

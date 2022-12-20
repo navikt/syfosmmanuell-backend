@@ -573,5 +573,5 @@ enum class ICD10(override val codeValue: String, override val text: String, val 
     Z637("Z637", "Problem i forbindelse med annen stressende livsopplevelse som påvirker familie eller husstand", listOf(ICPC2.Z22)),
     T749("T749", "Uspesifisert mishandlingssyndrom", listOf(ICPC2.Z25)),
     Z734("Z734", "Problem i forbindelse med mangelfulle sosiale ferdigheter, ikke klassifisert annet sted", listOf(ICPC2.Z28)),
-    Z658("Z658", "Annet spesifisert problem i forbindelse med psykososialt forhold", listOf(ICPC2.Z29)),
+    Z658("Z658", "Annet spesifisert problem i forbindelse med psykososialt forhold", listOf(ICPC2.Z29))
 }

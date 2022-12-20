@@ -29,7 +29,6 @@ class MSGraphClient(
         .build<String, String>()
 
     suspend fun getSubjectFromMsGraph(accessToken: String): String {
-
         subjectCache.getIfPresent(accessToken)?.let {
             log.debug("Traff subject cache for MSGraph")
             return it
@@ -46,7 +45,6 @@ class MSGraphClient(
     }
 
     private suspend fun callMsGraphApi(oboToken: String): String {
-
         val response = httpClient.get(msGraphApiAccountNameQuery) {
             headers {
                 append("Authorization", "Bearer $oboToken")

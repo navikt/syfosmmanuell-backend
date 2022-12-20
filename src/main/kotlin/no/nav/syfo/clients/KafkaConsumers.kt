@@ -14,7 +14,8 @@ class KafkaConsumers(env: Environment) {
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
         }
     }.toConsumerConfig(
-        "${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class
+        "${env.applicationName}-consumer",
+        valueDeserializer = StringDeserializer::class
     )
 
     val kafkaAivenConsumerManuellOppgave = KafkaConsumer<String, String>(consumerPropertiesAiven)

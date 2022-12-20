@@ -55,7 +55,8 @@ class ManuellOppgaveServiceTest : FunSpec({
     context("Test av ferdigstilling av manuell behandling") {
         test("Happy case OK") {
             manuellOppgaveService.ferdigstillManuellBehandling(
-                oppgaveid, "1234",
+                oppgaveid,
+                "1234",
                 "4321",
                 "token",
                 merknader = null
@@ -131,7 +132,8 @@ class ManuellOppgaveServiceTest : FunSpec({
             )
 
             manuellOppgaveService.ferdigstillManuellBehandling(
-                oppgaveId2, "1234",
+                oppgaveId2,
+                "1234",
                 "4321",
                 "token",
                 merknader = null
