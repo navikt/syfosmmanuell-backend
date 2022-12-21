@@ -17,12 +17,16 @@ fun Route.sykmeldingsApi(
             val sykmeldingsId = call.parameters["sykmeldingsId"]!!
 
             log.info("Mottok kall til /api/v1/sykmelding/$sykmeldingsId")
+            try {
+                val finnesSykmelding = manuellOppgaveService.finnesSykmelding(sykmeldingsId)
 
-            val finnesSykmelding = manuellOppgaveService.finnesSykmelding(sykmeldingsId)
-
-            when (finnesSykmelding) {
-                true -> call.respond(HttpStatusCode.OK)
-                else -> call.respond(HttpStatusCode.NotFound)
+                when (finnesSykmelding) {
+                    true -> call.respond(HttpStatusCode.OK)
+                    else -> call.respond(HttpStatusCode.NotFound)
+                }
+            } catch (e: Exception) {
+                log.error("Noe gikk galt ved sjekk av sykmelding med id $sykmeldingsId", e)
+                throw e
             }
         }
     }
