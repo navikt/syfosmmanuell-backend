@@ -21,5 +21,13 @@ class HttpRequestMonitorInterceptorKtTest : FunSpec({
 
             assertEquals("/sykmelding/:sykmeldingId", oppdatertPath)
         }
+        test("Skal matche på sykmeldingId også hvis uuid inneholder ni tall") {
+            val sykmeldingId = "bdbeebe8-8348-4ac7-a6d7-29c767527080"
+            val path = "/sykmelding/$sykmeldingId"
+
+            val oppdatertPath = getLabel(path)
+
+            assertEquals("/sykmelding/:sykmeldingId", oppdatertPath)
+        }
     }
 })
