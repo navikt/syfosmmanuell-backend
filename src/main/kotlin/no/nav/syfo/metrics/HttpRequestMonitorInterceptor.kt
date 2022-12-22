@@ -4,7 +4,7 @@ import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.path
 import io.ktor.util.pipeline.PipelineContext
 
-val REGEX = """[0-9]{9}""".toRegex()
+val REGEX_OPPGAVEID = """[0-9]{9}""".toRegex()
 
 val REGEX_SYKMELDINGID = """[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}""".toRegex()
 
@@ -19,6 +19,6 @@ fun monitorHttpRequests(): suspend PipelineContext<Unit, ApplicationCall>.(Unit)
 }
 
 fun getLabel(path: String): String {
-    val utenOppgaveId = REGEX.replace(path, ":oppgaveId")
-    return REGEX_SYKMELDINGID.replace(utenOppgaveId, ":sykmeldingId")
+    val utenSykmeldingId = REGEX_SYKMELDINGID.replace(path, ":sykmeldingId")
+    return REGEX_OPPGAVEID.replace(utenSykmeldingId, ":oppgaveId")
 }
