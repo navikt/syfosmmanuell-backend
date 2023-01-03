@@ -40,7 +40,7 @@ fun Route.sendVurderingManuellOppgave(
 
             when (hasAccess) {
                 false -> {
-                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/vurderingmanuelloppgave/{oppgaveid}")
+                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/vurderingmanuelloppgave/$oppgaveId")
                     call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
                 }
                 true -> {

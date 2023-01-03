@@ -31,7 +31,7 @@ fun Route.hentManuellOppgaver(
 
             when (hasAccess) {
                 false -> {
-                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/manuellOppgave/{oppgaveid}")
+                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/manuellOppgave/$oppgaveId")
                     call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
                 }
                 true -> {
