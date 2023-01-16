@@ -23,16 +23,17 @@ code: https://github.com/navikt/syfosmmanuell
 ## FlowChart
 This the high level flow for the application
 ```mermaid
-  graph LR;
-      A[\teamsykmelding.sykmelding-manuell/] --- syfosmmanuell-bakcend;  
-      syfosmmanuell-bakcend --- syfosmmanuell;
-      syfosmmanuell-bakcend -- check caseworker access --- syfo-tilgangskontroll;
-      syfosmmanuell-bakcend -- create,get,complete oppgave --- oppgave;
-      syfosmmanuell-bakcend -- verify token --- azure-AD;
-      syfosmmanuell-bakcend --- id1[(Database)];
+  graph LR
+  
+      A[\teamsykmelding.sykmelding-manuell/] --- syfosmmanuell-bakcend
+      syfosmmanuell-bakcend --- syfosmmanuell
+      syfosmmanuell-bakcend -- check caseworker access --- syfo-tilgangskontroll
+      syfosmmanuell-bakcend -- create,get,complete oppgave --- oppgave
+      syfosmmanuell-bakcend -- verify token --- azure-AD
+      syfosmmanuell-bakcend --- id1[(Database)]
       
       syfosmmanuell-bakcend --- B[\teamsykmelding.sykmelding-apprec/]
-      syfosmmanuell-bakcend --- C[\teamsykmelding.ok-sykmelding/];
+      syfosmmanuell-bakcend --- C[\teamsykmelding.ok-sykmelding/]
       syfosmmanuell-bakcend --- D[\teamsykmelding.oppgave-produser-oppgave/];  
  
 ```
@@ -116,7 +117,7 @@ Find the newest version of gradle here: https://gradle.org/releases/ Then run th
 
 ### Contact
 
-This project is maintained by navikt/teamsykmelding
+This project is maintained by [navikt/teamsykmelding](CODEOWNERS)
 
 Questions and/or feature requests? Please create an [issue](https://github.com/navikt/syfosmmanuell-backend/issues)
 
