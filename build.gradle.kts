@@ -6,31 +6,31 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val ktorVersion = "2.2.2"
+val ktorVersion = "2.2.3"
 val logbackVersion = "1.4.5"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.d6548c5"
+val smCommonVersion = "1.fbf33a9"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
-val jacksonVersion = "2.14.1"
+val jacksonVersion = "2.14.2"
 val mockkVersion = "1.13.2"
 val postgresVersion = "42.5.1"
 val flywayVersion = "9.10.0"
 val hikariVersion = "5.0.1"
 val javaTimeAdapterVersion = "1.1.3"
-val kotestVersion = "5.5.4"
+val kotestVersion = "5.5.5"
 val nimbusdsVersion = "9.25.6"
 val caffeineVersion = "3.1.2"
 val testContainerVersion = "1.17.6"
-val kotlinVersion = "1.8.0"
+val kotlinVersion = "1.8.10"
 val kafkaVersion = "3.3.1"
 val commonsCodecVersion = "1.15"
 
 
 plugins {
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.8.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jmailen.kotlinter") version "3.12.0"
     id("com.diffplug.spotless") version "6.11.0"
@@ -66,7 +66,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    // override transient version 1.11 from o.ktor:ktor-client-apache
+    // override transient version from io.ktor:ktor-client-apache
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
