@@ -52,6 +52,7 @@ spec:
     pool: nav-dev
   azure:
     application:
+      allowAllUsers: true
       enabled: true
       tenant: trygdeetaten.no
   accessPolicy:

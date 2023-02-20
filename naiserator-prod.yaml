@@ -53,6 +53,7 @@ spec:
     pool: nav-prod
   azure:
     application:
+      allowAllUsers: true
       enabled: true
       tenant: nav.no
   accessPolicy:
