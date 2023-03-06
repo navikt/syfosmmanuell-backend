@@ -71,7 +71,7 @@ spec:
     enabled: true
   env:
     - name: SYFOSMMANUELL_URL
-      value: syfosmmanuell.dev.intern.nav.no
+      value: syfosmmanuell.intern.dev.nav.no
     - name: SYFOTILGANGSKONTROLL_SCOPE
       value: api://dev-fss.teamsykefravr.syfo-tilgangskontroll/.default
     - name: SYFOTILGANGSKONTROLL_URL
