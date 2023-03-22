@@ -6,11 +6,11 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val ktorVersion = "2.2.3"
+val ktorVersion = "2.2.4"
 val logbackVersion = "1.4.5"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.fbf33a9"
+val smCommonVersion = "1.9df1108"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
@@ -31,9 +31,8 @@ val commonsCodecVersion = "1.15"
 
 plugins {
     kotlin("jvm") version "1.8.10"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jmailen.kotlinter") version "3.12.0"
-    id("com.diffplug.spotless") version "6.11.0"
 }
 
 val githubUser: String by project
