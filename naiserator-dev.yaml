@@ -68,6 +68,7 @@ spec:
         - application: syfosmmanuell
           namespace: teamsykmelding
           cluster: dev-gcp
+    outbound:
       external:
         - host: syfo-tilgangskontroll.dev-fss-pub.nais.io
         - host: graph.microsoft.com
