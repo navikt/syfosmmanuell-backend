@@ -68,6 +68,10 @@ spec:
         - application: syfosmmanuell
           namespace: teamsykmelding
           cluster: dev-gcp
+      external:
+        - host: syfo-tilgangskontroll.dev-fss-pub.nais.io
+        - host: graph.microsoft.com
+        - host: oppgave-q1.dev-fss-pub.nais.io
   vault:
     enabled: false
   webproxy: false
