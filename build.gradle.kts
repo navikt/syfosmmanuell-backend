@@ -24,13 +24,13 @@ val kotestVersion = "5.5.5"
 val nimbusdsVersion = "9.25.6"
 val caffeineVersion = "3.1.2"
 val testContainerVersion = "1.17.6"
-val kotlinVersion = "1.8.10"
+val kotlinVersion = "1.8.20"
 val kafkaVersion = "3.3.1"
 val commonsCodecVersion = "1.15"
 
 
 plugins {
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "1.8.20"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jmailen.kotlinter") version "3.12.0"
 }
