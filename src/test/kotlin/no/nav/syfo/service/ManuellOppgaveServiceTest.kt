@@ -39,7 +39,7 @@ class ManuellOppgaveServiceTest : FunSpec({
     val manuellOppgave = ManuellOppgave(
         receivedSykmelding = receivedSykmelding(msgId, generateSykmelding(id = sykmeldingsId)),
         validationResult = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))),
-        apprec = okApprec()
+        apprec = okApprec(),
     )
     val oppgaveid = 308076319
 
@@ -59,7 +59,7 @@ class ManuellOppgaveServiceTest : FunSpec({
                 "1234",
                 "4321",
                 "token",
-                merknader = null
+                merknader = null,
             )
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
@@ -80,7 +80,7 @@ class ManuellOppgaveServiceTest : FunSpec({
                 "1234",
                 "4321",
                 "token",
-                merknader = merknader
+                merknader = merknader,
             )
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
@@ -110,7 +110,7 @@ class ManuellOppgaveServiceTest : FunSpec({
                 ManuellOppgaveKomplett(
                     receivedSykmelding = receivedSykmelding(
                         msgId,
-                        generateSykmelding(id = UUID.randomUUID().toString())
+                        generateSykmelding(id = UUID.randomUUID().toString()),
                     ),
                     validationResult = ValidationResult(
                         Status.MANUAL_PROCESSING,
@@ -119,16 +119,16 @@ class ManuellOppgaveServiceTest : FunSpec({
                                 "regelnavn",
                                 "melding til legen",
                                 "melding til bruker",
-                                Status.MANUAL_PROCESSING
-                            )
-                        )
+                                Status.MANUAL_PROCESSING,
+                            ),
+                        ),
                     ),
                     apprec = okApprec(),
                     oppgaveid = oppgaveId2,
                     ferdigstilt = false,
                     sendtApprec = true,
-                    opprinneligValidationResult = null
-                )
+                    opprinneligValidationResult = null,
+                ),
             )
 
             manuellOppgaveService.ferdigstillManuellBehandling(
@@ -136,7 +136,7 @@ class ManuellOppgaveServiceTest : FunSpec({
                 "1234",
                 "4321",
                 "token",
-                merknader = null
+                merknader = null,
             )
 
             coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
@@ -163,7 +163,7 @@ class ManuellOppgaveServiceTest : FunSpec({
                 "1234",
                 "4321",
                 "token",
-                merknader = emptyList()
+                merknader = emptyList(),
             )
 
             manuellOppgaveService.slettOppgave(sykmeldingsId)

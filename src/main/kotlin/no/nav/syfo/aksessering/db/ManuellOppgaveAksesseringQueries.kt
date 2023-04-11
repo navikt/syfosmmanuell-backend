@@ -19,7 +19,7 @@ fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
                 SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE oppgaveid=?;
-                """
+                """,
         ).use {
             it.setInt(1, oppgaveId)
             it.executeQuery().next()
@@ -34,7 +34,7 @@ suspend fun DatabaseInterface.finnesSykmelding(id: String) =
                 SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE id=?;
-                """
+                """,
             ).use {
                 it.setString(1, id)
                 it.executeQuery().next()
@@ -50,7 +50,7 @@ fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
                 FROM MANUELLOPPGAVE
                 WHERE oppgaveid=?
                 AND sendt_apprec=?;
-                """
+                """,
         ).use {
             it.setInt(1, oppgaveId)
             it.setBoolean(2, true)
@@ -66,7 +66,7 @@ fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
                 FROM MANUELLOPPGAVE  
                 WHERE oppgaveid=? 
                 AND ferdigstilt=?;
-                """
+                """,
         ).use {
             it.setInt(1, oppgaveId)
             it.setBoolean(2, false)
@@ -81,7 +81,7 @@ fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO {
         sykmelding = receivedSykmelding.sykmelding,
         personNrPasient = receivedSykmelding.personNrPasient,
         mottattDato = receivedSykmelding.mottattDato,
-        validationResult = objectMapper.readValue(getString("validationresult"))
+        validationResult = objectMapper.readValue(getString("validationresult")),
     )
 }
 
@@ -92,7 +92,7 @@ fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: Int): List<ManuellOp
                 SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec,opprinnelig_validationresult
                 FROM MANUELLOPPGAVE  
                 WHERE oppgaveid=?;
-                """
+                """,
         ).use {
             it.setInt(1, oppgaveId)
             it.executeQuery().toList { toManuellOppgave() }
@@ -106,7 +106,7 @@ fun DatabaseInterface.hentManuellOppgaveForSykmeldingId(sykmeldingId: String): M
                 SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec,opprinnelig_validationresult
                 FROM MANUELLOPPGAVE  
                 WHERE receivedsykmelding->'sykmelding'->>'id' = ?;
-                """
+                """,
         ).use {
             it.setString(1, sykmeldingId)
             it.executeQuery().toList { toManuellOppgave() }.firstOrNull()
@@ -121,5 +121,5 @@ fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
         oppgaveid = getInt("oppgaveid"),
         ferdigstilt = getBoolean("ferdigstilt"),
         sendtApprec = getBoolean("sendt_apprec"),
-        opprinneligValidationResult = getString("opprinnelig_validationresult")?.let { objectMapper.readValue<ValidationResult>(it) }
+        opprinneligValidationResult = getString("opprinnelig_validationresult")?.let { objectMapper.readValue<ValidationResult>(it) },
     )

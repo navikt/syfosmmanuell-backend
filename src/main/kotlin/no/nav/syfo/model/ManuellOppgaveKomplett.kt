@@ -7,7 +7,7 @@ data class ManuellOppgaveKomplett(
     val oppgaveid: Int,
     val ferdigstilt: Boolean,
     val sendtApprec: Boolean,
-    val opprinneligValidationResult: ValidationResult?
+    val opprinneligValidationResult: ValidationResult?,
 ) {
     fun updateMerknader(merknadList: List<Merknad>?): ManuellOppgaveKomplett {
         return this.copy(receivedSykmelding = this.receivedSykmelding.copy(merknader = merknadList))

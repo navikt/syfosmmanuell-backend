@@ -36,7 +36,7 @@ class ManuellOppgaveService(
     private val database: DatabaseInterface,
     private val syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
     private val kafkaProducers: KafkaProducers,
-    private val oppgaveService: OppgaveService
+    private val oppgaveService: OppgaveService,
 ) {
     fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
         database.hentManuellOppgaver(oppgaveId)
@@ -60,7 +60,7 @@ class ManuellOppgaveService(
             mottakId = manuellOppgave.receivedSykmelding.navLogId,
             orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
             msgId = manuellOppgave.receivedSykmelding.msgId,
-            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id
+            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
         )
 
         incrementCounters(validationResult, manuellOppgave)
@@ -89,7 +89,7 @@ class ManuellOppgaveService(
                 oppgaveId = oppgaveId,
                 receivedSykmelding = manuellOppgave.receivedSykmelding,
                 validationResult = validationResult,
-                opprinneligValidationResult = manuellOppgave.validationResult
+                opprinneligValidationResult = manuellOppgave.validationResult,
             )
         } else {
             database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, validationResult)
@@ -123,7 +123,7 @@ class ManuellOppgaveService(
         val harTilgangTilOppgave =
             syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                 accessToken = accessToken,
-                personFnr = manuellOppgave.receivedSykmelding.personNrPasient
+                personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
             ).harTilgang
         if (!harTilgangTilOppgave) {
             throw IkkeTilgangException()
@@ -139,7 +139,7 @@ class ManuellOppgaveService(
                     manuellOppgave = it,
                     loggingMeta = LoggingMeta("", null, "", sykmeldingId),
                     enhet = null,
-                    veileder = null
+                    veileder = null,
                 )
             }
             val antallSlettedeOppgaver = database.slettOppgave(it.oppgaveid)
@@ -175,7 +175,7 @@ class ManuellOppgaveService(
                 manuellOppgave.apprec.ebService
             } else {
                 "Sykmelding"
-            }
+            },
         )
 
     fun sendReceivedSykmelding(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
@@ -185,8 +185,8 @@ class ManuellOppgaveService(
                 ProducerRecord(
                     topic,
                     receivedSykmelding.sykmelding.id,
-                    receivedSykmelding
-                )
+                    receivedSykmelding,
+                ),
             ).get()
             log.info("Sendt sykmelding {} to topic {} {}", receivedSykmelding.sykmelding.id, topic, loggingMeta)
         } catch (ex: Exception) {

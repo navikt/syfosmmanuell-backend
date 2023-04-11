@@ -21,30 +21,30 @@ data class Apprec(
     val senderOrganisasjon: Organisation,
     val mottakerOrganisasjon: Organisation,
     val validationResult: ValidationResult?,
-    val ebService: String? = null
+    val ebService: String? = null,
 )
 
 data class Organisation(
     val hovedIdent: Ident,
     val navn: String,
     val tilleggsIdenter: List<Ident>? = listOf(),
-    val helsepersonell: Helsepersonell? = null
+    val helsepersonell: Helsepersonell? = null,
 )
 
 data class Helsepersonell(
     val navn: String,
     val hovedIdent: Ident,
     val typeId: Kodeverdier,
-    val tilleggsIdenter: List<Ident>?
+    val tilleggsIdenter: List<Ident>?,
 
 )
 
 data class Ident(
     val id: String,
-    val typeId: Kodeverdier
+    val typeId: Kodeverdier,
 )
 
 data class Kodeverdier(
     val beskrivelse: String,
-    val verdi: String
+    val verdi: String,
 )

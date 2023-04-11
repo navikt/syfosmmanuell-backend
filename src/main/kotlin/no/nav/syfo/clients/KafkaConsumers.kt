@@ -15,7 +15,7 @@ class KafkaConsumers(env: Environment) {
         }
     }.toConsumerConfig(
         "${env.applicationName}-consumer",
-        valueDeserializer = StringDeserializer::class
+        valueDeserializer = StringDeserializer::class,
     )
 
     val kafkaAivenConsumerManuellOppgave = KafkaConsumer<String, String>(consumerPropertiesAiven)

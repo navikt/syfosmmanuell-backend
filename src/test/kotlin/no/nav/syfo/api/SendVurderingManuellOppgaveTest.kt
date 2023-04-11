@@ -59,9 +59,9 @@ val manuellOppgave = ManuellOppgave(
     validationResult = ValidationResult(Status.OK, emptyList()),
     apprec = objectMapper.readValue(
         Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
-            Charsets.UTF_8
-        )
-    )
+            Charsets.UTF_8,
+        ),
+    ),
 )
 
 class SendVurderingManuellOppgaveTest : FunSpec({
@@ -91,7 +91,7 @@ class SendVurderingManuellOppgaveTest : FunSpec({
                 application.routing {
                     sendVurderingManuellOppgave(
                         manuellOppgaveService,
-                        authorizationService
+                        authorizationService,
                     )
                 }
                 application.install(ContentNegotiation) {
@@ -117,7 +117,7 @@ class SendVurderingManuellOppgaveTest : FunSpec({
                         addHeader("X-Nav-Enhet", "1234")
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
                         setBody(objectMapper.writeValueAsString(result))
-                    }
+                    },
                 ) {
                     assertEquals(HttpStatusCode.NotFound, response.status())
                 }
@@ -172,25 +172,25 @@ class SendVurderingManuellOppgaveTest : FunSpec({
             assertEquals(
                 Merknad(
                     type = "UGYLDIG_TILBAKEDATERING",
-                    beskrivelse = null
+                    beskrivelse = null,
                 ),
-                merknad
+                merknad,
             )
         }
 
         test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER") {
             val result = Result(
                 status = ResultStatus.GODKJENT_MED_MERKNAD,
-                merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER
+                merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER,
             )
             val merknad = result.toMerknad()
 
             assertEquals(
                 Merknad(
                     type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER",
-                    beskrivelse = null
+                    beskrivelse = null,
                 ),
-                merknad
+                merknad,
             )
         }
 
@@ -210,7 +210,7 @@ fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode
             addHeader("X-Nav-Enhet", navEnhet)
             addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
             setBody(objectMapper.writeValueAsString(result))
-        }
+        },
     ) {
         assertEquals(statusCode, response.status())
     }
@@ -224,7 +224,7 @@ fun setUpTest(
     authorizationService: AuthorizationService,
     oppgaveService: OppgaveService,
     database: DatabaseInterface,
-    manuellOppgaveService: ManuellOppgaveService
+    manuellOppgaveService: ManuellOppgaveService,
 ) {
     val sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic"
     val sm2013ApprecTopicName = "sm2013ApprecTopicName"
@@ -245,7 +245,7 @@ fun setUpTest(
     testApplicationEngine.application.routing {
         sendVurderingManuellOppgave(
             manuellOppgaveService,
-            authorizationService
+            authorizationService,
         )
     }
     testApplicationEngine.application.install(ContentNegotiation) {

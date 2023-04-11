@@ -28,19 +28,19 @@ class OppgaveServiceTest : FunSpec({
             perioder = listOf(
                 generatePeriode(
                     fom = LocalDate.of(2020, 8, 1),
-                    tom = LocalDate.of(2020, 8, 15)
-                )
-            )
-        )
+                    tom = LocalDate.of(2020, 8, 15),
+                ),
+            ),
+        ),
     )
     val apprec: Apprec = objectMapper.readValue(
-        Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(Charsets.UTF_8)
+        Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(Charsets.UTF_8),
     )
     val validationResult = ValidationResult(Status.OK, emptyList())
     val manuellOppgave = ManuellOppgave(
         receivedSykmelding = receivedSykmelding,
         validationResult = validationResult,
-        apprec = apprec
+        apprec = apprec,
     )
 
     context("Test av oppretting av oppgave") {

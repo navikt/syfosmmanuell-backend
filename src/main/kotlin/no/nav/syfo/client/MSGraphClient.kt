@@ -18,7 +18,7 @@ class MSGraphClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val httpClient: HttpClient,
     private val oboScope: String = environment.msGraphApiScope,
-    msGraphApiUrl: String = environment.msGraphApiUrl
+    msGraphApiUrl: String = environment.msGraphApiUrl,
 ) {
 
     private val msGraphApiAccountNameQuery = "$msGraphApiUrl/me/?\$select=onPremisesSamAccountName"

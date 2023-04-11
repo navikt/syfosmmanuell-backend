@@ -16,10 +16,10 @@ class AzureAdV2Client(
     private val azureAppClientSecret: String,
     private val azureTokenEndpoint: String,
     private val httpClient: HttpClient,
-    private val azureAdV2Cache: AzureAdV2Cache = AzureAdV2Cache()
+    private val azureAdV2Cache: AzureAdV2Cache = AzureAdV2Cache(),
 ) {
     suspend fun getAccessToken(
-        scope: String
+        scope: String,
     ): String {
         return azureAdV2Cache.getAccessToken(scope)?.accessToken
             ?: getClientSecretAccessToken(scope).let {
@@ -28,7 +28,7 @@ class AzureAdV2Client(
     }
 
     private suspend fun getClientSecretAccessToken(
-        scope: String
+        scope: String,
     ): AzureAdV2Token {
         return getAccessToken(
             Parameters.build {
@@ -36,13 +36,13 @@ class AzureAdV2Client(
                 append("client_secret", azureAppClientSecret)
                 append("scope", scope)
                 append("grant_type", "client_credentials")
-            }
+            },
         ).toAzureAdV2Token()
     }
 
     suspend fun getOnBehalfOfToken(
         token: String,
-        scope: String
+        scope: String,
     ): AzureAdV2Token {
         return azureAdV2Cache.getOboToken(token, scope)
             ?: getAccessToken(token, scope).let {
@@ -52,7 +52,7 @@ class AzureAdV2Client(
 
     private suspend fun getAccessToken(
         token: String,
-        scope: String
+        scope: String,
     ): AzureAdV2Token {
         return getAccessToken(
             Parameters.build {
@@ -63,12 +63,12 @@ class AzureAdV2Client(
                 append("assertion", token)
                 append("scope", scope)
                 append("requested_token_use", "on_behalf_of")
-            }
+            },
         ).toAzureAdV2Token()
     }
 
     private suspend fun getAccessToken(
-        formParameters: Parameters
+        formParameters: Parameters,
     ): AzureAdV2TokenResponse {
         return try {
             val response: HttpResponse = httpClient.post(azureTokenEndpoint) {

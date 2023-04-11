@@ -10,7 +10,7 @@ import no.nav.syfo.log
 import no.nav.syfo.service.ManuellOppgaveService
 
 fun Route.sykmeldingsApi(
-    manuellOppgaveService: ManuellOppgaveService
+    manuellOppgaveService: ManuellOppgaveService,
 ) {
     route("/api/v1") {
         get("/sykmelding/{sykmeldingsId}") {

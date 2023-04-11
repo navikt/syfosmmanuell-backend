@@ -14,7 +14,7 @@ import no.nav.syfo.util.logNAVEpostFromTokenWhenNoAccessToSecureLogs
 
 fun Route.hentManuellOppgaver(
     manuellOppgaveService: ManuellOppgaveService,
-    authorizationService: AuthorizationService
+    authorizationService: AuthorizationService,
 ) {
     route("/api/v1") {
         get("/manuellOppgave/{oppgaveid}") {

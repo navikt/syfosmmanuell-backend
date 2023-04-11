@@ -21,7 +21,7 @@ class OppgaveClient(
     private val url: String,
     private val azureAdV2Client: AzureAdV2Client,
     private val httpClient: HttpClient,
-    private val scope: String
+    private val scope: String,
 ) {
     suspend fun opprettOppgave(opprettOppgave: OpprettOppgave, msgId: String):
         OpprettOppgaveResponse = retry("create_oppgave") {

@@ -16,7 +16,7 @@ import no.nav.syfo.util.logNAVEpostFromTokenWhenNoAccessToSecureLogs
 
 fun Route.sendVurderingManuellOppgave(
     manuellOppgaveService: ManuellOppgaveService,
-    authorizationService: AuthorizationService
+    authorizationService: AuthorizationService,
 ) {
     route("/api/v1") {
         post("/vurderingmanuelloppgave/{oppgaveid}") {
@@ -54,7 +54,7 @@ fun Route.sendVurderingManuellOppgave(
                         enhet = navEnhet,
                         veileder = veileder,
                         accessToken = accessToken,
-                        merknader = if (merknad != null) listOf(merknad) else null
+                        merknader = if (merknad != null) listOf(merknad) else null,
                     )
                     call.respond(HttpStatusCode.NoContent)
                 }
@@ -65,17 +65,17 @@ fun Route.sendVurderingManuellOppgave(
 
 enum class MerknadType {
     UGYLDIG_TILBAKEDATERING,
-    TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER
+    TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER,
 }
 
 enum class ResultStatus {
     GODKJENT,
-    GODKJENT_MED_MERKNAD
+    GODKJENT_MED_MERKNAD,
 }
 
 data class Result(
     val status: ResultStatus,
-    val merknad: MerknadType?
+    val merknad: MerknadType?,
 ) {
     fun toMerknad(): Merknad? {
         return when (status) {
@@ -84,13 +84,13 @@ data class Result(
                     MerknadType.UGYLDIG_TILBAKEDATERING -> {
                         Merknad(
                             type = MerknadType.UGYLDIG_TILBAKEDATERING.name,
-                            beskrivelse = null
+                            beskrivelse = null,
                         )
                     }
                     MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER -> {
                         Merknad(
                             type = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER.name,
-                            beskrivelse = null
+                            beskrivelse = null,
                         )
                     }
                     else -> {

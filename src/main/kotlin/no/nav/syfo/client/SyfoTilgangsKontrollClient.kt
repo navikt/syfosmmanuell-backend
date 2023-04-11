@@ -19,7 +19,7 @@ class SyfoTilgangsKontrollClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val httpClient: HttpClient,
     private val syfoTilgangsKontrollClientUrl: String = environment.syfoTilgangsKontrollClientUrl,
-    private val scope: String = environment.syfotilgangskontrollScope
+    private val scope: String = environment.syfotilgangskontrollScope,
 ) {
     val syfoTilgangskontrollCache: Cache<Map<String, String>, Tilgang> = Caffeine.newBuilder()
         .expireAfterWrite(1, TimeUnit.HOURS)
@@ -55,13 +55,13 @@ class SyfoTilgangsKontrollClient(
             HttpStatusCode.Forbidden -> {
                 log.warn("syfo-tilgangskontroll svarte med ${httpResponse.status.value}")
                 Tilgang(
-                    harTilgang = false
+                    harTilgang = false,
                 )
             }
             else -> {
                 log.error("syfo-tilgangskontroll svarte med ${httpResponse.status.value}")
                 Tilgang(
-                    harTilgang = false
+                    harTilgang = false,
                 )
             }
         }
@@ -69,5 +69,5 @@ class SyfoTilgangsKontrollClient(
 }
 
 data class Tilgang(
-    val harTilgang: Boolean
+    val harTilgang: Boolean,
 )

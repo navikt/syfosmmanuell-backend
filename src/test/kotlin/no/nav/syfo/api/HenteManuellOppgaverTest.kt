@@ -65,9 +65,9 @@ class HenteManuellOppgaverTest : FunSpec({
         validationResult = ValidationResult(Status.OK, emptyList()),
         apprec = objectMapper.readValue(
             Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
-                Charsets.UTF_8
-            )
-        )
+                Charsets.UTF_8,
+            ),
+        ),
     )
     val oppgaveid = 308076319
 
@@ -76,7 +76,7 @@ class HenteManuellOppgaverTest : FunSpec({
         coEvery {
             syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                 any(),
-                any()
+                any(),
             )
         } returns Tilgang(true)
     }
@@ -125,7 +125,7 @@ class HenteManuellOppgaverTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-                    }
+                    },
                 ) {
                     assertEquals(HttpStatusCode.OK, response.status())
                     assertEquals(oppgaveid, objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid)
@@ -210,7 +210,7 @@ class HenteManuellOppgaverTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
-                    }
+                    },
                 ) {
                     assertEquals(HttpStatusCode.NotFound, response.status())
                 }

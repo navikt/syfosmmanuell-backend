@@ -24,7 +24,7 @@ fun generateJWT(
     customClaim: Claim? = Claim("fnr", "12313145"),
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1),
     subject: String = "subject",
-    issuer: String = "https://sts.issuer.net/myid"
+    issuer: String = "https://sts.issuer.net/myid",
 ): String? {
     val now = Date()
     val key = getDefaultRSAKey()
@@ -63,6 +63,6 @@ private fun getJWKSet(): JWKSet {
 
 data class Claim(
     val name: String,
-    val value: String
+    val value: String,
 )
 fun getFileAsString(filePath: String) = String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8)

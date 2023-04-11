@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter
 
 class OppgaveService(
     private val oppgaveClient: OppgaveClient,
-    private val kafkaProduceTaskProducer: KafkaProducers.KafkaProduceTaskProducer
+    private val kafkaProduceTaskProducer: KafkaProducers.KafkaProduceTaskProducer,
 ) {
 
     suspend fun opprettOppgave(manuellOppgave: ManuellOppgave, loggingMeta: LoggingMeta): Int {
@@ -32,7 +32,7 @@ class OppgaveService(
         log.info(
             "Opprettet manuell sykmeldingsoppgave med {}, {}",
             StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-            StructuredArguments.fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta),
         )
         return oppgaveResponse.id
     }
@@ -42,7 +42,7 @@ class OppgaveService(
         val producerRecord = ProducerRecord(
             kafkaProduceTaskProducer.topic,
             manuellOppgave.receivedSykmelding.sykmelding.id,
-            opprettOppgaveKafkaMessage
+            opprettOppgaveKafkaMessage,
         )
 
         try {
@@ -54,7 +54,7 @@ class OppgaveService(
 
         log.info(
             "Opprettelse av oppfølgingsoppgave forespurt for sykmelding med merknad {}",
-            StructuredArguments.fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta),
         )
     }
 
@@ -74,7 +74,7 @@ class OppgaveService(
                 } else {
                     // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke har den aktuelle mappen
                     null
-                }
+                },
             )
 
             log.info("Forsøker å ferdigstille oppgave {}, {}", StructuredArguments.fields(ferdigstillOppgave), StructuredArguments.fields(loggingMeta))
@@ -83,7 +83,7 @@ class OppgaveService(
             log.info(
                 "Ferdigstilt oppgave med {}, {}",
                 StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
-                StructuredArguments.fields(loggingMeta)
+                StructuredArguments.fields(loggingMeta),
             )
         } else {
             log.info("Oppgaven er allerede ferdigstillt oppgaveId: ${oppgave.id} {}", StructuredArguments.fields(loggingMeta))
@@ -101,7 +101,7 @@ class OppgaveService(
             behandlingstype = "ae0239",
             aktivDato = LocalDate.now(),
             fristFerdigstillelse = omTreUkedager(LocalDate.now()),
-            prioritet = "HOY"
+            prioritet = "HOY",
         )
 
     fun tilOppfolgingsoppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: String): OpprettOppgaveKafkaMessage =
@@ -123,7 +123,7 @@ class OppgaveService(
             aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now()),
             fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now()),
             prioritet = PrioritetType.HOY,
-            metadata = mapOf("tilordnetRessurs" to veileder)
+            metadata = mapOf("tilordnetRessurs" to veileder),
         )
 
     fun omTreUkedager(idag: LocalDate): LocalDate = when (idag.dayOfWeek) {

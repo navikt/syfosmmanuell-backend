@@ -15,7 +15,7 @@ class JacksonKafkaSerializer : Serializer<Any> {
             registerModule(JavaTimeModule())
             objectMapper.configure(
                 SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
-                configs[SERIALIZE_AS_TIMESTAMP] == false
+                configs[SERIALIZE_AS_TIMESTAMP] == false,
             )
         }
     }

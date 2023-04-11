@@ -16,7 +16,7 @@ data class OpprettOppgave(
     val behandlingstype: String? = null,
     val aktivDato: LocalDate,
     val fristFerdigstillelse: LocalDate? = null,
-    val prioritet: String
+    val prioritet: String,
 )
 
 data class FerdigstillOppgave(
@@ -25,7 +25,7 @@ data class FerdigstillOppgave(
     val status: OppgaveStatus,
     val tildeltEnhetsnr: String?,
     val tilordnetRessurs: String?,
-    val mappeId: Int?
+    val mappeId: Int?,
 )
 
 data class OpprettOppgaveResponse(
@@ -33,7 +33,7 @@ data class OpprettOppgaveResponse(
     val versjon: Int,
     val status: String? = null,
     val tildeltEnhetsnr: String? = null,
-    val mappeId: Int? = null
+    val mappeId: Int? = null,
 )
 
 enum class OppgaveStatus(val status: String) {
@@ -41,5 +41,5 @@ enum class OppgaveStatus(val status: String) {
     AAPNET("AAPNET"),
     UNDER_BEHANDLING("UNDER_BEHANDLING"),
     FERDIGSTILT("FERDIGSTILT"),
-    FEILREGISTRERT("FEILREGISTRERT")
+    FEILREGISTRERT("FEILREGISTRERT"),
 }

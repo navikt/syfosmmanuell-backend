@@ -730,5 +730,5 @@ enum class ICPC2(override val codeValue: String, override val text: String, val 
     Z25("Z25", "Problem som følge av vold/traumatisk hendelse", listOf(ICD10.T749)),
     Z27("Z27", "Engstelig for sosialt problem", listOf(ICD10.Z711)),
     Z28("Z28", "Redusert funksjonsevne pga sosialt problem", listOf(ICD10.Z734)),
-    Z29("Z29", "Sosialt problem IKA", listOf(ICD10.Z658))
+    Z29("Z29", "Sosialt problem IKA", listOf(ICD10.Z658)),
 }

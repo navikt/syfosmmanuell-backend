@@ -59,7 +59,7 @@ fun Connection.opprettManuellOppgaveUtenOpprinneligValidationResult(manuellOppga
                 opprinnelig_validationresult
                 )
             VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """
+            """,
         ).use {
             it.setString(1, manuellOppgaveKomplett.receivedSykmelding.sykmelding.id)
             it.setObject(2, manuellOppgaveKomplett.receivedSykmelding.toPGObject())

@@ -63,13 +63,13 @@ fun main() {
         database,
         httpClients.syfoTilgangsKontrollClient,
         kafkaProducers,
-        oppgaveService
+        oppgaveService,
     )
 
     val authorizationService = AuthorizationService(
         httpClients.syfoTilgangsKontrollClient,
         httpClients.msGraphClient,
-        database
+        database,
     )
 
     val applicationEngine = createApplicationEngine(
@@ -78,7 +78,7 @@ fun main() {
         manuellOppgaveService,
         jwkProvider,
         env.jwtIssuer,
-        authorizationService
+        authorizationService,
     )
 
     val mottattSykmeldingService = MottattSykmeldingService(
@@ -87,7 +87,7 @@ fun main() {
         topicAiven = env.manuellTopic,
         database = database,
         oppgaveService = oppgaveService,
-        manuellOppgaveService = manuellOppgaveService
+        manuellOppgaveService = manuellOppgaveService,
     )
 
     GlobalScope.launch {
@@ -110,7 +110,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
             log.error(
                 "En uhåndtert feil oppstod, applikasjonen restarter {}",
                 fields(e.loggingMeta),
-                e.cause
+                e.cause,
             )
         } finally {
             applicationState.alive = false

@@ -71,7 +71,7 @@ class HttpClients(env: Environment) {
         azureAppClientId = env.azureAppClientId,
         azureAppClientSecret = env.azureAppClientSecret,
         azureTokenEndpoint = env.azureTokenEndpoint,
-        httpClient = httpClient
+        httpClient = httpClient,
     )
 
     val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, azureAdV2Client, httpClient, env.oppgaveScope)
@@ -79,12 +79,12 @@ class HttpClients(env: Environment) {
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
         environment = env,
         azureAdV2Client = azureAdV2Client,
-        httpClient = httpClient
+        httpClient = httpClient,
     )
 
     val msGraphClient = MSGraphClient(
         environment = env,
         azureAdV2Client = azureAdV2Client,
-        httpClient = httpClient
+        httpClient = httpClient,
     )
 }

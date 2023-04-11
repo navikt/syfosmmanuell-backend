@@ -47,7 +47,7 @@ class OppgaveClientTest : FunSpec({
         behandlingstype = "ae0239",
         aktivDato = LocalDate.now(),
         fristFerdigstillelse = LocalDate.now().plusDays(3),
-        prioritet = "HOY"
+        prioritet = "HOY",
     )
 
     val mockHttpServerPort = ServerSocket(0).use { it.localPort }
@@ -114,9 +114,9 @@ class OppgaveClientTest : FunSpec({
                     status = OppgaveStatus.FERDIGSTILT,
                     tildeltEnhetsnr = "1234",
                     tilordnetRessurs = "4321",
-                    mappeId = null
+                    mappeId = null,
                 ),
-                "123"
+                "123",
             )
 
             assertEquals(2, opprettOppgaveResponse.id)

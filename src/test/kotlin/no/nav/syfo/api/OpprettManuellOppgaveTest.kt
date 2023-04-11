@@ -22,14 +22,14 @@ class OpprettManuellOppgaveTest : FunSpec({
     val receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding())
     val apprec: Apprec = objectMapper.readValue(
         Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
-            Charsets.UTF_8
-        )
+            Charsets.UTF_8,
+        ),
     )
     val validationResult = ValidationResult(Status.OK, emptyList())
     val manuellOppgave = ManuellOppgave(
         receivedSykmelding = receivedSykmelding,
         validationResult = validationResult,
-        apprec = apprec
+        apprec = apprec,
     )
 
     afterTest {

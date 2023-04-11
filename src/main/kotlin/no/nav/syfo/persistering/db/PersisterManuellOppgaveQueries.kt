@@ -23,7 +23,7 @@ fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, appr
                 opprinnelig_validationresult
                 )
             VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """
+            """,
         ).use {
             it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
             it.setObject(2, manuellOppgave.receivedSykmelding.toPGObject())
@@ -48,7 +48,7 @@ fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
                 SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE id=?;
-                """
+                """,
         ).use {
             it.setString(1, sykmledingsId)
             it.executeQuery().next()
@@ -64,7 +64,7 @@ fun DatabaseInterface.oppdaterManuellOppgave(oppgaveId: Int, receivedSykmelding:
                 receivedsykmelding = ?,
                 validationresult = ?
             WHERE oppgaveid = ?;
-            """
+            """,
         ).use {
             it.setBoolean(1, true)
             it.setObject(2, receivedSykmelding.toPGObject())
@@ -80,7 +80,7 @@ fun DatabaseInterface.oppdaterManuellOppgaveUtenOpprinneligValidationResult(
     oppgaveId: Int,
     receivedSykmelding: ReceivedSykmelding,
     validationResult: ValidationResult,
-    opprinneligValidationResult: ValidationResult
+    opprinneligValidationResult: ValidationResult,
 ): Int =
     connection.use { connection ->
         val status = connection.prepareStatement(
@@ -91,7 +91,7 @@ fun DatabaseInterface.oppdaterManuellOppgaveUtenOpprinneligValidationResult(
                 validationresult = ?,
                 opprinnelig_validationresult = ?
             WHERE oppgaveid = ?;
-            """
+            """,
         ).use {
             it.setBoolean(1, true)
             it.setObject(2, receivedSykmelding.toPGObject())
@@ -111,7 +111,7 @@ fun DatabaseInterface.oppdaterApprecStatus(oppgaveId: Int, sendtApprec: Boolean)
             UPDATE MANUELLOPPGAVE
             SET sendt_apprec = ?
             WHERE oppgaveid = ?;
-            """
+            """,
         ).use {
             it.setBoolean(1, sendtApprec)
             it.setInt(2, oppgaveId)
@@ -127,7 +127,7 @@ fun DatabaseInterface.slettOppgave(oppgaveId: Int): Int =
             """
             DELETE FROM MANUELLOPPGAVE
             WHERE oppgaveid = ?;
-            """
+            """,
         ).use {
             it.setInt(1, oppgaveId)
             it.executeUpdate()

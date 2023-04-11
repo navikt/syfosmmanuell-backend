@@ -47,7 +47,7 @@ class MotattSykmeldingServiceTest : FunSpec({
         topicAiven = "topic-aiven",
         database = database,
         oppgaveService = oppgaveService,
-        manuellOppgaveService = manuellOppgaveService
+        manuellOppgaveService = manuellOppgaveService,
     )
 
     val sykmeldingsId = UUID.randomUUID().toString()
@@ -57,9 +57,9 @@ class MotattSykmeldingServiceTest : FunSpec({
         validationResult = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))),
         apprec = objectMapper.readValue(
             Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
-                Charsets.UTF_8
-            )
-        )
+                Charsets.UTF_8,
+            ),
+        ),
     )
     val oppgaveid = 308076319
     val loggingMeta = LoggingMeta("", null, msgId, sykmeldingsId)

@@ -4,5 +4,5 @@ import java.time.OffsetDateTime
 
 data class AzureAdV2Token(
     val accessToken: String,
-    val expires: OffsetDateTime
+    val expires: OffsetDateTime,
 )

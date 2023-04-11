@@ -38,7 +38,7 @@ class CORSTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "invalid-host")
-                    }
+                    },
                 ) {
                     assertEquals(HttpStatusCode.OK, response.status())
                     assertEquals(null, response.headers[HttpHeaders.AccessControlAllowOrigin])
@@ -49,7 +49,7 @@ class CORSTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "")
-                    }
+                    },
                 ) {
                     assertEquals(HttpStatusCode.OK, response.status())
                     assertEquals(null, response.headers[HttpHeaders.AccessControlAllowOrigin])
@@ -61,7 +61,7 @@ class CORSTest : FunSpec({
                     handleRequest(HttpMethod.Options, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
                         addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
-                    }
+                    },
                 ) {
                     assertEquals(HttpStatusCode.OK, response.status())
                     assertEquals("https://syfosmmanuell.nais.preprod.local", response.headers[HttpHeaders.AccessControlAllowOrigin])
@@ -87,7 +87,7 @@ class CORSTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
-                    }
+                    },
                 ) {
                     assertEquals(HttpStatusCode.OK, response.status())
                     assertEquals("https://syfosmmanuell.nais.preprod.local", response.headers[HttpHeaders.AccessControlAllowOrigin])
@@ -109,7 +109,7 @@ class CORSTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "null")
-                    }
+                    },
                 ) {
                     assertEquals(HttpStatusCode.OK, response.status())
                     assertEquals("*", response.headers[HttpHeaders.AccessControlAllowOrigin])
@@ -133,7 +133,7 @@ class CORSTest : FunSpec({
                     handleRequest(HttpMethod.Options, "/internal/is_ready") {
                         addHeader(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
                         addHeader(HttpHeaders.AccessControlRequestMethod, "GET")
-                    }
+                    },
                 ) {
                     assertEquals(HttpStatusCode.OK, response.status())
                     assertEquals("https://syfosmmanuell.nais.preprod.local", response.headers[HttpHeaders.AccessControlAllowOrigin])

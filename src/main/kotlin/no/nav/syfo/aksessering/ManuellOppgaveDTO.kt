@@ -8,5 +8,5 @@ data class ManuellOppgaveDTO(
     val sykmelding: Sykmelding,
     val personNrPasient: String,
     val mottattDato: java.time.LocalDateTime,
-    val validationResult: ValidationResult
+    val validationResult: ValidationResult,
 )

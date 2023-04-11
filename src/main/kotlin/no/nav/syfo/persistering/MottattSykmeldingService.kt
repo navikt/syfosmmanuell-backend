@@ -31,7 +31,7 @@ class MottattSykmeldingService(
     private val topicAiven: String,
     private val database: DatabaseInterface,
     private val oppgaveService: OppgaveService,
-    private val manuellOppgaveService: ManuellOppgaveService
+    private val manuellOppgaveService: ManuellOppgaveService,
 ) {
 
     companion object {
@@ -73,22 +73,22 @@ class MottattSykmeldingService(
                         mottakId = receivedManuellOppgave.receivedSykmelding.navLogId,
                         orgNr = receivedManuellOppgave.receivedSykmelding.legekontorOrgNr,
                         msgId = receivedManuellOppgave.receivedSykmelding.msgId,
-                        sykmeldingId = receivedManuellOppgave.receivedSykmelding.sykmelding.id
+                        sykmeldingId = receivedManuellOppgave.receivedSykmelding.sykmelding.id,
                     )
                     val receivedManuellOppgaveMedMerknad = receivedManuellOppgave.copy(
                         receivedSykmelding = receivedManuellOppgave.receivedSykmelding.copy(
                             merknader = listOf(
                                 Merknad(
                                     type = "UNDER_BEHANDLING",
-                                    beskrivelse = "Sykmeldingen er til manuell behandling"
-                                )
-                            )
-                        )
+                                    beskrivelse = "Sykmeldingen er til manuell behandling",
+                                ),
+                            ),
+                        ),
                     )
 
                     handleReceivedMessage(
                         receivedManuellOppgaveMedMerknad,
-                        loggingMeta
+                        loggingMeta,
                     )
                 }
             }
@@ -97,7 +97,7 @@ class MottattSykmeldingService(
 
     suspend fun handleReceivedMessage(
         manuellOppgave: ManuellOppgave,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ) {
         wrapExceptions(loggingMeta) {
             log.info("Mottok en manuell oppgave, {}", fields(loggingMeta))
@@ -107,7 +107,7 @@ class MottattSykmeldingService(
                 log.warn(
                     "Manuell oppgave med sykmeldingsid {}, er allerede lagret i databasen, {}",
                     manuellOppgave.receivedSykmelding.sykmelding.id,
-                    fields(loggingMeta)
+                    fields(loggingMeta),
                 )
             } else {
                 val oppgaveId = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
@@ -117,7 +117,7 @@ class MottattSykmeldingService(
                 log.info(
                     "Manuell oppgave lagret i databasen, for {}, {}",
                     StructuredArguments.keyValue("oppgaveId", oppgaveId),
-                    fields(loggingMeta)
+                    fields(loggingMeta),
                 )
                 manuellOppgaveService.sendApprec(oppgaveId, oppdatertApprec, loggingMeta)
                 manuellOppgaveService.sendReceivedSykmelding(manuellOppgave.receivedSykmelding, loggingMeta)

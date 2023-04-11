@@ -37,7 +37,7 @@ fun createApplicationEngine(
     manuellOppgaveService: ManuellOppgaveService,
     jwkProvider: JwkProvider,
     issuer: String,
-    authorizationService: AuthorizationService
+    authorizationService: AuthorizationService,
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort, configure = {
         // Increase timeout of Netty to handle large content bodies
@@ -88,11 +88,11 @@ fun createApplicationEngine(
             authenticate("jwt") {
                 hentManuellOppgaver(
                     manuellOppgaveService,
-                    authorizationService
+                    authorizationService,
                 )
                 sendVurderingManuellOppgave(
                     manuellOppgaveService,
-                    authorizationService
+                    authorizationService,
                 )
                 sykmeldingsApi(manuellOppgaveService)
             }

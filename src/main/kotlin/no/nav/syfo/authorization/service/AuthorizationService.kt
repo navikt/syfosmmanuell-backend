@@ -9,7 +9,7 @@ import no.nav.syfo.log
 class AuthorizationService(
     val syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
     val msGraphClient: MSGraphClient,
-    val databaseInterface: DatabaseInterface
+    val databaseInterface: DatabaseInterface,
 ) {
     suspend fun hasAccess(oppgaveId: Int, accessToken: String): Boolean {
         val pasientFnr = databaseInterface.getFnr(oppgaveId)

@@ -31,8 +31,8 @@ class MSGraphClientTest : FunSpec({
         MSGraphClient(
             environment = environment,
             azureAdV2Client = azureAdV2Client,
-            httpClient = httpClient.httpClient
-        )
+            httpClient = httpClient.httpClient,
+        ),
     )
 
     beforeTest {

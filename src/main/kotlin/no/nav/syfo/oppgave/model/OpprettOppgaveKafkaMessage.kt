@@ -17,7 +17,7 @@ data class OpprettOppgaveKafkaMessage(
     val aktivDato: String,
     val fristFerdigstillelse: String,
     val prioritet: PrioritetType,
-    val metadata: Map<String, String>?
+    val metadata: Map<String, String>?,
 )
 
 enum class PrioritetType {
