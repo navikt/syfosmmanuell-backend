@@ -74,7 +74,7 @@ class HttpClients(env: Environment) {
         httpClient = httpClient,
     )
 
-    val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, azureAdV2Client, httpClient, env.oppgaveScope)
+    val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, azureAdV2Client, httpClient, env.oppgaveScope, env.cluster)
 
     val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
         environment = env,

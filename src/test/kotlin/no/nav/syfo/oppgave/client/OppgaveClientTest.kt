@@ -78,7 +78,7 @@ class OppgaveClientTest : FunSpec({
         }
     }.start()
 
-    val oppgaveClient = OppgaveClient("$mockHttpServerUrl/oppgave", azureAdV2Client, httpClient, "scope")
+    val oppgaveClient = OppgaveClient("$mockHttpServerUrl/oppgave", azureAdV2Client, httpClient, "scope", "prod-gcp")
 
     beforeTest {
         clearMocks(azureAdV2Client)
