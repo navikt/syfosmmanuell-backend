@@ -24,6 +24,7 @@ data class Environment(
     val dbHost: String = getEnvVar("DB_HOST"),
     val dbPort: String = getEnvVar("DB_PORT"),
     val dbName: String = getEnvVar("DB_DATABASE"),
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

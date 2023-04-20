@@ -22,6 +22,7 @@ class OppgaveClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val httpClient: HttpClient,
     private val scope: String,
+    private val cluster: String,
 ) {
     suspend fun opprettOppgave(opprettOppgave: OpprettOppgave, msgId: String):
         OpprettOppgaveResponse = retry("create_oppgave") {
@@ -49,9 +50,13 @@ class OppgaveClient(
             header("X-Correlation-ID", msgId)
             setBody(ferdigstilloppgave)
         }
+
         if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
             log.info("Ferdigstilt oppgave med id ${ferdigstilloppgave.id}")
             return response.body<OpprettOppgaveResponse>()
+        } else if (cluster == "dev-gcp" && ferdigstilloppgave.mappeId == null) {
+            log.info("Skipping ferdigstilt oppgave med in dev due to mappeId is null id ${ferdigstilloppgave.id}: ${response.status}")
+            return OpprettOppgaveResponse(ferdigstilloppgave.id, ferdigstilloppgave.versjon)
         } else {
             log.error("Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}")
             throw RuntimeException("Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}")
