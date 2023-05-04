@@ -73,9 +73,6 @@ spec:
         - host: syfo-tilgangskontroll.dev-fss-pub.nais.io
         - host: graph.microsoft.com
         - host: oppgave-q1.dev-fss-pub.nais.io
-  vault:
-    enabled: false
-  webproxy: false
   secureLogs:
     enabled: true
   env:
