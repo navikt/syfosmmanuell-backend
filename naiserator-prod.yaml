@@ -70,8 +70,11 @@ spec:
           namespace: teamsykmelding
           cluster: prod-gcp
     outbound:
+      rules:
+        - application: syfo-tilgangskontroll
+          namespace: teamsykefravr
+          cluster: prod-gcp
       external:
-        - host: syfo-tilgangskontroll.prod-fss-pub.nais.io
         - host: graph.microsoft.com
         - host: oppgave.prod-fss-pub.nais.io
   secureLogs:
@@ -80,9 +83,7 @@ spec:
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.intern.nav.no
     - name: SYFOTILGANGSKONTROLL_SCOPE
-      value: api://prod-fss.teamsykefravr.syfo-tilgangskontroll/.default
-    - name: SYFOTILGANGSKONTROLL_URL
-      value: https://syfo-tilgangskontroll.prod-fss-pub.nais.io/syfo-tilgangskontroll
+      value: api://prod-gcp.teamsykefravr.syfo-tilgangskontroll/.default
     - name: MS_GRAPH_API_URL
       value: https://graph.microsoft.com/v1.0
     - name: MS_GRAPH_API_SCOPE
