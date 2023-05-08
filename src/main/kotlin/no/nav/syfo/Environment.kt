@@ -9,7 +9,7 @@ data class Environment(
     val produserOppgaveTopic: String = "teamsykmelding.oppgave-produser-oppgave",
     val syfosmmanuellUrl: String = getEnvVar("SYFOSMMANUELL_URL"),
     val oppgavebehandlingUrl: String = getEnvVar("OPPGAVEBEHANDLING_URL"),
-    val syfoTilgangsKontrollClientUrl: String = "http://syfo-tilgangskontroll.teamsykefravr/syfo-tilgangskontroll",
+    val syfoTilgangsKontrollClientUrl: String = "http://syfo-tilgangskontroll.teamsykefravr",
     val syfotilgangskontrollScope: String = getEnvVar("SYFOTILGANGSKONTROLL_SCOPE"),
     val msGraphApiScope: String = getEnvVar("MS_GRAPH_API_SCOPE"),
     val msGraphApiUrl: String = getEnvVar("MS_GRAPH_API_URL"),

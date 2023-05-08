@@ -37,7 +37,7 @@ class SyfoTilgangsKontrollClient(
         }
         val oboToken = azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = scope).accessToken
 
-        val httpResponse = httpClient.get("$syfoTilgangsKontrollClientUrl/api/tilgang/navident/person") {
+        val httpResponse = httpClient.get("$syfoTilgangsKontrollClientUrl/syfo-tilgangskontroll/api/tilgang/navident/person") {
             accept(ContentType.Application.Json)
             headers {
                 append("Authorization", "Bearer $oboToken")
