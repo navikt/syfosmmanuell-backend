@@ -27,6 +27,7 @@ val testContainerVersion = "1.18.1"
 val kotlinVersion = "1.8.21"
 val kafkaVersion = "3.4.0"
 val commonsCodecVersion = "1.15"
+val logbacksyslog4jVersion = "1.0.0"
 
 
 plugins {
@@ -96,6 +97,8 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
+
+    implementation("com.papertrailapp:logback-syslog4j:$logbacksyslog4jVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
 
