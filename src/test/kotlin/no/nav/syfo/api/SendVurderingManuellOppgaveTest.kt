@@ -41,6 +41,7 @@ import no.nav.syfo.persistering.api.ResultStatus
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
+import no.nav.syfo.testutil.Claim
 import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
@@ -115,7 +116,14 @@ class SendVurderingManuellOppgaveTest : FunSpec({
                         addHeader("Accept", "application/json")
                         addHeader("Content-Type", "application/json")
                         addHeader("X-Nav-Enhet", "1234")
-                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                        addHeader(
+                            HttpHeaders.Authorization,
+                            "Bearer ${generateJWT(
+                                "2",
+                                "clientId",
+                                Claim("preferred_username", "firstname.lastname@nav.no"),
+                            )}",
+                        )
                         setBody(objectMapper.writeValueAsString(result))
                     },
                 ) {
@@ -208,7 +216,14 @@ fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode
             addHeader("Accept", "application/json")
             addHeader("Content-Type", "application/json")
             addHeader("X-Nav-Enhet", navEnhet)
-            addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+            addHeader(
+                HttpHeaders.Authorization,
+                "Bearer ${generateJWT(
+                    "2",
+                    "clientId",
+                    Claim("preferred_username", "firstname.lastname@nav.no"),
+                )}",
+            )
             setBody(objectMapper.writeValueAsString(result))
         },
     ) {

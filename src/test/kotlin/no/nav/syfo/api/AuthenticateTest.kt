@@ -39,6 +39,7 @@ import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
+import no.nav.syfo.testutil.Claim
 import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateJWT
@@ -125,7 +126,14 @@ class AuthenticateTest : FunSpec({
             test("Aksepterer gyldig JWT med riktig audience") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")
+                        addHeader(
+                            HttpHeaders.Authorization,
+                            "Bearer ${generateJWT(
+                                "2",
+                                "clientId",
+                                Claim("preferred_username", "firstname.lastname@nav.no"),
+                            )}",
+                        )
                     },
                 ) {
                     assertEquals(HttpStatusCode.OK, response.status())
@@ -135,7 +143,14 @@ class AuthenticateTest : FunSpec({
             test("Gyldig JWT med feil audience gir Unauthorized") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "annenClientId")}")
+                        addHeader(
+                            HttpHeaders.Authorization,
+                            "Bearer ${generateJWT(
+                                "2",
+                                "annenClientId",
+                                Claim("preferred_username", "firstname.lastname@nav.no"),
+                            )}",
+                        )
                     },
                 ) {
                     assertEquals(HttpStatusCode.Unauthorized, response.status())

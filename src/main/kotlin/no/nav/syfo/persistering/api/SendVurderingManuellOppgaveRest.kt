@@ -7,6 +7,8 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import no.nav.syfo.auditLogger.AuditLogger
+import no.nav.syfo.auditlogg
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
 import no.nav.syfo.model.Merknad
@@ -40,6 +42,15 @@ fun Route.sendVurderingManuellOppgave(
 
             when (hasAccess) {
                 false -> {
+                    auditlogg.info(
+                        AuditLogger().createcCefMessage(
+                            fnr = null,
+                            accessToken = accessToken,
+                            operation = AuditLogger.Operation.WRITE,
+                            requestPath = "/api/v1/vurderingmanuelloppgave/$oppgaveId",
+                            permit = AuditLogger.Permit.DENY,
+                        ),
+                    )
                     logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/vurderingmanuelloppgave/$oppgaveId")
                     call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
                 }
@@ -56,6 +67,17 @@ fun Route.sendVurderingManuellOppgave(
                         accessToken = accessToken,
                         merknader = if (merknad != null) listOf(merknad) else null,
                     )
+
+                    auditlogg.info(
+                        AuditLogger().createcCefMessage(
+                            fnr = null,
+                            accessToken = accessToken,
+                            operation = AuditLogger.Operation.WRITE,
+                            requestPath = "/api/v1/vurderingmanuelloppgave/$oppgaveId",
+                            permit = AuditLogger.Permit.PERMIT,
+                        ),
+                    )
+
                     call.respond(HttpStatusCode.NoContent)
                 }
             }

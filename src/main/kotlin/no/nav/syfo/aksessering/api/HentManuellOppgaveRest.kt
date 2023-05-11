@@ -6,6 +6,8 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
+import no.nav.syfo.auditLogger.AuditLogger
+import no.nav.syfo.auditlogg
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.log
 import no.nav.syfo.service.ManuellOppgaveService
@@ -31,13 +33,31 @@ fun Route.hentManuellOppgaver(
 
             when (hasAccess) {
                 false -> {
-                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/manuellOppgave/$oppgaveId")
+                    auditlogg.info(
+                        AuditLogger().createcCefMessage(
+                            fnr = null,
+                            accessToken = accessToken,
+                            operation = AuditLogger.Operation.READ,
+                            requestPath = "/api/v1/manuellOppgave/$oppgaveId",
+                            permit = AuditLogger.Permit.DENY,
+                        ),
+                    )
+                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/api/v1/manuellOppgave/$oppgaveId")
                     call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
                 }
                 true -> {
                     log.info("Henter ut oppgave med $oppgaveId")
                     val manuellOppgave = manuellOppgaveService.hentManuellOppgaver(oppgaveId)
                     if (manuellOppgave != null) {
+                        auditlogg.info(
+                            AuditLogger().createcCefMessage(
+                                fnr = manuellOppgave.personNrPasient,
+                                accessToken = accessToken,
+                                operation = AuditLogger.Operation.READ,
+                                requestPath = "/api/v1/manuellOppgave/$oppgaveId",
+                                permit = AuditLogger.Permit.PERMIT,
+                            ),
+                        )
                         call.respond(manuellOppgave)
                     } else {
                         call.respond(HttpStatusCode.NotFound)

@@ -39,6 +39,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 val sikkerlogg = LoggerFactory.getLogger("securelog")
+val auditlogg = LoggerFactory.getLogger("auditLogger")
 
 @ExperimentalTime
 @DelicateCoroutinesApi
