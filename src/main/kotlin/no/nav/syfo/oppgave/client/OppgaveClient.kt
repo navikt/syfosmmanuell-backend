@@ -24,8 +24,7 @@ class OppgaveClient(
     private val scope: String,
     private val cluster: String,
 ) {
-    suspend fun opprettOppgave(opprettOppgave: OpprettOppgave, msgId: String):
-        OpprettOppgaveResponse = retry("create_oppgave") {
+    suspend fun opprettOppgave(opprettOppgave: OpprettOppgave, msgId: String): OpprettOppgaveResponse = retry("create_oppgave") {
         val response = httpClient.post(url) {
             contentType(ContentType.Application.Json)
             val token = azureAdV2Client.getAccessToken(scope)
