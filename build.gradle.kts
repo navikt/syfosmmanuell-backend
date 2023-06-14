@@ -25,7 +25,7 @@ val nimbusdsVersion = "9.31"
 val caffeineVersion = "3.1.6"
 val testContainerVersion = "1.18.3"
 val kotlinVersion = "1.8.22"
-val kafkaVersion = "3.4.1"
+val kafkaVersion = "3.5.0"
 val commonsCodecVersion = "1.15"
 val logbacksyslog4jVersion = "1.0.0"
 
