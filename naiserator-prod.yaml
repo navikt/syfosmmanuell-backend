@@ -10,7 +10,6 @@ spec:
     sqlInstances:
       - name: syfosmmanuell-backend-instance
         type: POSTGRES_14
-        tier: db-custom-2-5120
         diskSize: 100
         databases:
           - name: syfosmmanuell-backend
@@ -18,7 +17,7 @@ spec:
             users:
               - name: macgyver
         diskAutoresize: true
-        highAvailability: true
+        highAvailability: false
         diskType: SSD
         insights:
           enabled: true
@@ -29,7 +28,7 @@ spec:
   image: {{ image }}
   replicas:
     min: 2
-    max: 6
+    max: 4
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
@@ -51,8 +50,8 @@ spec:
       cpu: 1000m
       memory: 1Gi
     requests:
-      cpu: 400m
-      memory: 768Mi
+      cpu: 50m
+      memory: 350Mi
   kafka:
     pool: nav-prod
   azure:

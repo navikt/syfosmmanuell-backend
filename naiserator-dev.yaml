@@ -28,7 +28,7 @@ spec:
   image: {{ image }}
   replicas:
     min: 1
-    max: 2
+    max: 1
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
@@ -50,8 +50,8 @@ spec:
       cpu: 500m
       memory: 1Gi
     requests:
-      cpu: 400m
-      memory: 768Mi
+      cpu: 50m
+      memory: 350Mi
   kafka:
     pool: nav-dev
   azure:
