@@ -31,7 +31,7 @@ val logbacksyslog4jVersion = "1.0.0"
 
 
 plugins {
-    kotlin("jvm") version "1.8.22"
+    kotlin("jvm") version "1.9.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jmailen.kotlinter") version "3.15.0"
     id("org.cyclonedx.bom") version "1.7.4"
