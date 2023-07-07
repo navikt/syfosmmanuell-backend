@@ -12,7 +12,6 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import java.sql.ResultSet
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
@@ -116,7 +115,7 @@ fun DatabaseInterface.hentManuellOppgaveForSykmeldingId(sykmeldingId: String): M
         }
     }
 fun DatabaseInterface.getUlosteOppgaver(): List<UlosteOppgave> =
-    connection.use {connection ->
+    connection.use { connection ->
         connection.prepareStatement(
             """select receivedsykmelding->>'mottattDato' as dato, oppgaveId FROM MANUELLOPPGAVE
                 WHERE ferdigstilt is not true
@@ -128,8 +127,8 @@ fun DatabaseInterface.getUlosteOppgaver(): List<UlosteOppgave> =
 fun ResultSet.toUlostOppgave(): UlosteOppgave =
     UlosteOppgave(
         oppgaveId = getInt("oppgaveid"),
-        mottattDato = LocalDateTime.parse(getString("dato"))
-      )
+        mottattDato = LocalDateTime.parse(getString("dato")),
+    )
 
 fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
     ManuellOppgaveKomplett(
@@ -141,4 +140,3 @@ fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
         sendtApprec = getBoolean("sendt_apprec"),
         opprinneligValidationResult = getString("opprinnelig_validationresult")?.let { objectMapper.readValue<ValidationResult>(it) },
     )
-

@@ -4,7 +4,6 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.pool.HikariPool
 import no.nav.syfo.Environment
-import no.nav.syfo.aksessering.UlosteOppgave
 import no.nav.syfo.log
 import org.flywaydb.core.Flyway
 import java.net.ConnectException
