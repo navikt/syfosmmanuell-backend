@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
+import no.nav.syfo.aksessering.UlosteOppgave
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
 import no.nav.syfo.model.ManuellOppgaveKomplett
@@ -11,6 +12,8 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import java.sql.ResultSet
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
     connection.use { connection ->
@@ -112,6 +115,21 @@ fun DatabaseInterface.hentManuellOppgaveForSykmeldingId(sykmeldingId: String): M
             it.executeQuery().toList { toManuellOppgave() }.firstOrNull()
         }
     }
+fun DatabaseInterface.getUlosteOppgaver(): List<UlosteOppgave> =
+    connection.use {connection ->
+        connection.prepareStatement(
+            """select receivedsykmelding->>'mottattDato' as dato, oppgaveId FROM MANUELLOPPGAVE
+                WHERE ferdigstilt is not true
+            """,
+        ).use {
+            it.executeQuery().toList { toUlostOppgave() }
+        }
+    }
+fun ResultSet.toUlostOppgave(): UlosteOppgave =
+    UlosteOppgave(
+        oppgaveId = getInt("oppgaveid"),
+        mottattDato = LocalDateTime.parse(getString("dato"))
+      )
 
 fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
     ManuellOppgaveKomplett(
@@ -123,3 +141,4 @@ fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
         sendtApprec = getBoolean("sendt_apprec"),
         opprinneligValidationResult = getString("opprinnelig_validationresult")?.let { objectMapper.readValue<ValidationResult>(it) },
     )
+

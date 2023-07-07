@@ -1,12 +1,8 @@
 package no.nav.syfo.service
 
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
-import no.nav.syfo.aksessering.db.erApprecSendt
-import no.nav.syfo.aksessering.db.finnesOppgave
-import no.nav.syfo.aksessering.db.finnesSykmelding
-import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
-import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
-import no.nav.syfo.aksessering.db.hentManuellOppgaver
+import no.nav.syfo.aksessering.UlosteOppgave
+import no.nav.syfo.aksessering.db.*
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
@@ -193,5 +189,9 @@ class ManuellOppgaveService(
             log.error("Failed to send sykmelding {} to topic {} {}", receivedSykmelding.sykmelding.id, topic, loggingMeta)
             throw ex
         }
+    }
+
+    fun getOppgaver(): List<UlosteOppgave> {
+        return database.getUlosteOppgaver()
     }
 }

@@ -1,6 +1,7 @@
 package no.nav.syfo.service
 
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.ints.shouldBeExactly
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -50,6 +51,12 @@ class ManuellOppgaveServiceTest : FunSpec({
         database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
         clearMocks(kafkaProducers, oppgaveService, syfotilgangskontrollClient)
         coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
+    }
+    context("test get uloste oppgaver") {
+        test("ok") {
+            val uloste = manuellOppgaveService.getOppgaver()
+            uloste.size shouldBeExactly 1
+        }
     }
 
     context("Test av ferdigstilling av manuell behandling") {

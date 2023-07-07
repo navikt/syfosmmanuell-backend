@@ -65,5 +65,8 @@ fun Route.hentManuellOppgaver(
                 }
             }
         }
+        get("/oppgaver") {
+            call.respond(manuellOppgaveService.getOppgaver())
+        }
     }
 }
