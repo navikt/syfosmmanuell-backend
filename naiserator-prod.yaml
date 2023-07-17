@@ -35,8 +35,8 @@ spec:
     path: /internal/is_alive
     initialDelay: 10
     timeout: 5
-    periodSeconds: 5
-    failureThreshold: 30
+    periodSeconds: 10
+    failureThreshold: 100
   readiness:
     path: /internal/is_ready
     initialDelay: 30
