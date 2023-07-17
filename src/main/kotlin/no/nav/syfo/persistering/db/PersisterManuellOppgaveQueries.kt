@@ -6,6 +6,8 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toPGObject
+import java.sql.Timestamp
+import java.time.LocalDateTime
 
 fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, apprec: Apprec, oppgaveId: Int) {
     connection.use { connection ->
@@ -135,3 +137,22 @@ fun DatabaseInterface.slettOppgave(oppgaveId: Int): Int =
         connection.commit()
         return status
     }
+
+fun DatabaseInterface.oppdaterOppgaveHendelse(oppgaveId: String, status: String, statusTimeStamp: LocalDateTime) {
+    connection.use { connection ->
+        connection.prepareStatement(
+            """
+            UPDATE MANUELLOPPGAVE
+            set status = ?,
+            status_timestamp = ?
+            WHERE oppgaveid = ?;
+        """,
+        ).use {
+            it.setString(1, status)
+            it.setTimestamp(2, Timestamp.valueOf(statusTimeStamp))
+            it.setString(3, oppgaveId)
+            it.executeUpdate()
+        }
+        connection.commit()
+    }
+}
