@@ -21,6 +21,7 @@ import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.Database
+import no.nav.syfo.oppgave.kafka.OppgaveHendelseConsumer
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.MottattSykmeldingService
 import no.nav.syfo.service.ManuellOppgaveService
@@ -91,12 +92,19 @@ fun main() {
         manuellOppgaveService = manuellOppgaveService,
     )
 
-    GlobalScope.launch {
-        applicationState.ready = true
+    val oppgaveHendelseConsumer = OppgaveHendelseConsumer(
+        kafkaConsumer = kafkaConsumers.oppgaveHendelseConsumer,
+        topic = env.oppgaveHendelseTopic,
+        applicationState,
+        database,
+    )
+    applicationState.ready = true
 
-        createListener(applicationState) {
-            mottattSykmeldingService.startAivenConsumer()
-        }
+    createListener(applicationState) {
+        mottattSykmeldingService.startAivenConsumer()
+    }
+    createListener(applicationState) {
+        oppgaveHendelseConsumer.start()
     }
 
     ApplicationServer(applicationEngine, applicationState).start()

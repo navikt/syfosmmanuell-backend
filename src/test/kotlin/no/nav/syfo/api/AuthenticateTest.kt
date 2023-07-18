@@ -99,6 +99,7 @@ class AuthenticateTest : FunSpec({
             dbName = "",
             dbPort = "",
             cluster = "dev-gcp",
+            oppgaveHendelseTopic = "oppgavehendlese",
         )
         with(TestApplicationEngine()) {
             start()

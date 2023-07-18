@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -255,7 +256,7 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
     coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-    database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
+    runBlocking { database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid) }
 
     testApplicationEngine.application.routing {
         sendVurderingManuellOppgave(

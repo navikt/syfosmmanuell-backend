@@ -51,7 +51,6 @@ class OppgaveClient(
         }
 
         if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
-            log.info("Ferdigstilt oppgave med id ${ferdigstilloppgave.id}")
             return response.body<OpprettOppgaveResponse>()
         } else if (cluster == "dev-gcp" && ferdigstilloppgave.mappeId == null) {
             log.info("Skipping ferdigstilt oppgave med in dev due to mappeId is null id ${ferdigstilloppgave.id}: ${response.status}")
