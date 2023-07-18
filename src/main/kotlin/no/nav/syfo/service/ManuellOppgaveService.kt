@@ -40,19 +40,19 @@ class ManuellOppgaveService(
     private val kafkaProducers: KafkaProducers,
     private val oppgaveService: OppgaveService,
 ) {
-    fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
+    suspend fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
         database.hentManuellOppgaver(oppgaveId)
 
-    fun finnesOppgave(oppgaveId: Int): Boolean =
+    suspend fun finnesOppgave(oppgaveId: Int): Boolean =
         database.finnesOppgave(oppgaveId)
 
     suspend fun finnesSykmelding(sykmeldingId: String): Boolean =
         database.finnesSykmelding(sykmeldingId)
 
-    fun erApprecSendt(oppgaveId: Int): Boolean =
+    suspend fun erApprecSendt(oppgaveId: Int): Boolean =
         database.erApprecSendt(oppgaveId)
 
-    fun toggleApprecSendt(oppgaveId: Int) =
+    suspend fun toggleApprecSendt(oppgaveId: Int) =
         database.oppdaterApprecStatus(oppgaveId, true)
 
     suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: String, accessToken: String, merknader: List<Merknad>?) {
@@ -149,7 +149,7 @@ class ManuellOppgaveService(
         }
     }
 
-    fun sendApprec(oppgaveId: Int, apprec: Apprec, loggingMeta: LoggingMeta) {
+    suspend fun sendApprec(oppgaveId: Int, apprec: Apprec, loggingMeta: LoggingMeta) {
         try {
             kafkaProducers.kafkaApprecProducer.producer.send(ProducerRecord(kafkaProducers.kafkaApprecProducer.apprecTopic, apprec)).get()
             log.info("Apprec kvittering sent til kafka topic {} {}", kafkaProducers.kafkaApprecProducer.apprecTopic, loggingMeta)
@@ -197,7 +197,7 @@ class ManuellOppgaveService(
         }
     }
 
-    fun getOppgaver(): List<UlosteOppgave> {
+    suspend fun getOppgaver(): List<UlosteOppgave> {
         return database.getUlosteOppgaver()
     }
 }

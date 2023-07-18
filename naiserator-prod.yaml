@@ -91,3 +91,5 @@ spec:
       value: api://prod-fss.oppgavehandtering.oppgave/.default
     - name: OPPGAVEBEHANDLING_URL
       value: https://oppgave.prod-fss-pub.nais.io/api/v1/oppgaver
+    - name: OPPGAVE_HENDELSE_TOPIC
+      value: oppgavehandtering.oppgavehendelse-v1

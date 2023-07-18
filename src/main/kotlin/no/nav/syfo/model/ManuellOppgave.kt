@@ -23,3 +23,9 @@ fun Apprec.toPGObject() = PGobject().also {
     it.type = "json"
     it.value = objectMapper.writeValueAsString(this)
 }
+
+enum class ManuellOppgaveStatus {
+    APEN,
+    FERDIGSTILT,
+    FEILREGISTRERT,
+}

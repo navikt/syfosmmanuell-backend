@@ -14,17 +14,19 @@ import no.nav.syfo.objectMapper
 import java.sql.ResultSet
 import java.time.LocalDateTime
 
-fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
-    connection.use { connection ->
-        connection.prepareStatement(
-            """
+suspend fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection.prepareStatement(
+                """
                 SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE oppgaveid=?;
                 """,
-        ).use {
-            it.setInt(1, oppgaveId)
-            it.executeQuery().next()
+            ).use {
+                it.setInt(1, oppgaveId)
+                it.executeQuery().next()
+            }
         }
     }
 
@@ -44,7 +46,7 @@ suspend fun DatabaseInterface.finnesSykmelding(id: String) =
         }
     }
 
-fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
+suspend fun DatabaseInterface.erApprecSendt(oppgaveId: Int) = withContext(Dispatchers.IO) {
     connection.use { connection ->
         connection.prepareStatement(
             """
@@ -59,20 +61,23 @@ fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
             it.executeQuery().next()
         }
     }
+}
 
-fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
-    connection.use { connection ->
-        connection.prepareStatement(
-            """
+suspend fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection.prepareStatement(
+                """
                 SELECT oppgaveid,receivedsykmelding,validationresult
                 FROM MANUELLOPPGAVE  
                 WHERE oppgaveid=? 
                 AND ferdigstilt=?;
                 """,
-        ).use {
-            it.setInt(1, oppgaveId)
-            it.setBoolean(2, false)
-            it.executeQuery().toList { toManuellOppgaveDTO() }.firstOrNull()
+            ).use {
+                it.setInt(1, oppgaveId)
+                it.setBoolean(2, false)
+                it.executeQuery().toList { toManuellOppgaveDTO() }.firstOrNull()
+            }
         }
     }
 
@@ -87,41 +92,47 @@ fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO {
     )
 }
 
-fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: Int): List<ManuellOppgaveKomplett> =
-    connection.use { connection ->
-        connection.prepareStatement(
-            """
+suspend fun DatabaseInterface.hentKomplettManuellOppgave(oppgaveId: Int): List<ManuellOppgaveKomplett> =
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection.prepareStatement(
+                """
                 SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec,opprinnelig_validationresult
                 FROM MANUELLOPPGAVE  
                 WHERE oppgaveid=?;
                 """,
-        ).use {
-            it.setInt(1, oppgaveId)
-            it.executeQuery().toList { toManuellOppgave() }
+            ).use {
+                it.setInt(1, oppgaveId)
+                it.executeQuery().toList { toManuellOppgave() }
+            }
         }
     }
 
-fun DatabaseInterface.hentManuellOppgaveForSykmeldingId(sykmeldingId: String): ManuellOppgaveKomplett? =
-    connection.use { connection ->
-        connection.prepareStatement(
-            """
+suspend fun DatabaseInterface.hentManuellOppgaveForSykmeldingId(sykmeldingId: String): ManuellOppgaveKomplett? =
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection.prepareStatement(
+                """
                 SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec,opprinnelig_validationresult
                 FROM MANUELLOPPGAVE  
                 WHERE receivedsykmelding->'sykmelding'->>'id' = ?;
                 """,
-        ).use {
-            it.setString(1, sykmeldingId)
-            it.executeQuery().toList { toManuellOppgave() }.firstOrNull()
+            ).use {
+                it.setString(1, sykmeldingId)
+                it.executeQuery().toList { toManuellOppgave() }.firstOrNull()
+            }
         }
     }
-fun DatabaseInterface.getUlosteOppgaver(): List<UlosteOppgave> =
-    connection.use { connection ->
-        connection.prepareStatement(
-            """select receivedsykmelding->>'mottattDato' as dato, oppgaveId FROM MANUELLOPPGAVE
+suspend fun DatabaseInterface.getUlosteOppgaver(): List<UlosteOppgave> =
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection.prepareStatement(
+                """select receivedsykmelding->>'mottattDato' as dato, oppgaveId FROM MANUELLOPPGAVE
                 WHERE ferdigstilt is not true
             """,
-        ).use {
-            it.executeQuery().toList { toUlostOppgave() }
+            ).use {
+                it.executeQuery().toList { toUlostOppgave() }
+            }
         }
     }
 fun ResultSet.toUlostOppgave(): UlosteOppgave =

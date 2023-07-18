@@ -1,5 +1,6 @@
 package no.nav.syfo.oppgave.kafka
 
+import no.nav.syfo.model.ManuellOppgaveStatus
 import java.time.LocalDateTime
 
 data class OppgaveKafkaAivenRecord(
@@ -42,4 +43,13 @@ enum class Hendelsestype {
     OPPGAVE_ENDRET,
     OPPGAVE_FERDIGSTILT,
     OPPGAVE_FEILREGISTRERT,
+}
+
+fun Hendelsestype.manuellOppgaveStatus(): ManuellOppgaveStatus {
+    return when (this) {
+        Hendelsestype.OPPGAVE_OPPRETTET -> ManuellOppgaveStatus.APEN
+        Hendelsestype.OPPGAVE_ENDRET -> ManuellOppgaveStatus.APEN
+        Hendelsestype.OPPGAVE_FERDIGSTILT -> ManuellOppgaveStatus.FERDIGSTILT
+        Hendelsestype.OPPGAVE_FEILREGISTRERT -> ManuellOppgaveStatus.FEILREGISTRERT
+    }
 }
