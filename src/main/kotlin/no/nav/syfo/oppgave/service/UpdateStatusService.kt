@@ -28,6 +28,7 @@ class UpdateStatusService(
         private val statusMap = mapOf(
             "FERDIGSTILT" to ManuellOppgaveStatus.FERDIGSTILT,
             "FEILREGISTRERT" to ManuellOppgaveStatus.FEILREGISTRERT,
+            null to ManuellOppgaveStatus.DELETED,
         )
     }
 
@@ -46,13 +47,13 @@ class UpdateStatusService(
                                 val oppgave = oppgaveClient.hentOppgave(oppgaveId, id)
                                 if (oppgave == null) {
                                     logger.warn("Could not find oppgave for oppgaveId $oppgaveId")
-                                } else {
-                                    database.oppdaterOppgaveHendelse(
-                                        oppgaveId = oppgaveId,
-                                        status = statusMap[oppgave.status] ?: ManuellOppgaveStatus.APEN,
-                                        statusTimestamp = oppgave.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now(),
-                                    )
                                 }
+
+                                database.oppdaterOppgaveHendelse(
+                                    oppgaveId = oppgaveId,
+                                    status = statusMap[oppgave?.status] ?: ManuellOppgaveStatus.APEN,
+                                    statusTimestamp = oppgave?.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now(),
+                                )
                             } catch (ex: Exception) {
                                 logger.error("Caught $ex for oppgaveId $oppgaveId")
                             }
