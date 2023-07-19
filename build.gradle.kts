@@ -28,7 +28,7 @@ val kotlinVersion = "1.9.0"
 val kafkaVersion = "3.5.0"
 val commonsCodecVersion = "1.16.0"
 val logbacksyslog4jVersion = "1.0.0"
-
+val kubernetesClientVersion = "18.0.1"
 
 plugins {
     kotlin("jvm") version "1.9.0"
@@ -52,6 +52,8 @@ repositories {
 }
 
 dependencies {
+    implementation("io.kubernetes:client-java-extended:$kubernetesClientVersion")
+    implementation("io.kubernetes:client-java:$kubernetesClientVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")

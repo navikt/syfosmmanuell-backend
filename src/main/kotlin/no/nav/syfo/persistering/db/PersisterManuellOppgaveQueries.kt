@@ -168,3 +168,28 @@ suspend fun DatabaseInterface.oppdaterOppgaveHendelse(oppgaveId: Int, status: Ma
         }
     }
 }
+
+suspend fun DatabaseInterface.getOppgaveWithNullStatus(limit: Int): List<Pair<Int, String>> =
+    withContext(Dispatchers.IO) {
+        connection.use { conn ->
+            conn.prepareStatement(
+                """
+                SELECT oppgaveId, id
+                FROM MANUELLOPPGAVE
+                WHERE status IS NULL
+                LIMIT ?;
+                """,
+            ).use { stmt ->
+                stmt.setInt(1, limit)
+                stmt.executeQuery().use { rs ->
+                    generateSequence {
+                        if (rs.next()) {
+                            rs.getInt("oppgaveId") to rs.getString("id")
+                        } else {
+                            null
+                        }
+                    }.toList()
+                }
+            }
+        }
+    }
