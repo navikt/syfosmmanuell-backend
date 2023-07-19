@@ -15,13 +15,13 @@ class LeaderElector(
     suspend fun isLeader(): Boolean {
         val hostname: String = withContext(Dispatchers.IO) { InetAddress.getLocalHost() }.hostName
 
-        try {
+        return try {
             val leader = httpClient.get(getHttpPath(electorPath)).body<Leader>()
-            return leader.name == hostname
+            leader.name == hostname
         } catch (e: Exception) {
             val message = "Kall mot elector feiler"
-            log.error(message)
-            throw RuntimeException(message)
+            log.warn(message)
+            false
         }
     }
 
