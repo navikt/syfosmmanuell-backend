@@ -29,7 +29,6 @@ val kafkaVersion = "3.5.0"
 val commonsCodecVersion = "1.16.0"
 val logbacksyslog4jVersion = "1.0.0"
 
-
 plugins {
     kotlin("jvm") version "1.9.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"

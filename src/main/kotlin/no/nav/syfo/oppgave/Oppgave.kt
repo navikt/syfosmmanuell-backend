@@ -1,6 +1,7 @@
 package no.nav.syfo.oppgave
 
 import java.time.LocalDate
+import java.time.ZonedDateTime
 
 data class OpprettOppgave(
     val tildeltEnhetsnr: String? = null,
@@ -34,6 +35,7 @@ data class OpprettOppgaveResponse(
     val status: String? = null,
     val tildeltEnhetsnr: String? = null,
     val mappeId: Int? = null,
+    val endretTidspunkt: ZonedDateTime? = null,
 )
 
 enum class OppgaveStatus(val status: String) {

@@ -60,6 +60,9 @@ class OppgaveService(
 
     suspend fun ferdigstillOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta, enhet: String?, veileder: String?) {
         val oppgave = oppgaveClient.hentOppgave(manuellOppgave.oppgaveid, manuellOppgave.receivedSykmelding.msgId)
+        requireNotNull(oppgave) {
+            throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
+        }
         val oppgaveVersjon = oppgave.versjon
 
         if (oppgave.status != OppgaveStatus.FERDIGSTILT.name) {

@@ -28,4 +28,5 @@ enum class ManuellOppgaveStatus {
     APEN,
     FERDIGSTILT,
     FEILREGISTRERT,
+    DELETED,
 }
