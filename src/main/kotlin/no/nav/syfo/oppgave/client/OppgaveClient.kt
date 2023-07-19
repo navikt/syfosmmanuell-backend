@@ -61,7 +61,7 @@ class OppgaveClient(
         }
     }
 
-    suspend fun hentOppgave(oppgaveId: Int, msgId: String): OpprettOppgaveResponse {
+    suspend fun hentOppgave(oppgaveId: Int, msgId: String): OpprettOppgaveResponse? {
         val response = httpClient.get("$url/$oppgaveId") {
             contentType(ContentType.Application.Json)
             val token = azureAdV2Client.getAccessToken(scope)
@@ -71,6 +71,8 @@ class OppgaveClient(
         if (response.status == HttpStatusCode.OK) {
             log.info("Hentet oppgave med id $oppgaveId")
             return response.body<OpprettOppgaveResponse>()
+        } else if (response.status == HttpStatusCode.NotFound) {
+            return null
         } else {
             log.error("Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}")
             throw RuntimeException("Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}")

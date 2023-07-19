@@ -44,11 +44,15 @@ class UpdateStatusService(
                         launch(Dispatchers.IO) {
                             try {
                                 val oppgave = oppgaveClient.hentOppgave(oppgaveId, id)
-                                database.oppdaterOppgaveHendelse(
-                                    oppgaveId = oppgaveId,
-                                    status = statusMap[oppgave.status] ?: ManuellOppgaveStatus.APEN,
-                                    statusTimestamp = oppgave.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now(),
-                                )
+                                if (oppgave == null) {
+                                    logger.warn("Could not find oppgave for oppgaveId $oppgaveId")
+                                } else {
+                                    database.oppdaterOppgaveHendelse(
+                                        oppgaveId = oppgaveId,
+                                        status = statusMap[oppgave.status] ?: ManuellOppgaveStatus.APEN,
+                                        statusTimestamp = oppgave.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now(),
+                                    )
+                                }
                             } catch (ex: Exception) {
                                 logger.error("Caught $ex for oppgaveId $oppgaveId")
                             }

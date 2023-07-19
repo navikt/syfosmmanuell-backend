@@ -135,8 +135,8 @@ class OppgaveClientTest : FunSpec({
         test("Henter oppgave") {
             val opprettOppgaveResponse = oppgaveClient.hentOppgave(4, "123")
 
-            assertEquals(4, opprettOppgaveResponse.id)
-            assertEquals(1, opprettOppgaveResponse.versjon)
+            assertEquals(4, opprettOppgaveResponse?.id)
+            assertEquals(1, opprettOppgaveResponse?.versjon)
         }
         test("Kaster feil hvis henting feiler") {
             assertFailsWith<RuntimeException> {
