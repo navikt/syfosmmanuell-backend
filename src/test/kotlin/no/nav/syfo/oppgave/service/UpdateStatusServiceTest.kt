@@ -12,7 +12,7 @@ import no.nav.syfo.oppgave.OpprettOppgaveResponse
 import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.persistering.db.getOppgaveWithNullStatus
 import no.nav.syfo.persistering.db.oppdaterOppgaveHendelse
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 class UpdateStatusServiceTest : FunSpec({
     val database: DatabaseInterface = mockk(relaxed = true)
@@ -30,7 +30,7 @@ class UpdateStatusServiceTest : FunSpec({
             val id = "id"
             val status = "FERDIGSTILT"
             val oppgaveList = listOf(oppgaveId to id)
-            val localTime = LocalDateTime.now()
+            val localTime = ZonedDateTime.now()
             val oppgave = OpprettOppgaveResponse(oppgaveId, 1, status, endretTidspunkt = localTime)
 
             coEvery { database.getOppgaveWithNullStatus(10) } returns
@@ -43,7 +43,7 @@ class UpdateStatusServiceTest : FunSpec({
                 database.oppdaterOppgaveHendelse(
                     oppgaveId = oppgaveId,
                     status = ManuellOppgaveStatus.FERDIGSTILT,
-                    statusTimestamp = oppgave.endretTidspunkt!!,
+                    statusTimestamp = oppgave.endretTidspunkt!!.toLocalDateTime(),
                 )
             }
         }

@@ -47,7 +47,7 @@ class UpdateStatusService(
                                 database.oppdaterOppgaveHendelse(
                                     oppgaveId = oppgaveId,
                                     status = statusMap[oppgave.status] ?: ManuellOppgaveStatus.APEN,
-                                    statusTimestamp = oppgave.endretTidspunkt ?: LocalDateTime.now(),
+                                    statusTimestamp = oppgave.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now(),
                                 )
                             } catch (ex: Exception) {
                                 logger.error("Caught $ex for oppgaveId $oppgaveId")
