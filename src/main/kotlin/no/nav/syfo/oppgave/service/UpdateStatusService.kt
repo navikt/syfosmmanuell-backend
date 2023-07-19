@@ -2,7 +2,9 @@ package no.nav.syfo.oppgave.service
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -14,6 +16,7 @@ import no.nav.syfo.persistering.db.oppdaterOppgaveHendelse
 import no.nav.syfo.service.UpdateService
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.seconds
 
 class UpdateStatusService(
     private val database: DatabaseInterface,
@@ -36,37 +39,45 @@ class UpdateStatusService(
         if (updateJob?.isActive != true) {
             updateJob = launch(Dispatchers.IO) {
                 while (isActive) {
-                    val oppgaveList = database.getOppgaveWithNullStatus(limit)
+                    try {
+                        val oppgaveList = database.getOppgaveWithNullStatus(limit)
 
-                    // Breaks the loop if there are no more records
-                    if (oppgaveList.isEmpty()) break
+                        if (oppgaveList.isEmpty()) break
 
-                    val jobs = oppgaveList.map { (oppgaveId, id) ->
-                        launch(Dispatchers.IO) {
-                            try {
-                                val oppgave = oppgaveClient.hentOppgave(oppgaveId, id)
-                                if (oppgave == null) {
-                                    logger.warn("Could not find oppgave for oppgaveId $oppgaveId")
-                                }
-
-                                database.oppdaterOppgaveHendelse(
-                                    oppgaveId = oppgaveId,
-                                    status = statusMap[oppgave?.status] ?: ManuellOppgaveStatus.APEN,
-                                    statusTimestamp = oppgave?.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now(),
-                                )
-                            } catch (ex: Exception) {
-                                logger.error("Caught $ex for oppgaveId $oppgaveId")
+                        val jobs = oppgaveList.map { (oppgaveId, id) ->
+                            launch(Dispatchers.IO) {
+                                processOppgave(oppgaveId, id)
                             }
                         }
+                        jobs.joinAll()
+                    } catch (ex: Exception) {
+                        logger.error("Caught unexpected delaying for 10s $ex")
+                        delay(10.seconds)
                     }
-                    jobs.joinAll()
                 }
             }
         }
     }
 
-    override fun stop() {
-        updateJob?.cancel()
+    private suspend fun processOppgave(oppgaveId: Int, id: String) {
+        try {
+            val oppgave = oppgaveClient.hentOppgave(oppgaveId, id)
+            if (oppgave == null) {
+                logger.warn("Could not find oppgave for oppgaveId $oppgaveId")
+            }
+
+            database.oppdaterOppgaveHendelse(
+                oppgaveId = oppgaveId,
+                status = statusMap[oppgave?.status] ?: ManuellOppgaveStatus.APEN,
+                statusTimestamp = oppgave?.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now(),
+            )
+        } catch (ex: Exception) {
+            logger.error("Caught $ex for oppgaveId $oppgaveId")
+        }
+    }
+
+    override suspend fun stop() {
+        updateJob?.cancelAndJoin()
         updateJob = null
     }
 }

@@ -65,7 +65,7 @@ class HttpClients(env: Environment) {
         }
     }
 
-    private val httpClient = HttpClient(Apache, config)
+    val httpClient = HttpClient(Apache, config)
 
     private val azureAdV2Client = AzureAdV2Client(
         azureAppClientId = env.azureAppClientId,

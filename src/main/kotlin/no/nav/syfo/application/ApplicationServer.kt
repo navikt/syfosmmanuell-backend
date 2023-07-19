@@ -1,13 +1,13 @@
 package no.nav.syfo.application
 
 import io.ktor.server.engine.ApplicationEngine
-import no.nav.syfo.elector.LeaderElectorService
+import no.nav.syfo.elector.LeadershipHandling
 import java.util.concurrent.TimeUnit
 
 class ApplicationServer(
     private val applicationServer: ApplicationEngine,
     private val applicationState: ApplicationState,
-    private val leaderElectorService: LeaderElectorService,
+    private val leaderElectorService: LeadershipHandling,
 ) {
 
     init {

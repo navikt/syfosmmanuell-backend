@@ -52,8 +52,6 @@ repositories {
 }
 
 dependencies {
-    implementation("io.kubernetes:client-java-extended:$kubernetesClientVersion")
-    implementation("io.kubernetes:client-java:$kubernetesClientVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
