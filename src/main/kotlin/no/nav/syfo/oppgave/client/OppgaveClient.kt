@@ -69,7 +69,6 @@ class OppgaveClient(
             header("X-Correlation-ID", msgId)
         }
         if (response.status == HttpStatusCode.OK) {
-            log.info("Hentet oppgave med id $oppgaveId")
             return response.body<OpprettOppgaveResponse>()
         } else if (response.status == HttpStatusCode.NotFound) {
             return null

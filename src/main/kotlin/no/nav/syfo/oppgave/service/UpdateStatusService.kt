@@ -1,5 +1,6 @@
 package no.nav.syfo.oppgave.service
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
@@ -51,8 +52,16 @@ class UpdateStatusService(
                         }
                         jobs.joinAll()
                     } catch (ex: Exception) {
-                        logger.error("Caught unexpected delaying for 10s $ex")
-                        delay(10.seconds)
+                        when (ex) {
+                            is CancellationException -> {
+                                logger.warn("Job was cancelled, message: ${ex.message}")
+                                throw ex
+                            }
+                            else -> {
+                                logger.error("Caught unexpected delaying for 10s $ex")
+                                delay(10.seconds)
+                            }
+                        }
                     }
                 }
             }

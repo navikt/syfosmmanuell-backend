@@ -1,5 +1,6 @@
 package no.nav.syfo.elector
 
+import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -25,9 +26,17 @@ class LeadershipHandling(
                 try {
                     handleLeadership()
                     delay(5.seconds)
-                } catch (e: Exception) {
-                    logger.error("Error occurred in leadership handling loop delaying for 10 seconds", e)
-                    delay(10.seconds)
+                } catch (ex: Exception) {
+                    when (ex) {
+                        is CancellationException -> {
+                            logger.warn("Job was cancelled, message: ${ex.message}")
+                            throw ex
+                        }
+                        else -> {
+                            logger.error("Error occurred in leadership handling loop delaying for 10 seconds", ex)
+                            delay(10.seconds)
+                        }
+                    }
                 }
             }
 
