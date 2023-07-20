@@ -11,6 +11,7 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
+import no.nav.syfo.oppgave.OpprettOppgaveResponse
 import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.oppgave.model.PrioritetType
@@ -25,7 +26,7 @@ class OppgaveService(
     private val kafkaProduceTaskProducer: KafkaProducers.KafkaProduceTaskProducer,
 ) {
 
-    suspend fun opprettOppgave(manuellOppgave: ManuellOppgave, loggingMeta: LoggingMeta): Int {
+    suspend fun opprettOppgave(manuellOppgave: ManuellOppgave, loggingMeta: LoggingMeta): OpprettOppgaveResponse {
         val opprettOppgave = tilOpprettOppgave(manuellOppgave)
         val oppgaveResponse = oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
         OPPRETT_OPPGAVE_COUNTER.inc()
@@ -34,7 +35,7 @@ class OppgaveService(
             StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
             StructuredArguments.fields(loggingMeta),
         )
-        return oppgaveResponse.id
+        return oppgaveResponse
     }
 
     fun opprettOppfoligingsOppgave(manuellOppgave: ManuellOppgaveKomplett, enhet: String, veileder: String, loggingMeta: LoggingMeta) {

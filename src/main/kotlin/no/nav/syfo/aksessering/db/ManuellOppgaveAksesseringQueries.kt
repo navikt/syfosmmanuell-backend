@@ -8,6 +8,7 @@ import no.nav.syfo.aksessering.UlosteOppgave
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
 import no.nav.syfo.model.ManuellOppgaveKomplett
+import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
@@ -127,7 +128,7 @@ suspend fun DatabaseInterface.getUlosteOppgaver(): List<UlosteOppgave> =
     withContext(Dispatchers.IO) {
         connection.use { connection ->
             connection.prepareStatement(
-                """select receivedsykmelding->>'mottattDato' as dato, oppgaveId FROM MANUELLOPPGAVE
+                """select receivedsykmelding->>'mottattDato' as dato, oppgaveId, status FROM MANUELLOPPGAVE
                 WHERE ferdigstilt is not true
             """,
             ).use {
@@ -139,6 +140,7 @@ fun ResultSet.toUlostOppgave(): UlosteOppgave =
     UlosteOppgave(
         oppgaveId = getInt("oppgaveid"),
         mottattDato = LocalDateTime.parse(getString("dato")),
+        status = ManuellOppgaveStatus.valueOf(getString("status")),
     )
 
 fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =

@@ -21,6 +21,7 @@ import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
@@ -33,6 +34,7 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
+import java.time.LocalDateTime
 import java.util.UUID
 
 class SykmeldingsApiTest : FunSpec({
@@ -76,7 +78,13 @@ class SykmeldingsApiTest : FunSpec({
             }
 
             test("Skal få 200 OK hvis sykmelding finnes") {
-                database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
+                database.opprettManuellOppgave(
+                    manuellOppgave,
+                    manuellOppgave.apprec,
+                    oppgaveid,
+                    ManuellOppgaveStatus.APEN,
+                    LocalDateTime.now(),
+                )
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId") {
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("2", "clientId")}")

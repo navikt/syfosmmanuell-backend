@@ -33,6 +33,7 @@ import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
@@ -47,6 +48,7 @@ import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
 import java.nio.file.Paths
+import java.time.LocalDateTime
 
 class AuthenticateTest : FunSpec({
     val path = "src/test/resources/jwkset.json"
@@ -75,7 +77,7 @@ class AuthenticateTest : FunSpec({
     beforeTest {
         database.connection.dropData()
         clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
-        database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
+        database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid, ManuellOppgaveStatus.APEN, LocalDateTime.now())
         coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
     }
 

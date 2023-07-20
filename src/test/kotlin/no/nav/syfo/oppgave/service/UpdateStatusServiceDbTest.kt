@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.oppgave.client.OppgaveClient
@@ -13,6 +14,7 @@ import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.okApprec
 import no.nav.syfo.testutil.receivedSykmelding
+import java.time.LocalDateTime
 import java.util.UUID
 
 class UpdateStatusServiceDbTest : FunSpec({
@@ -30,6 +32,8 @@ class UpdateStatusServiceDbTest : FunSpec({
             ),
             okApprec(),
             0,
+            ManuellOppgaveStatus.APEN,
+            LocalDateTime.now(),
         )
     }
 

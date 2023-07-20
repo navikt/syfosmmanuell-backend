@@ -10,6 +10,7 @@ import no.nav.syfo.log
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
@@ -22,6 +23,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.AuthorizationException
 import org.apache.kafka.common.errors.ClusterAuthorizationException
 import java.time.Duration
+import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
@@ -37,6 +39,12 @@ class MottattSykmeldingService(
     companion object {
         private const val DELAY_ON_ERROR_SECONDS = 60L
         private const val POLL_TIME_SECONDS = 10L
+
+        private val statusMap = mapOf(
+            "FERDIGSTILT" to ManuellOppgaveStatus.FERDIGSTILT,
+            "FEILREGISTRERT" to ManuellOppgaveStatus.FEILREGISTRERT,
+            null to ManuellOppgaveStatus.DELETED,
+        )
     }
 
     @ExperimentalTime
@@ -110,16 +118,17 @@ class MottattSykmeldingService(
                     fields(loggingMeta),
                 )
             } else {
-                val oppgaveId = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
+                val oppgave = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
                 val oppdatertApprec = manuellOppgaveService.lagOppdatertApprec(manuellOppgave)
-
-                database.opprettManuellOppgave(manuellOppgave, oppdatertApprec, oppgaveId)
+                val status = statusMap[oppgave.status] ?: ManuellOppgaveStatus.APEN
+                val statusTimestamp = oppgave.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now()
+                database.opprettManuellOppgave(manuellOppgave, oppdatertApprec, oppgave.id, status, statusTimestamp)
                 log.info(
                     "Manuell oppgave lagret i databasen, for {}, {}",
-                    StructuredArguments.keyValue("oppgaveId", oppgaveId),
+                    StructuredArguments.keyValue("oppgaveId", oppgave.id),
                     fields(loggingMeta),
                 )
-                manuellOppgaveService.sendApprec(oppgaveId, oppdatertApprec, loggingMeta)
+                manuellOppgaveService.sendApprec(oppgave.id, oppdatertApprec, loggingMeta)
                 manuellOppgaveService.sendReceivedSykmelding(manuellOppgave.receivedSykmelding, loggingMeta)
                 MESSAGE_STORED_IN_DB_COUNTER.inc()
             }

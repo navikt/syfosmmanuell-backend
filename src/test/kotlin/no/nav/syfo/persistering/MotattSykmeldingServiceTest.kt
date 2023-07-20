@@ -24,6 +24,7 @@ import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.testutil.TestDB
 import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
+import no.nav.syfo.testutil.oppgave
 import no.nav.syfo.testutil.receivedSykmelding
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -66,7 +67,7 @@ class MotattSykmeldingServiceTest : FunSpec({
 
     beforeTest {
         clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-        coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgaveid
+        coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgave(oppgaveid)
         coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
         coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "apprectopic"
         coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
