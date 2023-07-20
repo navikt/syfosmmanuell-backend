@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
@@ -15,6 +16,7 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
+import java.time.LocalDateTime
 
 class OpprettManuellOppgaveTest : FunSpec({
     val database = TestDB.database
@@ -38,7 +40,13 @@ class OpprettManuellOppgaveTest : FunSpec({
 
     context("Test av oppretting av manuelle oppgaver") {
         test("Skal lagre manuellOppgave i databasen og kunne hente den opp som forventet") {
-            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)
+            database.opprettManuellOppgave(
+                manuellOppgave,
+                manuellOppgave.apprec,
+                123144,
+                ManuellOppgaveStatus.APEN,
+                LocalDateTime.now(),
+            )
 
             val oppgaveliste = database.hentKomplettManuellOppgave(123144)
 
@@ -49,7 +57,13 @@ class OpprettManuellOppgaveTest : FunSpec({
             assertEquals(false, oppgaveliste[0].sendtApprec)
         }
         test("Hvis oppgave er lagret for sykmeldingsid skal erOpprettManuellOppgave returnere true") {
-            database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, 123144)
+            database.opprettManuellOppgave(
+                manuellOppgave,
+                manuellOppgave.apprec,
+                123144,
+                ManuellOppgaveStatus.APEN,
+                LocalDateTime.now(),
+            )
 
             assertEquals(true, database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id))
         }

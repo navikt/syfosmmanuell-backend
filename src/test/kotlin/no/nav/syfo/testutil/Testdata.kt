@@ -29,8 +29,11 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.SporsmalSvar
 import no.nav.syfo.model.Sykmelding
 import no.nav.syfo.objectMapper
+import no.nav.syfo.oppgave.OpprettOppgaveResponse
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.random.Random
 
@@ -287,3 +290,13 @@ fun avvistApprec(): Apprec {
         ),
     )
 }
+
+fun oppgave(id: Int): OpprettOppgaveResponse =
+    OpprettOppgaveResponse(
+        id = id,
+        versjon = 1,
+        status = "APEN",
+        tildeltEnhetsnr = null,
+        mappeId = null,
+        endretTidspunkt = ZonedDateTime.now(ZoneOffset.UTC),
+    )

@@ -14,6 +14,7 @@ import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
+import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
@@ -27,6 +28,7 @@ import no.nav.syfo.testutil.okApprec
 import no.nav.syfo.testutil.opprettManuellOppgaveUtenOpprinneligValidationResult
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
@@ -48,7 +50,13 @@ class ManuellOppgaveServiceTest : FunSpec({
 
     beforeTest {
         database.connection.dropData()
-        database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
+        database.opprettManuellOppgave(
+            manuellOppgave,
+            manuellOppgave.apprec,
+            oppgaveid,
+            ManuellOppgaveStatus.APEN,
+            LocalDateTime.now(),
+        )
         clearMocks(kafkaProducers, oppgaveService, syfotilgangskontrollClient)
         coEvery { syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
     }

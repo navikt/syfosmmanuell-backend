@@ -31,6 +31,7 @@ import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -50,6 +51,7 @@ import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Assertions.assertEquals
+import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 
@@ -88,7 +90,13 @@ class SendVurderingManuellOppgaveTest : FunSpec({
             with(TestApplicationEngine()) {
                 start()
 
-                database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
+                database.opprettManuellOppgave(
+                    manuellOppgave,
+                    manuellOppgave.apprec,
+                    oppgaveid,
+                    ManuellOppgaveStatus.APEN,
+                    LocalDateTime.now(),
+                )
 
                 application.routing {
                     sendVurderingManuellOppgave(
@@ -256,7 +264,15 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
     coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-    runBlocking { database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid) }
+    runBlocking {
+        database.opprettManuellOppgave(
+            manuellOppgave,
+            manuellOppgave.apprec,
+            oppgaveid,
+            ManuellOppgaveStatus.APEN,
+            LocalDateTime.now(),
+        )
+    }
 
     testApplicationEngine.application.routing {
         sendVurderingManuellOppgave(

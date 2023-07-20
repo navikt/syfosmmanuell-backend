@@ -12,7 +12,13 @@ import no.nav.syfo.model.toPGObject
 import java.sql.Timestamp
 import java.time.LocalDateTime
 
-suspend fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppgave, apprec: Apprec, oppgaveId: Int) {
+suspend fun DatabaseInterface.opprettManuellOppgave(
+    manuellOppgave: ManuellOppgave,
+    apprec: Apprec,
+    oppgaveId: Int,
+    status: ManuellOppgaveStatus,
+    statusTimestamp: LocalDateTime,
+) {
     withContext(Dispatchers.IO) {
         connection.use { connection ->
             connection.prepareStatement(
@@ -26,9 +32,11 @@ suspend fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppga
                 ferdigstilt,
                 oppgaveid,
                 sendt_apprec,
-                opprinnelig_validationresult
+                opprinnelig_validationresult,
+                status,
+                status_timestamp
                 )
-            VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             ).use {
                 it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
@@ -40,6 +48,8 @@ suspend fun DatabaseInterface.opprettManuellOppgave(manuellOppgave: ManuellOppga
                 it.setInt(7, oppgaveId)
                 it.setBoolean(8, false)
                 it.setObject(9, manuellOppgave.validationResult.toPGObject())
+                it.setString(10, status.name)
+                it.setTimestamp(11, Timestamp.valueOf(statusTimestamp))
                 it.executeUpdate()
             }
             connection.commit()

@@ -31,6 +31,7 @@ import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
@@ -45,6 +46,7 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
+import java.time.LocalDateTime
 import java.util.concurrent.ExecutionException
 import kotlin.test.assertFailsWith
 
@@ -122,7 +124,13 @@ class HenteManuellOppgaverTest : FunSpec({
                         throw cause
                     }
                 }
-                database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
+                database.opprettManuellOppgave(
+                    manuellOppgave,
+                    manuellOppgave.apprec,
+                    oppgaveid,
+                    ManuellOppgaveStatus.APEN,
+                    LocalDateTime.now(),
+                )
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
                         addHeader(
@@ -174,7 +182,13 @@ class HenteManuellOppgaverTest : FunSpec({
                         throw cause
                     }
                 }
-                database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid)
+                database.opprettManuellOppgave(
+                    manuellOppgave,
+                    manuellOppgave.apprec,
+                    oppgaveid,
+                    ManuellOppgaveStatus.APEN,
+                    LocalDateTime.now(),
+                )
                 assertFailsWith<NumberFormatException> {
                     handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
                 }
