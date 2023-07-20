@@ -94,3 +94,7 @@ spec:
       value: https://oppgave-q1.dev-fss-pub.nais.io/api/v1/oppgaver
     - name: OPPGAVE_HENDELSE_TOPIC
       value: oppgavehandtering.oppgavehendelse-q1-v1
+    - name: KAFKA_CLIENT_ID
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
