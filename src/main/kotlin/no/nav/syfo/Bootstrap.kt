@@ -21,11 +21,8 @@ import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.Database
-import no.nav.syfo.elector.LeaderElector
-import no.nav.syfo.elector.LeadershipHandling
 import no.nav.syfo.oppgave.kafka.OppgaveHendelseConsumer
 import no.nav.syfo.oppgave.service.OppgaveService
-import no.nav.syfo.oppgave.service.UpdateStatusService
 import no.nav.syfo.persistering.MottattSykmeldingService
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.TrackableException
@@ -109,15 +106,8 @@ fun main() {
     createListener(applicationState) {
         oppgaveHendelseConsumer.start()
     }
-    val leaderElectorService = LeadershipHandling(
-        updateService = UpdateStatusService(
-            database = database,
-            oppgaveClient = httpClients.oppgaveClient,
-        ),
-        LeaderElector(httpClient = httpClients.httpClient, env.electorPath),
-    )
-    leaderElectorService.start()
-    ApplicationServer(applicationEngine, applicationState, leaderElectorService).start()
+
+    ApplicationServer(applicationEngine, applicationState).start()
 }
 
 @DelicateCoroutinesApi
