@@ -6,7 +6,6 @@ metadata:
   labels:
     team: teamsykmelding
 spec:
-  leaderElection: true
   gcp:
     sqlInstances:
       - name: syfosmmanuell-backend-instance
