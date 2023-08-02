@@ -1,5 +1,7 @@
 package no.nav.syfo.oppgave.kafka
 
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -12,8 +14,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.AuthorizationException
 import org.apache.kafka.common.errors.ClusterAuthorizationException
 import org.slf4j.LoggerFactory
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
 
 class OppgaveHendelseConsumer(
     private val kafkaConsumer: KafkaConsumer<String, OppgaveKafkaAivenRecord>,
@@ -41,12 +41,11 @@ class OppgaveHendelseConsumer(
 
     private suspend fun consumeMessages() {
         while (applicationState.ready) {
-            val records = withContext(Dispatchers.IO) {
-                kafkaConsumer.poll(POLL_TIME_DURATION.toJavaDuration())
-            }
-            records.forEach { record ->
-                processRecord(record)
-            }
+            val records =
+                withContext(Dispatchers.IO) {
+                    kafkaConsumer.poll(POLL_TIME_DURATION.toJavaDuration())
+                }
+            records.forEach { record -> processRecord(record) }
         }
     }
 
@@ -67,7 +66,8 @@ class OppgaveHendelseConsumer(
 
     private suspend fun handleException(exception: Exception) {
         when (exception) {
-            is AuthorizationException, is ClusterAuthorizationException -> throw exception
+            is AuthorizationException,
+            is ClusterAuthorizationException -> throw exception
             else -> {
                 log.error("Aiven: Caught exception, unsubscribing and retrying", exception)
                 kafkaConsumer.unsubscribe()

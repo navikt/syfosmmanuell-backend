@@ -24,57 +24,79 @@ class OppgaveClient(
     private val scope: String,
     private val cluster: String,
 ) {
-    suspend fun opprettOppgave(opprettOppgave: OpprettOppgave, msgId: String): OpprettOppgaveResponse = retry("create_oppgave") {
-        val response = httpClient.post(url) {
-            contentType(ContentType.Application.Json)
-            val token = azureAdV2Client.getAccessToken(scope)
-            header("Authorization", "Bearer $token")
-            header("X-Correlation-ID", msgId)
-            setBody(opprettOppgave)
+    suspend fun opprettOppgave(
+        opprettOppgave: OpprettOppgave,
+        msgId: String
+    ): OpprettOppgaveResponse =
+        retry("create_oppgave") {
+            val response =
+                httpClient.post(url) {
+                    contentType(ContentType.Application.Json)
+                    val token = azureAdV2Client.getAccessToken(scope)
+                    header("Authorization", "Bearer $token")
+                    header("X-Correlation-ID", msgId)
+                    setBody(opprettOppgave)
+                }
+            if (response.status == HttpStatusCode.Created) {
+                log.info("Opprettet oppgave for msgId $msgId")
+                return@retry response.body<OpprettOppgaveResponse>()
+            } else {
+                log.error(
+                    "Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}"
+                )
+                throw RuntimeException(
+                    "Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}"
+                )
+            }
         }
-        if (response.status == HttpStatusCode.Created) {
-            log.info("Opprettet oppgave for msgId $msgId")
-            return@retry response.body<OpprettOppgaveResponse>()
-        } else {
-            log.error("Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}")
-            throw RuntimeException("Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}")
-        }
-    }
 
-    suspend fun ferdigstillOppgave(ferdigstilloppgave: FerdigstillOppgave, msgId: String): OpprettOppgaveResponse {
-        val response = httpClient.patch(url + "/" + ferdigstilloppgave.id) {
-            contentType(ContentType.Application.Json)
-            val token = azureAdV2Client.getAccessToken(scope)
-            header("Authorization", "Bearer $token")
-            header("X-Correlation-ID", msgId)
-            setBody(ferdigstilloppgave)
-        }
+    suspend fun ferdigstillOppgave(
+        ferdigstilloppgave: FerdigstillOppgave,
+        msgId: String
+    ): OpprettOppgaveResponse {
+        val response =
+            httpClient.patch(url + "/" + ferdigstilloppgave.id) {
+                contentType(ContentType.Application.Json)
+                val token = azureAdV2Client.getAccessToken(scope)
+                header("Authorization", "Bearer $token")
+                header("X-Correlation-ID", msgId)
+                setBody(ferdigstilloppgave)
+            }
 
         if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
             return response.body<OpprettOppgaveResponse>()
         } else if (cluster == "dev-gcp" && ferdigstilloppgave.mappeId == null) {
-            log.info("Skipping ferdigstilt oppgave med in dev due to mappeId is null id ${ferdigstilloppgave.id}: ${response.status}")
+            log.info(
+                "Skipping ferdigstilt oppgave med in dev due to mappeId is null id ${ferdigstilloppgave.id}: ${response.status}"
+            )
             return OpprettOppgaveResponse(ferdigstilloppgave.id, ferdigstilloppgave.versjon)
         } else {
-            log.error("Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}")
-            throw RuntimeException("Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}")
+            log.error(
+                "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}"
+            )
+            throw RuntimeException(
+                "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}"
+            )
         }
     }
 
     suspend fun hentOppgave(oppgaveId: Int, msgId: String): OpprettOppgaveResponse? {
-        val response = httpClient.get("$url/$oppgaveId") {
-            contentType(ContentType.Application.Json)
-            val token = azureAdV2Client.getAccessToken(scope)
-            header("Authorization", "Bearer $token")
-            header("X-Correlation-ID", msgId)
-        }
+        val response =
+            httpClient.get("$url/$oppgaveId") {
+                contentType(ContentType.Application.Json)
+                val token = azureAdV2Client.getAccessToken(scope)
+                header("Authorization", "Bearer $token")
+                header("X-Correlation-ID", msgId)
+            }
         if (response.status == HttpStatusCode.OK) {
             return response.body<OpprettOppgaveResponse>()
         } else if (response.status == HttpStatusCode.NotFound) {
             return null
         } else {
             log.error("Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}")
-            throw RuntimeException("Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}")
+            throw RuntimeException(
+                "Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}"
+            )
         }
     }
 }

@@ -43,16 +43,23 @@ fun Route.sendVurderingManuellOppgave(
             when (hasAccess) {
                 false -> {
                     auditlogg.info(
-                        AuditLogger().createcCefMessage(
-                            fnr = null,
-                            accessToken = accessToken,
-                            operation = AuditLogger.Operation.WRITE,
-                            requestPath = "/api/v1/vurderingmanuelloppgave/$oppgaveId",
-                            permit = AuditLogger.Permit.DENY,
-                        ),
+                        AuditLogger()
+                            .createcCefMessage(
+                                fnr = null,
+                                accessToken = accessToken,
+                                operation = AuditLogger.Operation.WRITE,
+                                requestPath = "/api/v1/vurderingmanuelloppgave/$oppgaveId",
+                                permit = AuditLogger.Permit.DENY,
+                            ),
                     )
-                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/vurderingmanuelloppgave/$oppgaveId")
-                    call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
+                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(
+                        accessToken,
+                        "/vurderingmanuelloppgave/$oppgaveId"
+                    )
+                    call.respond(
+                        HttpStatusCode.Unauthorized,
+                        "Du har ikke tilgang til denne oppgaven."
+                    )
                 }
                 true -> {
                     val result = call.receive<Result>()
@@ -69,13 +76,14 @@ fun Route.sendVurderingManuellOppgave(
                     )
 
                     auditlogg.info(
-                        AuditLogger().createcCefMessage(
-                            fnr = null,
-                            accessToken = accessToken,
-                            operation = AuditLogger.Operation.WRITE,
-                            requestPath = "/api/v1/vurderingmanuelloppgave/$oppgaveId",
-                            permit = AuditLogger.Permit.PERMIT,
-                        ),
+                        AuditLogger()
+                            .createcCefMessage(
+                                fnr = null,
+                                accessToken = accessToken,
+                                operation = AuditLogger.Operation.WRITE,
+                                requestPath = "/api/v1/vurderingmanuelloppgave/$oppgaveId",
+                                permit = AuditLogger.Permit.PERMIT,
+                            ),
                     )
 
                     call.respond(HttpStatusCode.NoContent)
@@ -116,7 +124,9 @@ data class Result(
                         )
                     }
                     else -> {
-                        throw IllegalArgumentException("Result with status GODKJENT_MED_MERKNAD missing merknad property")
+                        throw IllegalArgumentException(
+                            "Result with status GODKJENT_MED_MERKNAD missing merknad property"
+                        )
                     }
                 }
             }

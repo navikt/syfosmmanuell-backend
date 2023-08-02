@@ -6,7 +6,8 @@ import io.ktor.util.pipeline.PipelineContext
 
 val REGEX_OPPGAVEID = """[0-9]{9}""".toRegex()
 
-val REGEX_SYKMELDINGID = """[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}""".toRegex()
+val REGEX_SYKMELDINGID =
+    """[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}""".toRegex()
 
 fun monitorHttpRequests(): suspend PipelineContext<Unit, ApplicationCall>.(Unit) -> Unit {
     return {

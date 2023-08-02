@@ -4,14 +4,13 @@ import com.auth0.jwt.JWT
 import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.server.auth.parseAuthorizationHeader
 import io.ktor.server.request.ApplicationRequest
-import no.nav.syfo.sikkerlogg
 import java.io.IOException
 import java.net.URISyntaxException
+import no.nav.syfo.sikkerlogg
 
 @Throws(IOException::class, URISyntaxException::class)
 fun getAccessTokenFromAuthHeader(request: ApplicationRequest): String {
-    val authHeader = request.parseAuthorizationHeader()
-        ?: throw UnauthorizedException()
+    val authHeader = request.parseAuthorizationHeader() ?: throw UnauthorizedException()
     return (authHeader as HttpAuthHeader.Single).blob
 }
 

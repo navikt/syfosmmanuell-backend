@@ -22,22 +22,23 @@ class AzureAdV2Client(
         scope: String,
     ): String {
         return azureAdV2Cache.getAccessToken(scope)?.accessToken
-            ?: getClientSecretAccessToken(scope).let {
-                azureAdV2Cache.putValue(scope, it)
-            }.accessToken
+            ?: getClientSecretAccessToken(scope)
+                .let { azureAdV2Cache.putValue(scope, it) }
+                .accessToken
     }
 
     private suspend fun getClientSecretAccessToken(
         scope: String,
     ): AzureAdV2Token {
         return getAccessToken(
-            Parameters.build {
-                append("client_id", azureAppClientId)
-                append("client_secret", azureAppClientSecret)
-                append("scope", scope)
-                append("grant_type", "client_credentials")
-            },
-        ).toAzureAdV2Token()
+                Parameters.build {
+                    append("client_id", azureAppClientId)
+                    append("client_secret", azureAppClientSecret)
+                    append("scope", scope)
+                    append("grant_type", "client_credentials")
+                },
+            )
+            .toAzureAdV2Token()
     }
 
     suspend fun getOnBehalfOfToken(
@@ -45,9 +46,7 @@ class AzureAdV2Client(
         scope: String,
     ): AzureAdV2Token {
         return azureAdV2Cache.getOboToken(token, scope)
-            ?: getAccessToken(token, scope).let {
-                azureAdV2Cache.putValue(token, scope, it)
-            }
+            ?: getAccessToken(token, scope).let { azureAdV2Cache.putValue(token, scope, it) }
     }
 
     private suspend fun getAccessToken(
@@ -55,26 +54,28 @@ class AzureAdV2Client(
         scope: String,
     ): AzureAdV2Token {
         return getAccessToken(
-            Parameters.build {
-                append("client_id", azureAppClientId)
-                append("client_secret", azureAppClientSecret)
-                append("client_assertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
-                append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
-                append("assertion", token)
-                append("scope", scope)
-                append("requested_token_use", "on_behalf_of")
-            },
-        ).toAzureAdV2Token()
+                Parameters.build {
+                    append("client_id", azureAppClientId)
+                    append("client_secret", azureAppClientSecret)
+                    append("client_assertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                    append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                    append("assertion", token)
+                    append("scope", scope)
+                    append("requested_token_use", "on_behalf_of")
+                },
+            )
+            .toAzureAdV2Token()
     }
 
     private suspend fun getAccessToken(
         formParameters: Parameters,
     ): AzureAdV2TokenResponse {
         return try {
-            val response: HttpResponse = httpClient.post(azureTokenEndpoint) {
-                accept(ContentType.Application.Json)
-                setBody(FormDataContent(formParameters))
-            }
+            val response: HttpResponse =
+                httpClient.post(azureTokenEndpoint) {
+                    accept(ContentType.Application.Json)
+                    setBody(FormDataContent(formParameters))
+                }
             response.body<AzureAdV2TokenResponse>()
         } catch (e: Exception) {
             log.error("Error while requesting AzureAdAccessToken", e)

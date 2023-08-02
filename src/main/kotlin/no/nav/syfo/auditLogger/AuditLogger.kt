@@ -27,6 +27,7 @@ internal class AuditLogger {
         WRITE("audit:update"),
         UNKNOWN("audit:unknown"),
     }
+
     enum class Permit(val logString: String) {
         PERMIT("Permit"),
         DENY("Deny"),

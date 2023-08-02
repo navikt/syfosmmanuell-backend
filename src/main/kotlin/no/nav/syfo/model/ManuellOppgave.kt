@@ -9,20 +9,23 @@ data class ManuellOppgave(
     val apprec: Apprec,
 )
 
-fun ReceivedSykmelding.toPGObject() = PGobject().also {
-    it.type = "json"
-    it.value = objectMapper.writeValueAsString(this)
-}
+fun ReceivedSykmelding.toPGObject() =
+    PGobject().also {
+        it.type = "json"
+        it.value = objectMapper.writeValueAsString(this)
+    }
 
-fun ValidationResult.toPGObject() = PGobject().also {
-    it.type = "json"
-    it.value = objectMapper.writeValueAsString(this)
-}
+fun ValidationResult.toPGObject() =
+    PGobject().also {
+        it.type = "json"
+        it.value = objectMapper.writeValueAsString(this)
+    }
 
-fun Apprec.toPGObject() = PGobject().also {
-    it.type = "json"
-    it.value = objectMapper.writeValueAsString(this)
-}
+fun Apprec.toPGObject() =
+    PGobject().also {
+        it.type = "json"
+        it.value = objectMapper.writeValueAsString(this)
+    }
 
 enum class ManuellOppgaveStatus {
     APEN,

@@ -3,11 +3,10 @@ package no.nav.syfo.model
 import java.time.LocalDateTime
 
 /**
- * Apprec representerer en Applikasjonskvittering for meldinger som utveksles mellom
- * systemer i helse- og omsorgstjenesten.
+ * Apprec representerer en Applikasjonskvittering for meldinger som utveksles mellom systemer i
+ * helse- og omsorgstjenesten.
  *
- * Apprec er beskrvet av Direktoratet for e-helse.
- * Se HIS 80415:2004 Applikasjonskvittering v 1.0
+ * Apprec er beskrvet av Direktoratet for e-helse. Se HIS 80415:2004 Applikasjonskvittering v 1.0
  */
 data class Apprec(
     val ediloggid: String,
@@ -36,7 +35,6 @@ data class Helsepersonell(
     val hovedIdent: Ident,
     val typeId: Kodeverdier,
     val tilleggsIdenter: List<Ident>?,
-
 )
 
 data class Ident(

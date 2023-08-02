@@ -22,6 +22,9 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import java.time.LocalDateTime
+import java.util.concurrent.CompletableFuture
+import kotlin.test.assertFailsWith
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
@@ -51,175 +54,232 @@ import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Assertions.assertEquals
-import java.time.LocalDateTime
-import java.util.concurrent.CompletableFuture
-import kotlin.test.assertFailsWith
 
 const val oppgaveid = 308076319
 const val manuelloppgaveId = "1314"
 
-val manuellOppgave = ManuellOppgave(
-    receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-    validationResult = ValidationResult(Status.OK, emptyList()),
-    apprec = objectMapper.readValue(
-        Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
-            Charsets.UTF_8,
-        ),
-    ),
-)
+val manuellOppgave =
+    ManuellOppgave(
+        receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
+        validationResult = ValidationResult(Status.OK, emptyList()),
+        apprec =
+            objectMapper.readValue(
+                Apprec::class
+                    .java
+                    .getResourceAsStream("/apprecOK.json")!!
+                    .readBytes()
+                    .toString(
+                        Charsets.UTF_8,
+                    ),
+            ),
+    )
 
-class SendVurderingManuellOppgaveTest : FunSpec({
-    val database = TestDB.database
-    val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val msGraphClient = mockk<MSGraphClient>()
-    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
-    val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
-    val oppgaveService = mockk<OppgaveService>(relaxed = true)
-    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+class SendVurderingManuellOppgaveTest :
+    FunSpec({
+        val database = TestDB.database
+        val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+        val msGraphClient = mockk<MSGraphClient>()
+        val authorizationService =
+            AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
+        val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
+        val oppgaveService = mockk<OppgaveService>(relaxed = true)
+        val manuellOppgaveService =
+            ManuellOppgaveService(
+                database,
+                syfoTilgangsKontrollClient,
+                kafkaProducers,
+                oppgaveService
+            )
 
-    beforeTest {
-        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
-    }
+        beforeTest {
+            clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+        }
 
-    afterTest {
-        database.connection.dropData()
-    }
+        afterTest { database.connection.dropData() }
 
-    context("Test av api for sending av vurdering") {
-        test("Skal returnere InternalServerError når oppdatering av manuelloppgave sitt ValidationResults feilet fordi oppgave ikke finnes") {
-            with(TestApplicationEngine()) {
-                start()
+        context("Test av api for sending av vurdering") {
+            test(
+                "Skal returnere InternalServerError når oppdatering av manuelloppgave sitt ValidationResults feilet fordi oppgave ikke finnes"
+            ) {
+                with(TestApplicationEngine()) {
+                    start()
 
-                database.opprettManuellOppgave(
-                    manuellOppgave,
-                    manuellOppgave.apprec,
-                    oppgaveid,
-                    ManuellOppgaveStatus.APEN,
-                    LocalDateTime.now(),
-                )
-
-                application.routing {
-                    sendVurderingManuellOppgave(
-                        manuellOppgaveService,
-                        authorizationService,
+                    database.opprettManuellOppgave(
+                        manuellOppgave,
+                        manuellOppgave.apprec,
+                        oppgaveid,
+                        ManuellOppgaveStatus.APEN,
+                        LocalDateTime.now(),
                     )
-                }
-                application.install(ContentNegotiation) {
-                    jackson {
-                        registerKotlinModule()
-                        registerModule(JavaTimeModule())
-                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                    }
-                }
-                application.install(StatusPages) {
-                    exception<Throwable> { call, cause ->
-                        call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-                        log.error("Caught exception", cause)
-                    }
-                }
 
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null)
+                    application.routing {
+                        sendVurderingManuellOppgave(
+                            manuellOppgaveService,
+                            authorizationService,
+                        )
+                    }
+                    application.install(ContentNegotiation) {
+                        jackson {
+                            registerKotlinModule()
+                            registerModule(JavaTimeModule())
+                            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        }
+                    }
+                    application.install(StatusPages) {
+                        exception<Throwable> { call, cause ->
+                            call.respond(
+                                HttpStatusCode.InternalServerError,
+                                cause.message ?: "Unknown error"
+                            )
+                            log.error("Caught exception", cause)
+                        }
+                    }
 
-                with(
-                    handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
-                        addHeader("Accept", "application/json")
-                        addHeader("Content-Type", "application/json")
-                        addHeader("X-Nav-Enhet", "1234")
-                        addHeader(
-                            HttpHeaders.Authorization,
-                            "Bearer ${generateJWT(
+                    val result = Result(status = ResultStatus.GODKJENT, merknad = null)
+
+                    with(
+                        handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
+                            addHeader("Accept", "application/json")
+                            addHeader("Content-Type", "application/json")
+                            addHeader("X-Nav-Enhet", "1234")
+                            addHeader(
+                                HttpHeaders.Authorization,
+                                "Bearer ${generateJWT(
                                 "2",
                                 "clientId",
                                 Claim("preferred_username", "firstname.lastname@nav.no"),
                             )}",
-                        )
-                        setBody(objectMapper.writeValueAsString(result))
-                    },
-                ) {
-                    assertEquals(HttpStatusCode.NotFound, response.status())
+                            )
+                            setBody(objectMapper.writeValueAsString(result))
+                        },
+                    ) {
+                        assertEquals(HttpStatusCode.NotFound, response.status())
+                    }
+                }
+            }
+
+            test("should fail when writing sykmelding to kafka fails with status OK") {
+                with(TestApplicationEngine()) {
+                    start()
+                    setUpTest(
+                        this,
+                        kafkaProducers,
+                        syfoTilgangsKontrollClient,
+                        msGraphClient,
+                        authorizationService,
+                        oppgaveService,
+                        database,
+                        manuellOppgaveService
+                    )
+
+                    val result = Result(status = ResultStatus.GODKJENT, merknad = null)
+                    every {
+                        kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any())
+                    } returns
+                        CompletableFuture<RecordMetadata>().completeAsync {
+                            throw RuntimeException()
+                        }
+                    sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
+                }
+            }
+
+            test("noContent oppdatering av manuelloppgave med status OK") {
+                with(TestApplicationEngine()) {
+                    start()
+                    setUpTest(
+                        this,
+                        kafkaProducers,
+                        syfoTilgangsKontrollClient,
+                        msGraphClient,
+                        authorizationService,
+                        oppgaveService,
+                        database,
+                        manuellOppgaveService
+                    )
+
+                    val result = Result(status = ResultStatus.GODKJENT, merknad = null)
+                    sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
+                }
+            }
+
+            test("should fail when X-Nav-Enhet header is empty") {
+                with(TestApplicationEngine()) {
+                    start()
+                    setUpTest(
+                        this,
+                        kafkaProducers,
+                        syfoTilgangsKontrollClient,
+                        msGraphClient,
+                        authorizationService,
+                        oppgaveService,
+                        database,
+                        manuellOppgaveService
+                    )
+
+                    val result = Result(status = ResultStatus.GODKJENT, merknad = null)
+                    sendRequest(result, HttpStatusCode.BadRequest, oppgaveid, "")
                 }
             }
         }
 
-        test("should fail when writing sykmelding to kafka fails with status OK") {
-            with(TestApplicationEngine()) {
-                start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, msGraphClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-
+        context("Merknader") {
+            test("Får ikke merknad for status GODKJENT") {
                 val result = Result(status = ResultStatus.GODKJENT, merknad = null)
-                every { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().completeAsync { throw RuntimeException() }
-                sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
+                val merknader = result.toMerknad()
+
+                assertEquals(null, merknader)
+            }
+
+            test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
+                val result =
+                    Result(
+                        status = ResultStatus.GODKJENT_MED_MERKNAD,
+                        merknad = MerknadType.UGYLDIG_TILBAKEDATERING
+                    )
+                val merknad = result.toMerknad()
+
+                assertEquals(
+                    Merknad(
+                        type = "UGYLDIG_TILBAKEDATERING",
+                        beskrivelse = null,
+                    ),
+                    merknad,
+                )
+            }
+
+            test(
+                "Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
+            ) {
+                val result =
+                    Result(
+                        status = ResultStatus.GODKJENT_MED_MERKNAD,
+                        merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER,
+                    )
+                val merknad = result.toMerknad()
+
+                assertEquals(
+                    Merknad(
+                        type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER",
+                        beskrivelse = null,
+                    ),
+                    merknad,
+                )
+            }
+
+            test("Kaster TypeCastException for status GODKJENT_MED_MERKNAD merknad NULL") {
+                assertFailsWith<IllegalArgumentException> {
+                    Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null).toMerknad()
+                }
             }
         }
+    })
 
-        test("noContent oppdatering av manuelloppgave med status OK") {
-            with(TestApplicationEngine()) {
-                start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, msGraphClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null)
-                sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
-            }
-        }
-
-        test("should fail when X-Nav-Enhet header is empty") {
-            with(TestApplicationEngine()) {
-                start()
-                setUpTest(this, kafkaProducers, syfoTilgangsKontrollClient, msGraphClient, authorizationService, oppgaveService, database, manuellOppgaveService)
-
-                val result = Result(status = ResultStatus.GODKJENT, merknad = null)
-                sendRequest(result, HttpStatusCode.BadRequest, oppgaveid, "")
-            }
-        }
-    }
-
-    context("Merknader") {
-        test("Får ikke merknad for status GODKJENT") {
-            val result = Result(status = ResultStatus.GODKJENT, merknad = null)
-            val merknader = result.toMerknad()
-
-            assertEquals(null, merknader)
-        }
-
-        test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
-            val result =
-                Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = MerknadType.UGYLDIG_TILBAKEDATERING)
-            val merknad = result.toMerknad()
-
-            assertEquals(
-                Merknad(
-                    type = "UGYLDIG_TILBAKEDATERING",
-                    beskrivelse = null,
-                ),
-                merknad,
-            )
-        }
-
-        test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER") {
-            val result = Result(
-                status = ResultStatus.GODKJENT_MED_MERKNAD,
-                merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER,
-            )
-            val merknad = result.toMerknad()
-
-            assertEquals(
-                Merknad(
-                    type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER",
-                    beskrivelse = null,
-                ),
-                merknad,
-            )
-        }
-
-        test("Kaster TypeCastException for status GODKJENT_MED_MERKNAD merknad NULL") {
-            assertFailsWith<IllegalArgumentException> {
-                Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null).toMerknad()
-            }
-        }
-    }
-})
-
-fun TestApplicationEngine.sendRequest(result: Result, statusCode: HttpStatusCode, oppgaveId: Int, navEnhet: String = "1234") {
+fun TestApplicationEngine.sendRequest(
+    result: Result,
+    statusCode: HttpStatusCode,
+    oppgaveId: Int,
+    navEnhet: String = "1234"
+) {
     with(
         handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/$oppgaveId") {
             addHeader("Accept", "application/json")
@@ -257,13 +317,18 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns sm2013ApprecTopicName
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer } returns mockk()
-    coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic } returns sm2013AutomaticHandlingTopic
-    coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
+    coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic } returns
+        sm2013AutomaticHandlingTopic
+    coEvery {
+        syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+    } returns Tilgang(true)
     coEvery { msGraphClient.getSubjectFromMsGraph(any()) } returns "4321"
 
-    coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+    coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns
+        CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
-    coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+    coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns
+        CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     runBlocking {
         database.opprettManuellOppgave(
             manuellOppgave,

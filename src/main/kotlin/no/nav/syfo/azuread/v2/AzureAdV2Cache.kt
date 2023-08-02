@@ -1,30 +1,32 @@
 package no.nav.syfo.azuread.v2
 
 import com.github.benmanes.caffeine.cache.Caffeine
-import org.slf4j.LoggerFactory
 import java.security.MessageDigest
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import org.slf4j.LoggerFactory
 
 class AzureAdV2Cache {
     companion object {
         private val log = LoggerFactory.getLogger(AzureAdV2Cache::class.java)
     }
 
-    private val cache = Caffeine
-        .newBuilder().expireAfterWrite(Duration.ofHours(1))
-        .maximumSize(500)
-        .build<String, AzureAdV2Token>()
+    private val cache =
+        Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofHours(1))
+            .maximumSize(500)
+            .build<String, AzureAdV2Token>()
 
     fun getOboToken(token: String, scope: String): AzureAdV2Token? {
         val key = getSha256Key(token + scope)
         return cache.getIfPresent(key)?.let {
             when (it.expires.isBefore(OffsetDateTime.now(ZoneOffset.UTC))) {
-                true -> cache.invalidate(key).let {
-                    log.info("Token in cache has expired")
-                    null
-                }
+                true ->
+                    cache.invalidate(key).let {
+                        log.info("Token in cache has expired")
+                        null
+                    }
                 else -> it
             }
         }
@@ -39,10 +41,11 @@ class AzureAdV2Cache {
         val key = getSha256Key(scope)
         return cache.getIfPresent(key)?.let {
             when (it.expires.isBefore(OffsetDateTime.now(ZoneOffset.UTC))) {
-                true -> cache.invalidate(key).let {
-                    log.info("Access token in cache has expired")
-                    null
-                }
+                true ->
+                    cache.invalidate(key).let {
+                        log.info("Access token in cache has expired")
+                        null
+                    }
                 else -> it
             }
         }
@@ -54,7 +57,7 @@ class AzureAdV2Cache {
     }
 
     private fun getSha256Key(input: String): String =
-        MessageDigest.getInstance("SHA-256")
-            .digest(input.toByteArray())
-            .fold("") { str, it -> str + "%02x".format(it) }
+        MessageDigest.getInstance("SHA-256").digest(input.toByteArray()).fold("") { str, it ->
+            str + "%02x".format(it)
+        }
 }

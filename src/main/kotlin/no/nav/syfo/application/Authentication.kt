@@ -22,7 +22,8 @@ fun Application.setupAuth(
             verifier(jwkProvider, issuer)
             validate { credentials ->
                 when {
-                    hasSyfosmmanuellBackendClientIdAudience(credentials, env) -> JWTPrincipal(credentials.payload)
+                    hasSyfosmmanuellBackendClientIdAudience(credentials, env) ->
+                        JWTPrincipal(credentials.payload)
                     else -> {
                         unauthorized(credentials)
                     }

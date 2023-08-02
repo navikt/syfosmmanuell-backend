@@ -14,38 +14,44 @@ import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.StringDeserializer
 
 class KafkaOppgaveDeserializer : Deserializer<OppgaveKafkaAivenRecord> {
-    private val objectMapper = ObjectMapper()
-        .registerModule(JavaTimeModule())
-        .registerKotlinModule()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    private val objectMapper =
+        ObjectMapper()
+            .registerModule(JavaTimeModule())
+            .registerKotlinModule()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     override fun deserialize(topic: String, bytes: ByteArray): OppgaveKafkaAivenRecord {
         return objectMapper.readValue(bytes, OppgaveKafkaAivenRecord::class.java)
     }
 }
+
 class KafkaConsumers(env: Environment) {
-    val kafkaAivenConsumerManuellOppgave = KafkaConsumer<String, String>(
-        KafkaUtils.getAivenKafkaConfig("manuell-oppgave-consumer").also {
-            it.let {
-                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-            }
-        }.toConsumerConfig(
-            "${env.applicationName}-consumer",
-            valueDeserializer = StringDeserializer::class,
-        ),
-    )
-    val oppgaveHendelseConsumer = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig("oppgavehendelse-consumer")
-            .also {
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 50
-            }
-            .toConsumerConfig(
-                "${env.applicationName}-consumer",
-                KafkaOppgaveDeserializer::class,
-            ),
-        StringDeserializer(),
-        KafkaOppgaveDeserializer(),
-    )
+    val kafkaAivenConsumerManuellOppgave =
+        KafkaConsumer<String, String>(
+            KafkaUtils.getAivenKafkaConfig("manuell-oppgave-consumer")
+                .also {
+                    it.let {
+                        it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                    }
+                }
+                .toConsumerConfig(
+                    "${env.applicationName}-consumer",
+                    valueDeserializer = StringDeserializer::class,
+                ),
+        )
+    val oppgaveHendelseConsumer =
+        KafkaConsumer(
+            KafkaUtils.getAivenKafkaConfig("oppgavehendelse-consumer")
+                .also {
+                    it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+                    it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 50
+                }
+                .toConsumerConfig(
+                    "${env.applicationName}-consumer",
+                    KafkaOppgaveDeserializer::class,
+                ),
+            StringDeserializer(),
+            KafkaOppgaveDeserializer(),
+        )
 }

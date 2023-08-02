@@ -13,30 +13,43 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.jackson
 
-data class ResponseData(val httpStatusCode: HttpStatusCode, val content: String, val headers: Headers = headersOf("Content-Type", listOf("application/json")))
+data class ResponseData(
+    val httpStatusCode: HttpStatusCode,
+    val content: String,
+    val headers: Headers = headersOf("Content-Type", listOf("application/json"))
+)
 
 class HttpClientTest {
 
     var responseData: ResponseData? = null
     var responseDataOboToken: ResponseData? = null
 
-    val httpClient = HttpClient(MockEngine) {
-        install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    val httpClient =
+        HttpClient(MockEngine) {
+            install(ContentNegotiation) {
+                jackson {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
             }
-        }
-        engine {
-            addHandler { request ->
-                if (request.url.host == "obo") {
-                    respond(responseDataOboToken!!.content, responseDataOboToken!!.httpStatusCode, responseDataOboToken!!.headers)
-                } else {
-                    respond(responseData!!.content, responseData!!.httpStatusCode, responseData!!.headers)
+            engine {
+                addHandler { request ->
+                    if (request.url.host == "obo") {
+                        respond(
+                            responseDataOboToken!!.content,
+                            responseDataOboToken!!.httpStatusCode,
+                            responseDataOboToken!!.headers
+                        )
+                    } else {
+                        respond(
+                            responseData!!.content,
+                            responseData!!.httpStatusCode,
+                            responseData!!.headers
+                        )
+                    }
                 }
             }
         }
-    }
 }

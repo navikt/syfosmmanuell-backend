@@ -17,7 +17,8 @@ class AuthorizationService(
             log.info("did not find oppgave with id: $oppgaveId")
             return false
         }
-        return syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(accessToken, pasientFnr)
+        return syfoTilgangsKontrollClient
+            .sjekkVeiledersTilgangTilPersonViaAzure(accessToken, pasientFnr)
             .harTilgang
     }
 
@@ -25,10 +26,16 @@ class AuthorizationService(
         try {
             return msGraphClient.getSubjectFromMsGraph(accessToken)
         } catch (e: Exception) {
-            log.error("Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId}")
-            throw IdentNotFoundException("Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId", e)
+            log.error(
+                "Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId}"
+            )
+            throw IdentNotFoundException(
+                "Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId",
+                e
+            )
         }
     }
 }
 
-class IdentNotFoundException(override val message: String, cause: Throwable) : Exception(message, cause)
+class IdentNotFoundException(override val message: String, cause: Throwable) :
+    Exception(message, cause)

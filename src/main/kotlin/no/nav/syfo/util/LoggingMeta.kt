@@ -7,7 +7,8 @@ data class LoggingMeta(
     val sykmeldingId: String,
 )
 
-open class TrackableException(override val cause: Throwable, val loggingMeta: LoggingMeta) : RuntimeException()
+open class TrackableException(override val cause: Throwable, val loggingMeta: LoggingMeta) :
+    RuntimeException()
 
 suspend fun <O> wrapExceptions(loggingMeta: LoggingMeta, block: suspend () -> O): O {
     try {

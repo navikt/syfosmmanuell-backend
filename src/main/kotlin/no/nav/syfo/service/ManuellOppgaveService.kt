@@ -43,27 +43,31 @@ class ManuellOppgaveService(
     suspend fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
         database.hentManuellOppgaver(oppgaveId)
 
-    suspend fun finnesOppgave(oppgaveId: Int): Boolean =
-        database.finnesOppgave(oppgaveId)
+    suspend fun finnesOppgave(oppgaveId: Int): Boolean = database.finnesOppgave(oppgaveId)
 
     suspend fun finnesSykmelding(sykmeldingId: String): Boolean =
         database.finnesSykmelding(sykmeldingId)
 
-    suspend fun erApprecSendt(oppgaveId: Int): Boolean =
-        database.erApprecSendt(oppgaveId)
+    suspend fun erApprecSendt(oppgaveId: Int): Boolean = database.erApprecSendt(oppgaveId)
 
-    suspend fun toggleApprecSendt(oppgaveId: Int) =
-        database.oppdaterApprecStatus(oppgaveId, true)
+    suspend fun toggleApprecSendt(oppgaveId: Int) = database.oppdaterApprecStatus(oppgaveId, true)
 
-    suspend fun ferdigstillManuellBehandling(oppgaveId: Int, enhet: String, veileder: String, accessToken: String, merknader: List<Merknad>?) {
+    suspend fun ferdigstillManuellBehandling(
+        oppgaveId: Int,
+        enhet: String,
+        veileder: String,
+        accessToken: String,
+        merknader: List<Merknad>?
+    ) {
         val validationResult = ValidationResult(Status.OK, emptyList())
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).updateMerknader(merknader)
-        val loggingMeta = LoggingMeta(
-            mottakId = manuellOppgave.receivedSykmelding.navLogId,
-            orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
-            msgId = manuellOppgave.receivedSykmelding.msgId,
-            sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
-        )
+        val loggingMeta =
+            LoggingMeta(
+                mottakId = manuellOppgave.receivedSykmelding.navLogId,
+                orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
+                msgId = manuellOppgave.receivedSykmelding.msgId,
+                sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
+            )
 
         incrementCounters(validationResult, manuellOppgave)
 
@@ -71,11 +75,10 @@ class ManuellOppgaveService(
 
         if (!erApprecSendt(oppgaveId)) {
             /**
-             * Fallback for å sende apprec for oppgaver hvor apprec ikke har blitt sendt
-             * Tidligere ble apprec sendt ved ferdigstilling, mens det nå blir sendt ved mottak i manuell
-             * Frem til alle gamle oppgaver er ferdigstilt er vi nødt til å sjekke
+             * Fallback for å sende apprec for oppgaver hvor apprec ikke har blitt sendt Tidligere
+             * ble apprec sendt ved ferdigstilling, mens det nå blir sendt ved mottak i manuell Frem
+             * til alle gamle oppgaver er ferdigstilt er vi nødt til å sjekke
              */
-
             sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
         }
 
@@ -86,7 +89,9 @@ class ManuellOppgaveService(
         }
 
         if (manuellOppgave.opprinneligValidationResult == null) {
-            log.info("Mangler opprinnelig validation result, oppdaterer ved ferdigstilling av oppgaveId $oppgaveId")
+            log.info(
+                "Mangler opprinnelig validation result, oppdaterer ved ferdigstilling av oppgaveId $oppgaveId"
+            )
             database.oppdaterManuellOppgaveUtenOpprinneligValidationResult(
                 oppgaveId = oppgaveId,
                 receivedSykmelding = manuellOppgave.receivedSykmelding,
@@ -94,7 +99,11 @@ class ManuellOppgaveService(
                 opprinneligValidationResult = manuellOppgave.validationResult,
             )
         } else {
-            database.oppdaterManuellOppgave(oppgaveId, manuellOppgave.receivedSykmelding, validationResult)
+            database.oppdaterManuellOppgave(
+                oppgaveId,
+                manuellOppgave.receivedSykmelding,
+                validationResult
+            )
         }
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }
@@ -103,30 +112,37 @@ class ManuellOppgaveService(
         return manuellOppgave.receivedSykmelding.merknader?.any {
             it.type == "UGYLDIG_TILBAKEDATERING" ||
                 it.type == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
-        } ?: false
+        }
+            ?: false
     }
 
-    private fun incrementCounters(validationResult: ValidationResult, manuellOppgaveWithMerknad: ManuellOppgaveKomplett) {
-        validationResult.ruleHits.forEach {
-            RULE_HIT_COUNTER.labels(it.ruleName).inc()
-        }
+    private fun incrementCounters(
+        validationResult: ValidationResult,
+        manuellOppgaveWithMerknad: ManuellOppgaveKomplett
+    ) {
+        validationResult.ruleHits.forEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
         manuellOppgaveWithMerknad.receivedSykmelding.merknader?.forEach {
             MERKNAD_COUNTER.labels(it.type).inc()
         }
         RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
     }
 
-    private suspend fun hentManuellOppgave(oppgaveId: Int, accessToken: String): ManuellOppgaveKomplett {
+    private suspend fun hentManuellOppgave(
+        oppgaveId: Int,
+        accessToken: String
+    ): ManuellOppgaveKomplett {
         val manuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
         if (manuellOppgave == null) {
             log.error("Fant ikke oppgave med id $oppgaveId")
             throw OppgaveNotFoundException("Fant ikke oppgave med id $oppgaveId")
         }
         val harTilgangTilOppgave =
-            syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                accessToken = accessToken,
-                personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
-            ).harTilgang
+            syfoTilgangsKontrollClient
+                .sjekkVeiledersTilgangTilPersonViaAzure(
+                    accessToken = accessToken,
+                    personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
+                )
+                .harTilgang
         if (!harTilgangTilOppgave) {
             throw IkkeTilgangException()
         }
@@ -151,8 +167,14 @@ class ManuellOppgaveService(
 
     suspend fun sendApprec(oppgaveId: Int, apprec: Apprec, loggingMeta: LoggingMeta) {
         try {
-            kafkaProducers.kafkaApprecProducer.producer.send(ProducerRecord(kafkaProducers.kafkaApprecProducer.apprecTopic, apprec)).get()
-            log.info("Apprec kvittering sent til kafka topic {} {}", kafkaProducers.kafkaApprecProducer.apprecTopic, loggingMeta)
+            kafkaProducers.kafkaApprecProducer.producer
+                .send(ProducerRecord(kafkaProducers.kafkaApprecProducer.apprecTopic, apprec))
+                .get()
+            log.info(
+                "Apprec kvittering sent til kafka topic {} {}",
+                kafkaProducers.kafkaApprecProducer.apprecTopic,
+                loggingMeta
+            )
             toggleApprecSendt(oppgaveId)
         } catch (ex: Exception) {
             log.error("Failed to send apprec {}", loggingMeta)
@@ -173,26 +195,39 @@ class ManuellOppgaveService(
             senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
             mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
             validationResult = manuellOppgave.validationResult,
-            ebService = if (manuellOppgave.apprec.ebService.isNullOrEmpty()) {
-                manuellOppgave.apprec.ebService
-            } else {
-                "Sykmelding"
-            },
+            ebService =
+                if (manuellOppgave.apprec.ebService.isNullOrEmpty()) {
+                    manuellOppgave.apprec.ebService
+                } else {
+                    "Sykmelding"
+                },
         )
 
     fun sendReceivedSykmelding(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
         val topic = kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic
         try {
-            kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(
-                ProducerRecord(
-                    topic,
-                    receivedSykmelding.sykmelding.id,
-                    receivedSykmelding,
-                ),
-            ).get()
-            log.info("Sendt sykmelding {} to topic {} {}", receivedSykmelding.sykmelding.id, topic, loggingMeta)
+            kafkaProducers.kafkaRecievedSykmeldingProducer.producer
+                .send(
+                    ProducerRecord(
+                        topic,
+                        receivedSykmelding.sykmelding.id,
+                        receivedSykmelding,
+                    ),
+                )
+                .get()
+            log.info(
+                "Sendt sykmelding {} to topic {} {}",
+                receivedSykmelding.sykmelding.id,
+                topic,
+                loggingMeta
+            )
         } catch (ex: Exception) {
-            log.error("Failed to send sykmelding {} to topic {} {}", receivedSykmelding.sykmelding.id, topic, loggingMeta)
+            log.error(
+                "Failed to send sykmelding {} to topic {} {}",
+                receivedSykmelding.sykmelding.id,
+                topic,
+                loggingMeta
+            )
             throw ex
         }
     }

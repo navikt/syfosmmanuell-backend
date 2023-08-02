@@ -1,7 +1,7 @@
 package no.nav.syfo.aksessering
 
-import no.nav.syfo.model.ManuellOppgaveStatus
 import java.time.LocalDateTime
+import no.nav.syfo.model.ManuellOppgaveStatus
 
 data class UlosteOppgave(
     val oppgaveId: Int,

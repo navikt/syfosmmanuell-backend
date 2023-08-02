@@ -34,29 +34,37 @@ fun Route.hentManuellOppgaver(
             when (hasAccess) {
                 false -> {
                     auditlogg.info(
-                        AuditLogger().createcCefMessage(
-                            fnr = null,
-                            accessToken = accessToken,
-                            operation = AuditLogger.Operation.READ,
-                            requestPath = "/api/v1/manuellOppgave/$oppgaveId",
-                            permit = AuditLogger.Permit.DENY,
-                        ),
+                        AuditLogger()
+                            .createcCefMessage(
+                                fnr = null,
+                                accessToken = accessToken,
+                                operation = AuditLogger.Operation.READ,
+                                requestPath = "/api/v1/manuellOppgave/$oppgaveId",
+                                permit = AuditLogger.Permit.DENY,
+                            ),
                     )
-                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(accessToken, "/api/v1/manuellOppgave/$oppgaveId")
-                    call.respond(HttpStatusCode.Unauthorized, "Du har ikke tilgang til denne oppgaven.")
+                    logNAVEpostFromTokenWhenNoAccessToSecureLogs(
+                        accessToken,
+                        "/api/v1/manuellOppgave/$oppgaveId"
+                    )
+                    call.respond(
+                        HttpStatusCode.Unauthorized,
+                        "Du har ikke tilgang til denne oppgaven."
+                    )
                 }
                 true -> {
                     log.info("Henter ut oppgave med $oppgaveId")
                     val manuellOppgave = manuellOppgaveService.hentManuellOppgaver(oppgaveId)
                     if (manuellOppgave != null) {
                         auditlogg.info(
-                            AuditLogger().createcCefMessage(
-                                fnr = manuellOppgave.personNrPasient,
-                                accessToken = accessToken,
-                                operation = AuditLogger.Operation.READ,
-                                requestPath = "/api/v1/manuellOppgave/$oppgaveId",
-                                permit = AuditLogger.Permit.PERMIT,
-                            ),
+                            AuditLogger()
+                                .createcCefMessage(
+                                    fnr = manuellOppgave.personNrPasient,
+                                    accessToken = accessToken,
+                                    operation = AuditLogger.Operation.READ,
+                                    requestPath = "/api/v1/manuellOppgave/$oppgaveId",
+                                    permit = AuditLogger.Permit.PERMIT,
+                                ),
                         )
                         call.respond(manuellOppgave)
                     } else {
@@ -65,8 +73,6 @@ fun Route.hentManuellOppgaver(
                 }
             }
         }
-        get("/oppgaver") {
-            call.respond(manuellOppgaveService.getOppgaver())
-        }
+        get("/oppgaver") { call.respond(manuellOppgaveService.getOppgaver()) }
     }
 }

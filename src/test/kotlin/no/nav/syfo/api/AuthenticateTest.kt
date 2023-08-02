@@ -21,6 +21,8 @@ import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.nio.file.Paths
+import java.time.LocalDateTime
 import no.nav.syfo.Environment
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
@@ -47,119 +49,146 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
-import java.nio.file.Paths
-import java.time.LocalDateTime
 
-class AuthenticateTest : FunSpec({
-    val path = "src/test/resources/jwkset.json"
-    val uri = Paths.get(path).toUri().toURL()
-    val jwkProvider = JwkProviderBuilder(uri).build()
-    val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val msGraphClient = mockk<MSGraphClient>()
-    val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
-    val oppgaveService = mockk<OppgaveService>(relaxed = true)
+class AuthenticateTest :
+    FunSpec({
+        val path = "src/test/resources/jwkset.json"
+        val uri = Paths.get(path).toUri().toURL()
+        val jwkProvider = JwkProviderBuilder(uri).build()
+        val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+        val msGraphClient = mockk<MSGraphClient>()
+        val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
+        val oppgaveService = mockk<OppgaveService>(relaxed = true)
 
-    val database = TestDB.database
-    val authorizationService = AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
-    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-    val manuelloppgaveId = "1314"
-    val manuellOppgave = ManuellOppgave(
-        receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-        validationResult = ValidationResult(Status.OK, emptyList()),
-        apprec = objectMapper.readValue(
-            Apprec::class.java.getResourceAsStream("/apprecOK.json").readBytes().toString(
-                Charsets.UTF_8,
-            ),
-        ),
-    )
-    val oppgaveid = 308076319
+        val database = TestDB.database
+        val authorizationService =
+            AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
+        val manuellOppgaveService =
+            ManuellOppgaveService(
+                database,
+                syfoTilgangsKontrollClient,
+                kafkaProducers,
+                oppgaveService
+            )
+        val manuelloppgaveId = "1314"
+        val manuellOppgave =
+            ManuellOppgave(
+                receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
+                validationResult = ValidationResult(Status.OK, emptyList()),
+                apprec =
+                    objectMapper.readValue(
+                        Apprec::class
+                            .java
+                            .getResourceAsStream("/apprecOK.json")
+                            .readBytes()
+                            .toString(
+                                Charsets.UTF_8,
+                            ),
+                    ),
+            )
+        val oppgaveid = 308076319
 
-    beforeTest {
-        database.connection.dropData()
-        clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
-        database.opprettManuellOppgave(manuellOppgave, manuellOppgave.apprec, oppgaveid, ManuellOppgaveStatus.APEN, LocalDateTime.now())
-        coEvery { syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns Tilgang(true)
-    }
+        beforeTest {
+            database.connection.dropData()
+            clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+            database.opprettManuellOppgave(
+                manuellOppgave,
+                manuellOppgave.apprec,
+                oppgaveid,
+                ManuellOppgaveStatus.APEN,
+                LocalDateTime.now()
+            )
+            coEvery {
+                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+            } returns Tilgang(true)
+        }
 
-    context("Autentiseringstest for api") {
-        val config = Environment(
-            syfosmmanuellUrl = "https://syfosmmanuell",
-            syfotilgangskontrollScope = "scope",
-            oppgavebehandlingUrl = "oppgave",
-            syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
-            msGraphApiScope = "http://ms.graph.fo/",
-            msGraphApiUrl = "http://ms.graph.fo.ton/",
-            azureTokenEndpoint = "http://ms.token/",
-            azureAppClientSecret = "secret",
-            azureAppClientId = "clientId",
-            oppgaveScope = "oppgave",
-            jwkKeysUrl = "keys",
-            jwtIssuer = "https://sts.issuer.net/myid",
-            databasePassword = "asd",
-            databaseUsername = "asda",
-            dbHost = "",
-            dbName = "",
-            dbPort = "",
-            cluster = "dev-gcp",
-            oppgaveHendelseTopic = "oppgavehendlese",
-        )
-        with(TestApplicationEngine()) {
-            start()
-            application.setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
-            application.routing {
-                authenticate("jwt") {
-                    hentManuellOppgaver(manuellOppgaveService, authorizationService)
+        context("Autentiseringstest for api") {
+            val config =
+                Environment(
+                    syfosmmanuellUrl = "https://syfosmmanuell",
+                    syfotilgangskontrollScope = "scope",
+                    oppgavebehandlingUrl = "oppgave",
+                    syfoTilgangsKontrollClientUrl = "http://syfotilgangskontroll",
+                    msGraphApiScope = "http://ms.graph.fo/",
+                    msGraphApiUrl = "http://ms.graph.fo.ton/",
+                    azureTokenEndpoint = "http://ms.token/",
+                    azureAppClientSecret = "secret",
+                    azureAppClientId = "clientId",
+                    oppgaveScope = "oppgave",
+                    jwkKeysUrl = "keys",
+                    jwtIssuer = "https://sts.issuer.net/myid",
+                    databasePassword = "asd",
+                    databaseUsername = "asda",
+                    dbHost = "",
+                    dbName = "",
+                    dbPort = "",
+                    cluster = "dev-gcp",
+                    oppgaveHendelseTopic = "oppgavehendlese",
+                )
+            with(TestApplicationEngine()) {
+                start()
+                application.setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
+                application.routing {
+                    authenticate("jwt") {
+                        hentManuellOppgaver(manuellOppgaveService, authorizationService)
+                    }
                 }
-            }
-            application.install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                application.install(ContentNegotiation) {
+                    jackson {
+                        registerKotlinModule()
+                        registerModule(JavaTimeModule())
+                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    }
                 }
-            }
-            application.install(StatusPages) {
-                exception<Throwable> { call, cause ->
-                    call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-                    log.error("Caught exception", cause)
-                    throw cause
+                application.install(StatusPages) {
+                    exception<Throwable> { call, cause ->
+                        call.respond(
+                            HttpStatusCode.InternalServerError,
+                            cause.message ?: "Unknown error"
+                        )
+                        log.error("Caught exception", cause)
+                        throw cause
+                    }
                 }
-            }
 
-            test("Aksepterer gyldig JWT med riktig audience") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                        addHeader(
-                            HttpHeaders.Authorization,
-                            "Bearer ${generateJWT(
+                test("Aksepterer gyldig JWT med riktig audience") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
+                            addHeader(
+                                HttpHeaders.Authorization,
+                                "Bearer ${generateJWT(
                                 "2",
                                 "clientId",
                                 Claim("preferred_username", "firstname.lastname@nav.no"),
                             )}",
+                            )
+                        },
+                    ) {
+                        assertEquals(HttpStatusCode.OK, response.status())
+                        assertEquals(
+                            oppgaveid,
+                            objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid
                         )
-                    },
-                ) {
-                    assertEquals(HttpStatusCode.OK, response.status())
-                    assertEquals(oppgaveid, objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid)
+                    }
                 }
-            }
-            test("Gyldig JWT med feil audience gir Unauthorized") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                        addHeader(
-                            HttpHeaders.Authorization,
-                            "Bearer ${generateJWT(
+                test("Gyldig JWT med feil audience gir Unauthorized") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
+                            addHeader(
+                                HttpHeaders.Authorization,
+                                "Bearer ${generateJWT(
                                 "2",
                                 "annenClientId",
                                 Claim("preferred_username", "firstname.lastname@nav.no"),
                             )}",
-                        )
-                    },
-                ) {
-                    assertEquals(HttpStatusCode.Unauthorized, response.status())
-                    assertEquals(null, response.content)
+                            )
+                        },
+                    ) {
+                        assertEquals(HttpStatusCode.Unauthorized, response.status())
+                        assertEquals(null, response.content)
+                    }
                 }
             }
         }
-    }
-})
+    })

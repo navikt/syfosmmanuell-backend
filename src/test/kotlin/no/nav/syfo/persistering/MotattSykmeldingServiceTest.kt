@@ -6,6 +6,9 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
@@ -30,99 +33,128 @@ import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Assertions.assertEquals
-import java.util.UUID
-import java.util.concurrent.CompletableFuture
-import kotlin.test.assertFailsWith
 
-class MotattSykmeldingServiceTest : FunSpec({
-    val applicationState = ApplicationState(alive = true, ready = true)
-    val database = TestDB.database
-    val oppgaveService = mockk<OppgaveService>()
-    val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
-    val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
-    val manuellOppgaveAivenConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
-    val manuellOppgaveService = ManuellOppgaveService(database, syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-    val mottattSykmeldingService = MottattSykmeldingService(
-        kafkaAivenConsumer = manuellOppgaveAivenConsumer,
-        applicationState = applicationState,
-        topicAiven = "topic-aiven",
-        database = database,
-        oppgaveService = oppgaveService,
-        manuellOppgaveService = manuellOppgaveService,
-    )
+class MotattSykmeldingServiceTest :
+    FunSpec({
+        val applicationState = ApplicationState(alive = true, ready = true)
+        val database = TestDB.database
+        val oppgaveService = mockk<OppgaveService>()
+        val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+        val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
+        val manuellOppgaveAivenConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
+        val manuellOppgaveService =
+            ManuellOppgaveService(
+                database,
+                syfoTilgangsKontrollClient,
+                kafkaProducers,
+                oppgaveService
+            )
+        val mottattSykmeldingService =
+            MottattSykmeldingService(
+                kafkaAivenConsumer = manuellOppgaveAivenConsumer,
+                applicationState = applicationState,
+                topicAiven = "topic-aiven",
+                database = database,
+                oppgaveService = oppgaveService,
+                manuellOppgaveService = manuellOppgaveService,
+            )
 
-    val sykmeldingsId = UUID.randomUUID().toString()
-    val msgId = "1314"
-    val manuellOppgave = ManuellOppgave(
-        receivedSykmelding = receivedSykmelding(msgId, generateSykmelding(id = sykmeldingsId)),
-        validationResult = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("regelnavn", "melding til legen", "melding til bruker", Status.MANUAL_PROCESSING))),
-        apprec = objectMapper.readValue(
-            Apprec::class.java.getResourceAsStream("/apprecOK.json")!!.readBytes().toString(
-                Charsets.UTF_8,
-            ),
-        ),
-    )
-    val oppgaveid = 308076319
-    val loggingMeta = LoggingMeta("", null, msgId, sykmeldingsId)
+        val sykmeldingsId = UUID.randomUUID().toString()
+        val msgId = "1314"
+        val manuellOppgave =
+            ManuellOppgave(
+                receivedSykmelding =
+                    receivedSykmelding(msgId, generateSykmelding(id = sykmeldingsId)),
+                validationResult =
+                    ValidationResult(
+                        Status.MANUAL_PROCESSING,
+                        listOf(
+                            RuleInfo(
+                                "regelnavn",
+                                "melding til legen",
+                                "melding til bruker",
+                                Status.MANUAL_PROCESSING
+                            )
+                        )
+                    ),
+                apprec =
+                    objectMapper.readValue(
+                        Apprec::class
+                            .java
+                            .getResourceAsStream("/apprecOK.json")!!
+                            .readBytes()
+                            .toString(
+                                Charsets.UTF_8,
+                            ),
+                    ),
+            )
+        val oppgaveid = 308076319
+        val loggingMeta = LoggingMeta("", null, msgId, sykmeldingsId)
 
-    beforeTest {
-        clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
-        coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgave(oppgaveid)
-        coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
-        coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "apprectopic"
-        coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-    }
-
-    afterTest {
-        database.connection.dropData()
-    }
-
-    context("Test av mottak av ny melding") {
-        test("Happy-case") {
-            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
-
-            assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
-            coVerify { oppgaveService.opprettOppgave(any(), any()) }
-            coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
-            coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
+        beforeTest {
+            clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+            coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgave(oppgaveid)
+            coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
+            coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "apprectopic"
+            coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns
+                CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+            coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns
+                CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         }
 
-        test("Apprec oppdateres") {
-            assertEquals(false, database.erApprecSendt(oppgaveid))
+        afterTest { database.connection.dropData() }
 
-            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+        context("Test av mottak av ny melding") {
+            test("Happy-case") {
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
-            val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
-            assertEquals(true, hentKomplettManuellOppgave.first().sendtApprec)
-            assertEquals(true, database.erApprecSendt(oppgaveid))
+                assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
+                coVerify { oppgaveService.opprettOppgave(any(), any()) }
+                coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
+                coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
+            }
 
-            coVerify { oppgaveService.opprettOppgave(any(), any()) }
-        }
+            test("Apprec oppdateres") {
+                assertEquals(false, database.erApprecSendt(oppgaveid))
 
-        test("Lagrer opprinnelig validation result") {
-            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
 
-            val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
-            assertEquals(komplettManuellOppgave.validationResult, komplettManuellOppgave.opprinneligValidationResult)
-        }
+                val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
+                assertEquals(true, hentKomplettManuellOppgave.first().sendtApprec)
+                assertEquals(true, database.erApprecSendt(oppgaveid))
 
-        test("Lagrer ikke melding som allerede finnes") {
-            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
-            mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                coVerify { oppgaveService.opprettOppgave(any(), any()) }
+            }
 
-            assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
-            coVerify(exactly = 1) { oppgaveService.opprettOppgave(any(), any()) }
-        }
-        test("Kaster feil hvis opprettOppgave feilet") {
-            coEvery { oppgaveService.opprettOppgave(any(), any()) } throws RuntimeException("Noe gikk galt")
-            assertFailsWith<RuntimeException> {
-                runBlocking {
-                    mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+            test("Lagrer opprinnelig validation result") {
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+
+                val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
+                assertEquals(
+                    komplettManuellOppgave.validationResult,
+                    komplettManuellOppgave.opprinneligValidationResult
+                )
+            }
+
+            test("Lagrer ikke melding som allerede finnes") {
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+
+                assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
+                coVerify(exactly = 1) { oppgaveService.opprettOppgave(any(), any()) }
+            }
+            test("Kaster feil hvis opprettOppgave feilet") {
+                coEvery { oppgaveService.opprettOppgave(any(), any()) } throws
+                    RuntimeException("Noe gikk galt")
+                assertFailsWith<RuntimeException> {
+                    runBlocking {
+                        mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                    }
+                }
+                assertEquals(false, database.erOpprettManuellOppgave(sykmeldingsId))
+                coVerify(exactly = 0) {
+                    kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any())
                 }
             }
-            assertEquals(false, database.erOpprettManuellOppgave(sykmeldingsId))
-            coVerify(exactly = 0) { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
         }
-    }
-})
+    })

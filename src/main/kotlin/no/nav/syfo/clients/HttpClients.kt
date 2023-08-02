@@ -38,7 +38,8 @@ class HttpClients(env: Environment) {
             HttpResponseValidator {
                 handleResponseExceptionWithRequest { exception, _ ->
                     when (exception) {
-                        is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                        is SocketTimeoutException ->
+                            throw ServiceUnavailableException(exception.message)
                     }
                 }
             }
@@ -50,7 +51,9 @@ class HttpClients(env: Environment) {
                 }
                 retryIf(maxRetries) { request, response ->
                     if (response.status.value.let { it in 500..599 }) {
-                        log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                        log.warn(
+                            "Retrying for statuscode ${response.status.value}, for url ${request.url}"
+                        )
                         true
                     } else {
                         false
@@ -67,24 +70,34 @@ class HttpClients(env: Environment) {
 
     val httpClient = HttpClient(Apache, config)
 
-    private val azureAdV2Client = AzureAdV2Client(
-        azureAppClientId = env.azureAppClientId,
-        azureAppClientSecret = env.azureAppClientSecret,
-        azureTokenEndpoint = env.azureTokenEndpoint,
-        httpClient = httpClient,
-    )
+    private val azureAdV2Client =
+        AzureAdV2Client(
+            azureAppClientId = env.azureAppClientId,
+            azureAppClientSecret = env.azureAppClientSecret,
+            azureTokenEndpoint = env.azureTokenEndpoint,
+            httpClient = httpClient,
+        )
 
-    val oppgaveClient = OppgaveClient(env.oppgavebehandlingUrl, azureAdV2Client, httpClient, env.oppgaveScope, env.cluster)
+    val oppgaveClient =
+        OppgaveClient(
+            env.oppgavebehandlingUrl,
+            azureAdV2Client,
+            httpClient,
+            env.oppgaveScope,
+            env.cluster
+        )
 
-    val syfoTilgangsKontrollClient = SyfoTilgangsKontrollClient(
-        environment = env,
-        azureAdV2Client = azureAdV2Client,
-        httpClient = httpClient,
-    )
+    val syfoTilgangsKontrollClient =
+        SyfoTilgangsKontrollClient(
+            environment = env,
+            azureAdV2Client = azureAdV2Client,
+            httpClient = httpClient,
+        )
 
-    val msGraphClient = MSGraphClient(
-        environment = env,
-        azureAdV2Client = azureAdV2Client,
-        httpClient = httpClient,
-    )
+    val msGraphClient =
+        MSGraphClient(
+            environment = env,
+            azureAdV2Client = azureAdV2Client,
+            httpClient = httpClient,
+        )
 }

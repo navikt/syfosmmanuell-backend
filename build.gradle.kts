@@ -10,7 +10,7 @@ val ktorVersion = "2.3.3"
 val logbackVersion = "1.4.8"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.0.11"
+val smCommonVersion = "1.0.12"
 val sykmeldingVersion = "1.0.4"
 val fellesformatVersion = "1.0.4"
 val kithHodemeldingVersion = "1.0.4"
@@ -28,11 +28,13 @@ val kotlinVersion = "1.9.0"
 val kafkaVersion = "3.5.1"
 val commonsCodecVersion = "1.16.0"
 val logbacksyslog4jVersion = "1.0.0"
+val ktfmtVersion = "0.44"
+val jvmVersion = "17"
 
 plugins {
     kotlin("jvm") version "1.9.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.jmailen.kotlinter") version "3.15.0"
+    id("com.diffplug.spotless") version "6.20.0"
     id("org.cyclonedx.bom") version "1.7.4"
 }
 
@@ -123,7 +125,7 @@ tasks {
         }
     }
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+        kotlinOptions.jvmTarget = jvmVersion
     }
 
     withType<ShadowJar> {
@@ -134,7 +136,7 @@ tasks {
     }
 
     withType<Test> {
-        dependsOn("lintKotlin")
+        dependsOn("spotlessApply")
         useJUnitPlatform {
         }
         testLogging {
@@ -144,7 +146,10 @@ tasks {
         }
     }
 
-    "check" {
-        dependsOn("formatKotlin")
+    spotless {
+        kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
+        check {
+            dependsOn("spotlessApply")
+        }
     }
 }

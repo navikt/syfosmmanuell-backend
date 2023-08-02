@@ -2,9 +2,22 @@ package no.nav.syfo
 
 import no.nav.syfo.diagnose.Kodeverk
 
-enum class ICPC2(override val codeValue: String, override val text: String, val icd10: List<ICD10>, override val oid: String = "2.16.578.1.12.4.1.1.7170") : Kodeverk {
-    NEGATIVE_30("-30", "Medisinsk undersøkelse/helsevurdering generell/fullstendig", listOf(ICD10.Z000)),
-    NEGATIVE_31("-31", "Medisinsk undersøkelse/helsevurdering målrettet/partiell", listOf(ICD10.Z019)),
+enum class ICPC2(
+    override val codeValue: String,
+    override val text: String,
+    val icd10: List<ICD10>,
+    override val oid: String = "2.16.578.1.12.4.1.1.7170"
+) : Kodeverk {
+    NEGATIVE_30(
+        "-30",
+        "Medisinsk undersøkelse/helsevurdering generell/fullstendig",
+        listOf(ICD10.Z000)
+    ),
+    NEGATIVE_31(
+        "-31",
+        "Medisinsk undersøkelse/helsevurdering målrettet/partiell",
+        listOf(ICD10.Z019)
+    ),
     NEGATIVE_32("-32", "Sensitivitetsprøve", listOf(ICD10.Z015)),
     NEGATIVE_33("-33", "Mikrobiologisk/immunologisk prøve", listOf(ICD10.Z017)),
     NEGATIVE_34("-34", "Blodprøve IKA", listOf(ICD10.Z017)),
@@ -25,20 +38,40 @@ enum class ICPC2(override val codeValue: String, override val text: String, val 
     NEGATIVE_49("-49", "Forebyggende prosedyre IKA", listOf(ICD10.Z298)),
     NEGATIVE_50("-50", "Legemiddelforskrivning/-administrasjon", listOf(ICD10.Z768)),
     NEGATIVE_51("-51", "Incisjon/tapping/aspirasjon", listOf(ICD10.Z518)),
-    NEGATIVE_52("-52", "Eksisjon/fjerning av vev/biopsi/skraping/kauterisasjon", listOf(ICD10.Z518)),
+    NEGATIVE_52(
+        "-52",
+        "Eksisjon/fjerning av vev/biopsi/skraping/kauterisasjon",
+        listOf(ICD10.Z518)
+    ),
     NEGATIVE_53("-53", "Instrumentering/kateterisering/intubasjon/dilatasjon", listOf(ICD10.Z518)),
-    NEGATIVE_54("-54", "Reparasjon/fiksasjon med sutur/gips/protese påføring og fjerning", listOf(ICD10.Z518)),
+    NEGATIVE_54(
+        "-54",
+        "Reparasjon/fiksasjon med sutur/gips/protese påføring og fjerning",
+        listOf(ICD10.Z518)
+    ),
     NEGATIVE_55("-55", "Lokal injeksjon/infiltrasjon", listOf(ICD10.Z512)),
     NEGATIVE_56("-56", "Bandasjering/kompresjon/tamponade", listOf(ICD10.Z518)),
     NEGATIVE_57("-57", "Fysikalsk behandling/rehabilitering", listOf(ICD10.Z509)),
     NEGATIVE_58("-58", "Terapeutisk rådgivning/samtale", listOf(ICD10.Z719)),
     NEGATIVE_59("-59", "Andre terapeutiske prosedyrer/småkirurgi IKA", listOf(ICD10.Z768)),
     NEGATIVE_60("-60", "Resultat av prøve/prosedyre", listOf(ICD10.Z712)),
-    NEGATIVE_61("-61", "Resultat av undersøkelse/prøve ved journal/brev fra annen helsetjenesteyter", listOf(ICD10.Z929)),
+    NEGATIVE_61(
+        "-61",
+        "Resultat av undersøkelse/prøve ved journal/brev fra annen helsetjenesteyter",
+        listOf(ICD10.Z929)
+    ),
     NEGATIVE_62("-62", "Administrativ prosedyre", listOf(ICD10.Z029)),
     NEGATIVE_63("-63", "Observasjon/oppfølgingskontakt IKA", listOf(ICD10.Z048)),
-    NEGATIVE_64("-64", "Kontakt/helseproblem initiert/formidlet av helsepersonell", listOf(ICD10.Z099)),
-    NEGATIVE_65("-65", "Kontakt/helseproblem initiert/formidlet av annen enn pasient/helsepersonell", listOf(ICD10.Z099)),
+    NEGATIVE_64(
+        "-64",
+        "Kontakt/helseproblem initiert/formidlet av helsepersonell",
+        listOf(ICD10.Z099)
+    ),
+    NEGATIVE_65(
+        "-65",
+        "Kontakt/helseproblem initiert/formidlet av annen enn pasient/helsepersonell",
+        listOf(ICD10.Z099)
+    ),
     NEGATIVE_66("-66", "Henvisning til annen primærhelsetjeneste/tjenesteyter", listOf(ICD10.Z048)),
     NEGATIVE_67("-67", "Henvisning til spesialist/sykehus", listOf(ICD10.Z048)),
     NEGATIVE_68("-68", "Henvisning IKA", listOf(ICD10.Z048)),

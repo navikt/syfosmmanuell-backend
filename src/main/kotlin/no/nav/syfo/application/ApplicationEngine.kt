@@ -19,6 +19,7 @@ import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
+import java.util.concurrent.ExecutionException
 import no.nav.syfo.Environment
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.aksessering.api.sykmeldingsApi
@@ -29,7 +30,6 @@ import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.IkkeTilgangException
 import no.nav.syfo.service.ManuellOppgaveService
-import java.util.concurrent.ExecutionException
 
 fun createApplicationEngine(
     env: Environment,
@@ -39,10 +39,14 @@ fun createApplicationEngine(
     issuer: String,
     authorizationService: AuthorizationService,
 ): ApplicationEngine =
-    embeddedServer(Netty, env.applicationPort, configure = {
-        // Increase timeout of Netty to handle large content bodies
-        responseWriteTimeoutSeconds = 40
-    }) {
+    embeddedServer(
+        Netty,
+        env.applicationPort,
+        configure = {
+            // Increase timeout of Netty to handle large content bodies
+            responseWriteTimeoutSeconds = 40
+        }
+    ) {
         setupAuth(env, jwkProvider, issuer)
         install(ContentNegotiation) {
             jackson {

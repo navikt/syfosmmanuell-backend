@@ -7,11 +7,11 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.http.HttpStatusCode
+import java.io.Serializable
+import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.log
-import java.io.Serializable
-import java.util.concurrent.TimeUnit
 
 class MSGraphClient(
     environment: Environment,
@@ -23,10 +23,11 @@ class MSGraphClient(
 
     private val msGraphApiAccountNameQuery = "$msGraphApiUrl/me/?\$select=onPremisesSamAccountName"
 
-    val subjectCache: Cache<String, String> = Caffeine.newBuilder()
-        .expireAfterWrite(1, TimeUnit.HOURS)
-        .maximumSize(100)
-        .build<String, String>()
+    val subjectCache: Cache<String, String> =
+        Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .maximumSize(100)
+            .build<String, String>()
 
     suspend fun getSubjectFromMsGraph(accessToken: String): String {
         subjectCache.getIfPresent(accessToken)?.let {
@@ -45,19 +46,21 @@ class MSGraphClient(
     }
 
     private suspend fun callMsGraphApi(oboToken: String): String {
-        val response = httpClient.get(msGraphApiAccountNameQuery) {
-            headers {
-                append("Authorization", "Bearer $oboToken")
+        val response =
+            httpClient.get(msGraphApiAccountNameQuery) {
+                headers { append("Authorization", "Bearer $oboToken") }
             }
-        }
 
         if (response.status == HttpStatusCode.OK) {
             return response.body<GraphResponse>().onPremisesSamAccountName
         } else {
-            throw RuntimeException("Noe gikk galt ved henting av veilderIdent fra Ms Graph ${response.status} ${response.body<String>()}")
+            throw RuntimeException(
+                "Noe gikk galt ved henting av veilderIdent fra Ms Graph ${response.status} ${response.body<String>()}"
+            )
         }
     }
 }
 
 data class GraphOboToken(val access_token: String)
+
 data class GraphResponse(val onPremisesSamAccountName: String) : Serializable
