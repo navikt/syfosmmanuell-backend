@@ -124,9 +124,6 @@ tasks {
             println(project.version)
         }
     }
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = jvmVersion
-    }
 
     withType<ShadowJar> {
         transform(ServiceFileTransformer::class.java) {
