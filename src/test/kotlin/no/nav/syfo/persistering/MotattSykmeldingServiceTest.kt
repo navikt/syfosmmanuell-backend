@@ -57,6 +57,7 @@ class MotattSykmeldingServiceTest :
                 database = database,
                 oppgaveService = oppgaveService,
                 manuellOppgaveService = manuellOppgaveService,
+                cluster = "localhost"
             )
 
         val sykmeldingsId = UUID.randomUUID().toString()

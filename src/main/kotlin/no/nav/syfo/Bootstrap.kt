@@ -97,6 +97,7 @@ fun main() {
             database = database,
             oppgaveService = oppgaveService,
             manuellOppgaveService = manuellOppgaveService,
+            cluster = env.cluster,
         )
 
     val oppgaveHendelseConsumer =

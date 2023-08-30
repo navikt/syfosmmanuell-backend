@@ -34,6 +34,7 @@ class MottattSykmeldingService(
     private val database: DatabaseInterface,
     private val oppgaveService: OppgaveService,
     private val manuellOppgaveService: ManuellOppgaveService,
+    private val cluster: String,
 ) {
 
     companion object {
@@ -60,9 +61,16 @@ class MottattSykmeldingService(
                         throw ex
                     }
                     else -> {
-                        log.error("Aiven: Caught exception, unsubscribing and retrying", ex)
-                        kafkaAivenConsumer.unsubscribe()
-                        delay(DELAY_ON_ERROR_SECONDS.seconds)
+                        if (cluster == "dev-gcp") {
+                            log.error(
+                                "Aiven: Caught exception could not process record skipping in dev",
+                                ex
+                            )
+                        } else {
+                            log.error("Aiven: Caught exception, unsubscribing and retrying", ex)
+                            kafkaAivenConsumer.unsubscribe()
+                            delay(DELAY_ON_ERROR_SECONDS.seconds)
+                        }
                     }
                 }
             }
