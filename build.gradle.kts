@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
 version = "1.0.0"
@@ -10,7 +9,7 @@ val ktorVersion = "2.3.3"
 val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.0.12"
+val smCommonVersion = "1.0.14"
 val sykmeldingVersion = "1.0.4"
 val fellesformatVersion = "1.0.4"
 val kithHodemeldingVersion = "1.0.4"
