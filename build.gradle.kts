@@ -35,7 +35,7 @@ plugins {
 }
 
 application {
-    mainClass.set("no.nav.syfo.ApplicationKt")
+    mainClass.set("no.nav.syfo.BootstrapKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
