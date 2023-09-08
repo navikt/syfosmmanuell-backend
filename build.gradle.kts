@@ -1,11 +1,8 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-
 group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.7.3"
-val ktorVersion = "2.3.3"
+val ktorVersion = "2.3.4"
 val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
@@ -23,7 +20,7 @@ val kotestVersion = "5.6.2"
 val nimbusdsVersion = "9.31"
 val caffeineVersion = "3.1.8"
 val testContainerVersion = "1.18.3"
-val kotlinVersion = "1.9.0"
+val kotlinVersion = "1.9.10"
 val kafkaVersion = "3.5.1"
 val commonsCodecVersion = "1.16.0"
 val logbacksyslog4jVersion = "1.0.0"
@@ -31,10 +28,17 @@ val ktfmtVersion = "0.44"
 val jvmVersion = "17"
 
 plugins {
-    kotlin("jvm") version "1.9.0"
+    id("application")
+    kotlin("jvm") version "1.9.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.diffplug.spotless") version "6.20.0"
-    id("org.cyclonedx.bom") version "1.7.4"
+    id("com.diffplug.spotless") version "6.21.0"
+}
+
+application {
+    mainClass.set("no.nav.syfo.ApplicationKt")
+
+    val isDevelopment: Boolean = project.ext.has("development")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
 val githubUser: String by project
@@ -115,32 +119,29 @@ dependencies {
 
 
 tasks {
-    withType<Jar> {
-        manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-    }
-    create("printVersion") {
-        doLast {
-            println(project.version)
+    shadowJar {
+        archiveBaseName.set("app")
+        archiveClassifier.set("")
+        isZip64 = true
+        manifest {
+            attributes(
+                mapOf(
+                    "Main-Class" to "no.nav.syfo.BootstrapKt",
+                ),
+            )
         }
     }
 
-    withType<ShadowJar> {
-        transform(ServiceFileTransformer::class.java) {
-            setPath("META-INF/cxf")
-            include("bus-extensions.txt")
-        }
-    }
 
-    withType<Test> {
-        dependsOn("spotlessApply")
-        useJUnitPlatform {
-        }
+    test {
+        useJUnitPlatform {}
         testLogging {
             events("skipped", "failed")
             showStackTraces = true
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
     }
+
 
     spotless {
         kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
