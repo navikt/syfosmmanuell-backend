@@ -24,7 +24,8 @@ import no.nav.syfo.clients.HttpClients
 import no.nav.syfo.clients.KafkaConsumers
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.Database
-import no.nav.syfo.oppgave.kafka.OppgaveHendelseConsumer
+import no.nav.syfo.kafka.KafkaConsumer
+import no.nav.syfo.oppgave.service.OppgaveHendelseService
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.MottattSykmeldingService
 import no.nav.syfo.service.ManuellOppgaveService
@@ -91,26 +92,29 @@ fun main() {
 
     val mottattSykmeldingService =
         MottattSykmeldingService(
-            kafkaAivenConsumer = kafkaConsumers.kafkaAivenConsumerManuellOppgave,
-            applicationState = applicationState,
-            topicAiven = env.manuellTopic,
             database = database,
             oppgaveService = oppgaveService,
             manuellOppgaveService = manuellOppgaveService,
-            cluster = env.cluster,
         )
 
-    val oppgaveHendelseConsumer =
-        OppgaveHendelseConsumer(
-            kafkaConsumer = kafkaConsumers.oppgaveHendelseConsumer,
-            topic = env.oppgaveHendelseTopic,
-            applicationState,
+    val oppgaveHendelseService =
+        OppgaveHendelseService(
             database,
+        )
+
+    val kafkaConsumer =
+        KafkaConsumer(
+            kafkaAivenConsumer = kafkaConsumers.kafkaAivenConsumerManuellOppgave,
+            applicationState = applicationState,
+            mottattSykmeldingService = mottattSykmeldingService,
+            oppgaveHendelseService = oppgaveHendelseService,
+            oppgaveTopic = env.oppgaveHendelseTopic,
+            manuellOppgaveTopic = env.manuellTopic,
+            cluster = env.cluster
         )
     applicationState.ready = true
 
-    createListener(applicationState) { mottattSykmeldingService.startAivenConsumer() }
-    createListener(applicationState) { oppgaveHendelseConsumer.start() }
+    createListener(applicationState) { kafkaConsumer.startAivenConsumer() }
 
     ApplicationServer(applicationEngine, applicationState).start()
 }
