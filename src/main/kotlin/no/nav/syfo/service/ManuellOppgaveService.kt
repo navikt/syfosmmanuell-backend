@@ -50,7 +50,8 @@ class ManuellOppgaveService(
 
     suspend fun erApprecSendt(oppgaveId: Int): Boolean = database.erApprecSendt(oppgaveId)
 
-    suspend fun toggleApprecSendt(oppgaveId: Int) = database.oppdaterApprecStatus(oppgaveId, true)
+    suspend fun toggleApprecSendt(oppgaveId: Int) =
+        database.oppdaterApprecStatus(oppgaveId, true)
 
     suspend fun ferdigstillManuellBehandling(
         oppgaveId: Int,

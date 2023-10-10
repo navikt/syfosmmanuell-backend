@@ -12,7 +12,6 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
@@ -29,19 +28,15 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.oppgave
 import no.nav.syfo.testutil.receivedSykmelding
-import no.nav.syfo.util.LoggingMeta
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Assertions.assertEquals
 
 class MotattSykmeldingServiceTest :
     FunSpec({
-        val applicationState = ApplicationState(alive = true, ready = true)
         val database = TestDB.database
         val oppgaveService = mockk<OppgaveService>()
         val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
-        val manuellOppgaveAivenConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
@@ -51,13 +46,9 @@ class MotattSykmeldingServiceTest :
             )
         val mottattSykmeldingService =
             MottattSykmeldingService(
-                kafkaAivenConsumer = manuellOppgaveAivenConsumer,
-                applicationState = applicationState,
-                topicAiven = "topic-aiven",
                 database = database,
                 oppgaveService = oppgaveService,
                 manuellOppgaveService = manuellOppgaveService,
-                cluster = "localhost"
             )
 
         val sykmeldingsId = UUID.randomUUID().toString()
@@ -89,8 +80,8 @@ class MotattSykmeldingServiceTest :
                             ),
                     ),
             )
+        val manuellOppgaveString = objectMapper.writeValueAsString(manuellOppgave)
         val oppgaveid = 308076319
-        val loggingMeta = LoggingMeta("", null, msgId, sykmeldingsId)
 
         beforeTest {
             clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
@@ -107,7 +98,10 @@ class MotattSykmeldingServiceTest :
 
         context("Test av mottak av ny melding") {
             test("Happy-case") {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                mottattSykmeldingService.handleMottattSykmelding(
+                    sykmeldingsId,
+                    manuellOppgaveString
+                )
 
                 assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
                 coVerify { oppgaveService.opprettOppgave(any(), any()) }
@@ -118,7 +112,10 @@ class MotattSykmeldingServiceTest :
             test("Apprec oppdateres") {
                 assertEquals(false, database.erApprecSendt(oppgaveid))
 
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                mottattSykmeldingService.handleMottattSykmelding(
+                    sykmeldingsId,
+                    manuellOppgaveString
+                )
 
                 val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
                 assertEquals(true, hentKomplettManuellOppgave.first().sendtApprec)
@@ -128,7 +125,10 @@ class MotattSykmeldingServiceTest :
             }
 
             test("Lagrer opprinnelig validation result") {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                mottattSykmeldingService.handleMottattSykmelding(
+                    sykmeldingsId,
+                    manuellOppgaveString
+                )
 
                 val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
                 assertEquals(
@@ -138,8 +138,14 @@ class MotattSykmeldingServiceTest :
             }
 
             test("Lagrer ikke melding som allerede finnes") {
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
-                mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                mottattSykmeldingService.handleMottattSykmelding(
+                    sykmeldingsId,
+                    manuellOppgaveString
+                )
+                mottattSykmeldingService.handleMottattSykmelding(
+                    sykmeldingsId,
+                    manuellOppgaveString
+                )
 
                 assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
                 coVerify(exactly = 1) { oppgaveService.opprettOppgave(any(), any()) }
@@ -149,7 +155,10 @@ class MotattSykmeldingServiceTest :
                     RuntimeException("Noe gikk galt")
                 assertFailsWith<RuntimeException> {
                     runBlocking {
-                        mottattSykmeldingService.handleReceivedMessage(manuellOppgave, loggingMeta)
+                        mottattSykmeldingService.handleMottattSykmelding(
+                            sykmeldingsId,
+                            manuellOppgaveString
+                        )
                     }
                 }
                 assertEquals(false, database.erOpprettManuellOppgave(sykmeldingsId))

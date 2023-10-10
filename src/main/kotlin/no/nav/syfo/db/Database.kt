@@ -31,10 +31,10 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
                             jdbcUrl = "jdbc:postgresql://${env.dbHost}:${env.dbPort}/${env.dbName}"
                             username = env.databaseUsername
                             password = env.databasePassword
-                            maximumPoolSize = 2
+                            maximumPoolSize = 3
                             minimumIdle = 1
                             isAutoCommit = false
-                            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+                            transactionIsolation = "TRANSACTION_READ_COMMITTED"
                             validate()
                         },
                     )
