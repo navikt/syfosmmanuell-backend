@@ -18,7 +18,7 @@ internal class AuditLogger {
         val subject = fnr?.padStart(11, '0')
         val duidStr = subject?.let { " duid=$it" } ?: ""
 
-        return "CEF:0|$application|auditLog|1.0|${operation.logString}|Sporingslogg|INFO|end=$now$duidStr" +
+        return "CEF:0|Sykemeldingregistrering|$application|auditLog|1.0|${operation.logString}|Sporingslogg|INFO|end=$now$duidStr" +
             " suid=$navEmail request=$requestPath flexString1Label=Decision flexString1=$permit"
     }
 
