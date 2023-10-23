@@ -10,6 +10,7 @@ import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.oppgave.kafka.OppgaveKafkaAivenRecord
 import no.nav.syfo.oppgave.kafka.manuellOppgaveStatus
 import no.nav.syfo.persistering.db.oppdaterOppgaveHendelse
+import no.nav.syfo.util.retry
 import org.slf4j.LoggerFactory
 
 class OppgaveHendelseService(
@@ -32,11 +33,13 @@ class OppgaveHendelseService(
         val oppgaveId = oppgaveHendlese.oppgave.oppgaveId.toInt()
         if (database.finnesOppgave(oppgaveId)) {
             log.info("Oppdaterer oppgave for oppgaveId: {} til {}", oppgaveId, oppgaveStatus)
-            database.oppdaterOppgaveHendelse(
-                oppgaveId = oppgaveId,
-                status = oppgaveStatus,
-                statusTimestamp = timestamp,
-            )
+            retry {
+                database.oppdaterOppgaveHendelse(
+                    oppgaveId = oppgaveId,
+                    status = oppgaveStatus,
+                    statusTimestamp = timestamp,
+                )
+            }
         }
     }
 }

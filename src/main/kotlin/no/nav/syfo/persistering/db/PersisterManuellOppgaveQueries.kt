@@ -2,15 +2,18 @@ package no.nav.syfo.persistering.db
 
 import java.sql.Timestamp
 import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.db.DatabaseInterface
+import no.nav.syfo.helpers.retry
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toPGObject
+import no.nav.syfo.util.retry
 
 suspend fun DatabaseInterface.opprettManuellOppgave(
     manuellOppgave: ManuellOppgave,
@@ -20,41 +23,43 @@ suspend fun DatabaseInterface.opprettManuellOppgave(
     statusTimestamp: LocalDateTime,
 ) {
     withContext(Dispatchers.IO) {
-        connection.use { connection ->
-            connection
-                .prepareStatement(
-                    """
-            INSERT INTO MANUELLOPPGAVE(
-                id,
-                receivedsykmelding,
-                validationresult,
-                apprec,
-                pasientfnr,
-                ferdigstilt,
-                oppgaveid,
-                sendt_apprec,
-                opprinnelig_validationresult,
-                status,
-                status_timestamp
-                )
-            VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-                )
-                .use {
-                    it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
-                    it.setObject(2, manuellOppgave.receivedSykmelding.toPGObject())
-                    it.setObject(3, manuellOppgave.validationResult.toPGObject())
-                    it.setObject(4, apprec.toPGObject())
-                    it.setString(5, manuellOppgave.receivedSykmelding.personNrPasient)
-                    it.setBoolean(6, false)
-                    it.setInt(7, oppgaveId)
-                    it.setBoolean(8, false)
-                    it.setObject(9, manuellOppgave.validationResult.toPGObject())
-                    it.setString(10, status.name)
-                    it.setTimestamp(11, Timestamp.valueOf(statusTimestamp))
-                    it.executeUpdate()
-                }
-            connection.commit()
+        retry {
+            connection.use { connection ->
+                connection
+                    .prepareStatement(
+                        """
+                INSERT INTO MANUELLOPPGAVE(
+                    id,
+                    receivedsykmelding,
+                    validationresult,
+                    apprec,
+                    pasientfnr,
+                    ferdigstilt,
+                    oppgaveid,
+                    sendt_apprec,
+                    opprinnelig_validationresult,
+                    status,
+                    status_timestamp
+                    )
+                VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                    )
+                    .use {
+                        it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
+                        it.setObject(2, manuellOppgave.receivedSykmelding.toPGObject())
+                        it.setObject(3, manuellOppgave.validationResult.toPGObject())
+                        it.setObject(4, apprec.toPGObject())
+                        it.setString(5, manuellOppgave.receivedSykmelding.personNrPasient)
+                        it.setBoolean(6, false)
+                        it.setInt(7, oppgaveId)
+                        it.setBoolean(8, false)
+                        it.setObject(9, manuellOppgave.validationResult.toPGObject())
+                        it.setString(10, status.name)
+                        it.setTimestamp(11, Timestamp.valueOf(statusTimestamp))
+                        it.executeUpdate()
+                    }
+                connection.commit()
+            }
         }
     }
 }
@@ -140,25 +145,25 @@ suspend fun DatabaseInterface.oppdaterManuellOppgaveUtenOpprinneligValidationRes
         }
     }
 
-suspend fun DatabaseInterface.oppdaterApprecStatus(oppgaveId: Int, sendtApprec: Boolean): Int =
+suspend fun DatabaseInterface.oppdaterApprecStatus(oppgaveId: Int, sendtApprec: Boolean) =
     withContext(Dispatchers.IO) {
-        connection.use { connection ->
-            val status =
+        retry(delay = 500.milliseconds) {
+            connection.use { connection ->
                 connection
                     .prepareStatement(
                         """
-            UPDATE MANUELLOPPGAVE
-            SET sendt_apprec = ?
-            WHERE oppgaveid = ?;
-            """,
+                UPDATE MANUELLOPPGAVE
+                SET sendt_apprec = ?
+                WHERE oppgaveid = ?;
+                """,
                     )
                     .use {
                         it.setBoolean(1, sendtApprec)
                         it.setInt(2, oppgaveId)
                         it.executeUpdate()
                     }
-            connection.commit()
-            status
+                connection.commit()
+            }
         }
     }
 
@@ -208,31 +213,3 @@ suspend fun DatabaseInterface.oppdaterOppgaveHendelse(
         }
     }
 }
-
-suspend fun DatabaseInterface.getOppgaveWithNullStatus(limit: Int): List<Pair<Int, String>> =
-    withContext(Dispatchers.IO) {
-        connection.use { conn ->
-            conn
-                .prepareStatement(
-                    """
-                SELECT oppgaveId, id
-                FROM MANUELLOPPGAVE
-                WHERE status IS NULL
-                LIMIT ?;
-                """,
-                )
-                .use { stmt ->
-                    stmt.setInt(1, limit)
-                    stmt.executeQuery().use { rs ->
-                        generateSequence {
-                                if (rs.next()) {
-                                    rs.getInt("oppgaveId") to rs.getString("id")
-                                } else {
-                                    null
-                                }
-                            }
-                            .toList()
-                    }
-                }
-        }
-    }
