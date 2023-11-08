@@ -5,6 +5,7 @@ import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.SyfoTilgangsKontrollClient
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
+import no.nav.syfo.sikkerlogg
 
 class AuthorizationService(
     val syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
@@ -26,6 +27,8 @@ class AuthorizationService(
         try {
             return msGraphClient.getSubjectFromMsGraph(accessToken)
         } catch (e: Exception) {
+            sikkerlogg.info("Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId} " +
+                    "med accessToken: $accessToken og Exception er", e)
             log.error(
                 "Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId}"
             )
