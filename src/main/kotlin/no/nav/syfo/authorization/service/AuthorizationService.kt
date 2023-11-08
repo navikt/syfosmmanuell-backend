@@ -27,8 +27,11 @@ class AuthorizationService(
         try {
             return msGraphClient.getSubjectFromMsGraph(accessToken)
         } catch (e: Exception) {
-            sikkerlogg.info("Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId} " +
-                    "med accessToken: $accessToken og Exception er", e)
+            sikkerlogg.info(
+                "Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId} " +
+                    "med accessToken: $accessToken og Exception er",
+                e
+            )
             log.error(
                 "Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId}"
             )
