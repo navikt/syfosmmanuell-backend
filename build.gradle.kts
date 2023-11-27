@@ -12,9 +12,9 @@ val fellesformatVersion = "2.0.1"
 val kithHodemeldingVersion = "2.0.1"
 val jacksonVersion = "2.16.0"
 val mockkVersion = "1.13.8"
-val postgresVersion = "42.6.0"
-val flywayVersion = "9.22.3"
-val hikariVersion = "5.0.1"
+val postgresVersion = "42.7.0"
+val flywayVersion = "10.1.0"
+val hikariVersion = "5.1.0"
 val javaTimeAdapterVersion = "1.1.3"
 val kotestVersion = "5.8.0"
 val nimbusdsVersion = "9.37.1"
@@ -101,6 +101,7 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
 
     implementation("com.papertrailapp:logback-syslog4j:$logbacksyslog4jVersion")
