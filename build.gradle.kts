@@ -12,9 +12,9 @@ val fellesformatVersion = "2.0.1"
 val kithHodemeldingVersion = "2.0.1"
 val jacksonVersion = "2.16.0"
 val mockkVersion = "1.13.8"
-val postgresVersion = "42.6.0"
-val flywayVersion = "9.22.3"
-val hikariVersion = "5.0.1"
+val postgresVersion = "42.7.0"
+val flywayVersion = "10.1.0"
+val hikariVersion = "5.1.0"
 val javaTimeAdapterVersion = "1.1.3"
 val kotestVersion = "5.8.0"
 val nimbusdsVersion = "9.37.1"
@@ -31,7 +31,7 @@ plugins {
     id("application")
     kotlin("jvm") version "1.9.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.diffplug.spotless") version "6.22.0"
+    id("com.diffplug.spotless") version "6.23.0"
 }
 
 application {
