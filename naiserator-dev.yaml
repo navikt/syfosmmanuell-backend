@@ -69,7 +69,7 @@ spec:
           cluster: dev-gcp
     outbound:
       rules:
-        - application: syfo-tilgangskontroll
+        - application: istilgangskontroll
           namespace: teamsykefravr
           cluster: dev-gcp
       external:
@@ -80,8 +80,8 @@ spec:
   env:
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.intern.dev.nav.no
-    - name: SYFOTILGANGSKONTROLL_SCOPE
-      value: api://dev-gcp.teamsykefravr.syfo-tilgangskontroll/.default
+    - name: ISTILGANGSKONTROLL_SCOPE
+      value: api://dev-gcp.teamsykefravr.istilgangskontroll/.default
     - name: MS_GRAPH_API_SCOPE
       value: https://graph.microsoft.com/.default
     - name: MS_GRAPH_API_URL

@@ -9,7 +9,7 @@ import no.nav.syfo.aksessering.db.getUlosteOppgaver
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
 import no.nav.syfo.aksessering.db.hentManuellOppgaver
-import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
@@ -36,7 +36,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 class ManuellOppgaveService(
     private val database: DatabaseInterface,
-    private val syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
+    private val istilgangskontrollClient: IstilgangskontrollClient,
     private val kafkaProducers: KafkaProducers,
     private val oppgaveService: OppgaveService,
 ) {
@@ -137,12 +137,12 @@ class ManuellOppgaveService(
             throw OppgaveNotFoundException("Fant ikke oppgave med id $oppgaveId")
         }
         val harTilgangTilOppgave =
-            syfoTilgangsKontrollClient
+            istilgangskontrollClient
                 .sjekkVeiledersTilgangTilPersonViaAzure(
                     accessToken = accessToken,
                     personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
                 )
-                .harTilgang
+                .erGodkjent
         if (!harTilgangTilOppgave) {
             throw IkkeTilgangException()
         }
