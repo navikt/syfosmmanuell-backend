@@ -68,14 +68,14 @@ fun main() {
     val manuellOppgaveService =
         ManuellOppgaveService(
             database,
-            httpClients.syfoTilgangsKontrollClient,
+            httpClients.istilgangskontrollClient,
             kafkaProducers,
             oppgaveService,
         )
 
     val authorizationService =
         AuthorizationService(
-            httpClients.syfoTilgangsKontrollClient,
+            httpClients.istilgangskontrollClient,
             httpClients.msGraphClient,
             database,
         )

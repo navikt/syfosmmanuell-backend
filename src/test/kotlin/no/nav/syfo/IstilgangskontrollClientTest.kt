@@ -9,13 +9,13 @@ import io.mockk.mockk
 import io.mockk.spyk
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.azuread.v2.AzureAdV2TokenResponse
-import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.testutil.HttpClientTest
 import no.nav.syfo.testutil.ResponseData
 import org.junit.jupiter.api.Assertions.assertEquals
 
-class SyfoTilgangsKontrollClientTest :
+class IstilgangskontrollClientTest :
     FunSpec({
         val httpClient = HttpClientTest()
         val environment = mockk<Environment>()
@@ -24,12 +24,12 @@ class SyfoTilgangsKontrollClientTest :
 
         val pasientFnr = "123145"
 
-        coEvery { environment.syfoTilgangsKontrollClientUrl } returns "http://foo"
-        coEvery { environment.syfotilgangskontrollScope } returns "scope"
+        coEvery { environment.istilgangskontrollClientUrl } returns "http://foo"
+        coEvery { environment.istilgangskontrollScope } returns "scope"
 
-        val syfoTilgangsKontrollClient =
+        val istilgangskontrollClient =
             spyk(
-                SyfoTilgangsKontrollClient(
+                IstilgangskontrollClient(
                     environment = environment,
                     httpClient = httpClient.httpClient,
                     azureAdV2Client = azureAdV2Client,
@@ -38,11 +38,11 @@ class SyfoTilgangsKontrollClientTest :
 
         beforeTest {
             clearMocks(environment, azureAdV2Client)
-            syfoTilgangsKontrollClient.syfoTilgangskontrollCache.invalidateAll()
+            istilgangskontrollClient.istilgangskontrollCache.invalidateAll()
         }
 
         context("Tilgangskontroll-test") {
-            test("Skal returnere harTilgang = true") {
+            test("Skal returnere erGodkjent = true") {
                 httpClient.responseDataOboToken =
                     ResponseData(
                         HttpStatusCode.OK,
@@ -54,15 +54,15 @@ class SyfoTilgangsKontrollClientTest :
                     ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(true)))
 
                 val tilgang =
-                    syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                    istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                         "sdfsdfsfs",
                         pasientFnr
                     )
 
-                assertEquals(true, tilgang.harTilgang)
+                assertEquals(true, tilgang.erGodkjent)
             }
             test(
-                "Skal returnere harTilgang = false hvis syfotilgangskontroll svarer med feilmelding"
+                "Skal returnere erGodkjent = false hvis istilgangskontroll svarer med feilmelding"
             ) {
                 httpClient.responseDataOboToken =
                     ResponseData(
@@ -75,22 +75,22 @@ class SyfoTilgangsKontrollClientTest :
                     ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(false)))
 
                 val tilgang =
-                    syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                    istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                         "sdfsdfsfs",
                         pasientFnr
                     )
 
-                assertEquals(false, tilgang.harTilgang)
+                assertEquals(false, tilgang.erGodkjent)
             }
         }
 
         context("Test av cache") {
             test("Henter fra cache hvis kallet er cachet") {
-                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                     "sdfsdfsfs",
                     pasientFnr
                 )
-                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                     "sdfsdfsfs",
                     pasientFnr
                 )
@@ -98,11 +98,11 @@ class SyfoTilgangsKontrollClientTest :
                 coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken("sdfsdfsfs", "scope") }
             }
             test("Henter ikke fra cache hvis samme accesstoken men ulikt fnr") {
-                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                     "sdfsdfsfs",
                     pasientFnr
                 )
-                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                     "sdfsdfsfs",
                     "987654"
                 )
@@ -110,11 +110,11 @@ class SyfoTilgangsKontrollClientTest :
                 coVerify(exactly = 2) { azureAdV2Client.getOnBehalfOfToken("sdfsdfsfs", "scope") }
             }
             test("Henter ikke fra cache hvis samme fnr men ulikt accesstoken") {
-                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                     "sdfsdfsfs",
                     pasientFnr
                 )
-                syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
                     "xxxxxxxxx",
                     pasientFnr
                 )

@@ -14,14 +14,14 @@ import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.log
 
-class SyfoTilgangsKontrollClient(
+class IstilgangskontrollClient(
     environment: Environment,
     private val azureAdV2Client: AzureAdV2Client,
     private val httpClient: HttpClient,
-    private val syfoTilgangsKontrollClientUrl: String = environment.syfoTilgangsKontrollClientUrl,
-    private val scope: String = environment.syfotilgangskontrollScope,
+    private val istilgangskontrollClientUrl: String = environment.istilgangskontrollClientUrl,
+    private val scope: String = environment.istilgangskontrollScope,
 ) {
-    val syfoTilgangskontrollCache: Cache<Map<String, String>, Tilgang> =
+    val istilgangskontrollCache: Cache<Map<String, String>, Tilgang> =
         Caffeine.newBuilder()
             .expireAfterWrite(1, TimeUnit.HOURS)
             .maximumSize(100)
@@ -35,8 +35,8 @@ class SyfoTilgangsKontrollClient(
         accessToken: String,
         personFnr: String
     ): Tilgang {
-        syfoTilgangskontrollCache.getIfPresent(mapOf(Pair(accessToken, personFnr)))?.let {
-            log.debug("Traff cache for syfotilgangskontroll")
+        istilgangskontrollCache.getIfPresent(mapOf(Pair(accessToken, personFnr)))?.let {
+            log.debug("Traff cache for istilgangskontroll")
             return it
         }
         val oboToken =
@@ -44,7 +44,7 @@ class SyfoTilgangsKontrollClient(
 
         val httpResponse =
             httpClient.get(
-                "$syfoTilgangsKontrollClientUrl/syfo-tilgangskontroll/api/tilgang/navident/person"
+                "$istilgangskontrollClientUrl/api/tilgang/navident/person"
             ) {
                 accept(ContentType.Application.Json)
                 headers {
@@ -55,24 +55,24 @@ class SyfoTilgangsKontrollClient(
         return when (httpResponse.status) {
             HttpStatusCode.OK -> {
                 log.debug(
-                    "syfo-tilgangskontroll svarer med httpResponse status kode: {}",
+                    "istilgangskontroll svarer med httpResponse status kode: {}",
                     httpResponse.status.value
                 )
                 log.info("Sjekker tilgang for veileder på person")
                 val tilgang = httpResponse.body<Tilgang>()
-                syfoTilgangskontrollCache.put(mapOf(Pair(accessToken, personFnr)), tilgang)
+                istilgangskontrollCache.put(mapOf(Pair(accessToken, personFnr)), tilgang)
                 tilgang
             }
             HttpStatusCode.Forbidden -> {
-                log.warn("syfo-tilgangskontroll svarte med ${httpResponse.status.value}")
+                log.warn("istilgangskontroll svarte med ${httpResponse.status.value}")
                 Tilgang(
-                    harTilgang = false,
+                    erGodkjent = false,
                 )
             }
             else -> {
-                log.error("syfo-tilgangskontroll svarte med ${httpResponse.status.value}")
+                log.error("istilgangskontroll svarte med ${httpResponse.status.value}")
                 Tilgang(
-                    harTilgang = false,
+                    erGodkjent = false,
                 )
             }
         }
@@ -80,5 +80,5 @@ class SyfoTilgangsKontrollClient(
 }
 
 data class Tilgang(
-    val harTilgang: Boolean,
+    val erGodkjent: Boolean,
 )

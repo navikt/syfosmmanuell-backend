@@ -12,7 +12,7 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
-import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -35,12 +35,12 @@ class MotattSykmeldingServiceTest :
     FunSpec({
         val database = TestDB.database
         val oppgaveService = mockk<OppgaveService>()
-        val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
-                syfoTilgangsKontrollClient,
+                istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService
             )
@@ -84,7 +84,7 @@ class MotattSykmeldingServiceTest :
         val oppgaveid = 308076319
 
         beforeTest {
-            clearMocks(syfoTilgangsKontrollClient, kafkaProducers, oppgaveService)
+            clearMocks(istilgangskontrollClient, kafkaProducers, oppgaveService)
             coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgave(oppgaveid)
             coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
             coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "apprectopic"

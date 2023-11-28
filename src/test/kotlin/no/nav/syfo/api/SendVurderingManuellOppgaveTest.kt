@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.MSGraphClient
-import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
@@ -77,22 +77,22 @@ val manuellOppgave =
 class SendVurderingManuellOppgaveTest :
     FunSpec({
         val database = TestDB.database
-        val syfoTilgangsKontrollClient = mockk<SyfoTilgangsKontrollClient>()
+        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val authorizationService =
-            AuthorizationService(syfoTilgangsKontrollClient, msGraphClient, database)
+            AuthorizationService(istilgangskontrollClient, msGraphClient, database)
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
-                syfoTilgangsKontrollClient,
+                istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService
             )
 
         beforeTest {
-            clearMocks(syfoTilgangsKontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(istilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
         }
 
         afterTest { database.connection.dropData() }
@@ -164,7 +164,7 @@ class SendVurderingManuellOppgaveTest :
                     setUpTest(
                         this,
                         kafkaProducers,
-                        syfoTilgangsKontrollClient,
+                        istilgangskontrollClient,
                         msGraphClient,
                         authorizationService,
                         oppgaveService,
@@ -189,7 +189,7 @@ class SendVurderingManuellOppgaveTest :
                     setUpTest(
                         this,
                         kafkaProducers,
-                        syfoTilgangsKontrollClient,
+                        istilgangskontrollClient,
                         msGraphClient,
                         authorizationService,
                         oppgaveService,
@@ -208,7 +208,7 @@ class SendVurderingManuellOppgaveTest :
                     setUpTest(
                         this,
                         kafkaProducers,
-                        syfoTilgangsKontrollClient,
+                        istilgangskontrollClient,
                         msGraphClient,
                         authorizationService,
                         oppgaveService,
@@ -303,7 +303,7 @@ fun TestApplicationEngine.sendRequest(
 fun setUpTest(
     testApplicationEngine: TestApplicationEngine,
     kafkaProducers: KafkaProducers,
-    syfoTilgangsKontrollClient: SyfoTilgangsKontrollClient,
+    istilgangskontrollClient: IstilgangskontrollClient,
     msGraphClient: MSGraphClient,
     authorizationService: AuthorizationService,
     oppgaveService: OppgaveService,
@@ -320,7 +320,7 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic } returns
         sm2013AutomaticHandlingTopic
     coEvery {
-        syfoTilgangsKontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+        istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
     } returns Tilgang(true)
     coEvery { msGraphClient.getSubjectFromMsGraph(any()) } returns "4321"
 

@@ -12,7 +12,7 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
-import no.nav.syfo.client.SyfoTilgangsKontrollClient
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.ManuellOppgave
@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 class ManuellOppgaveServiceTest :
     FunSpec({
         val database = TestDB.database
-        val syfotilgangskontrollClient = mockk<SyfoTilgangsKontrollClient>()
+        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val sykmeldingsId = UUID.randomUUID().toString()
@@ -63,7 +63,7 @@ class ManuellOppgaveServiceTest :
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
-                syfotilgangskontrollClient,
+                istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService
             )
@@ -77,9 +77,9 @@ class ManuellOppgaveServiceTest :
                 ManuellOppgaveStatus.APEN,
                 LocalDateTime.now(),
             )
-            clearMocks(kafkaProducers, oppgaveService, syfotilgangskontrollClient)
+            clearMocks(kafkaProducers, oppgaveService, istilgangskontrollClient)
             coEvery {
-                syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
             } returns Tilgang(true)
         }
         context("test get uloste oppgaver") {
@@ -146,7 +146,7 @@ class ManuellOppgaveServiceTest :
             }
             test("Feiler hvis veileder ikke har tilgang til oppgave") {
                 coEvery {
-                    syfotilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+                    istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
                 } returns Tilgang(false)
 
                 assertFailsWith<IkkeTilgangException> {
