@@ -71,6 +71,11 @@ class ManuellOppgaveService(
 
         incrementCounters(validationResult, manuellOppgave)
 
+        if (trengerFlereOpplysninger(manuellOppgave)) {
+            oppgaveService.endreOppgave(manuellOppgave, loggingMeta, enhet)
+            return
+        }
+
         sendReceivedSykmelding(manuellOppgave.receivedSykmelding, loggingMeta)
 
         if (!erApprecSendt(oppgaveId)) {
@@ -81,7 +86,6 @@ class ManuellOppgaveService(
              */
             sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
         }
-
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
 
         if (skalOppretteOppfolgingsOppgave(manuellOppgave)) {
@@ -106,6 +110,10 @@ class ManuellOppgaveService(
             )
         }
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
+    }
+
+    private fun trengerFlereOpplysninger(manuellOppgave: ManuellOppgaveKomplett): Boolean {
+        return manuellOppgave.receivedSykmelding.merknader?.any { it.type == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER" } ?: false
     }
 
     private fun skalOppretteOppfolgingsOppgave(manuellOppgave: ManuellOppgaveKomplett): Boolean {

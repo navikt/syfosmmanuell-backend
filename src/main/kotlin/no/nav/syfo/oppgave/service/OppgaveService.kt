@@ -11,6 +11,7 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.Periode
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.oppgave.EndreOppgave
 import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
@@ -40,6 +41,50 @@ class OppgaveService(
             StructuredArguments.fields(loggingMeta),
         )
         return oppgaveResponse
+    }
+
+    suspend fun endreOppgave(
+        manuellOppgave: ManuellOppgaveKomplett,
+        loggingMeta: LoggingMeta,
+        enhet: String?,
+    ) {
+        val oppgave =
+            oppgaveClient.hentOppgave(
+                manuellOppgave.oppgaveid,
+                manuellOppgave.receivedSykmelding.msgId
+            )
+
+        requireNotNull(oppgave) {
+            throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
+        }
+
+        val endreOppgave = EndreOppgave(
+            versjon = oppgave.versjon,
+            id = manuellOppgave.oppgaveid,
+            beskrivelse = "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Send inn oppgaven på nytt når du har nødvendige opplysninger.",
+            mappeId =
+            if (oppgave.tildeltEnhetsnr == enhet) {
+                oppgave.mappeId
+            } else {
+                // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
+                // har den aktuelle mappen
+                null
+            },
+        )
+        log.info(
+            "Forsøker å endre oppgavebeskrivelse på oppgave som trenger flere opplysninger {}, {}",
+            StructuredArguments.fields(endreOppgave),
+            StructuredArguments.fields(loggingMeta)
+        )
+        val oppgaveResponse = oppgaveClient.endreOppgave(
+            endreOppgave,
+            manuellOppgave.receivedSykmelding.msgId
+        )
+        log.info(
+            "Endret oppgave på oppgave som trenger flere opplysninger med {}, {}",
+            StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+            StructuredArguments.fields(loggingMeta),
+        )
     }
 
     fun opprettOppfoligingsOppgave(
