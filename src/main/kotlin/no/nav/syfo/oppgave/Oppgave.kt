@@ -29,6 +29,13 @@ data class FerdigstillOppgave(
     val mappeId: Int?,
 )
 
+data class EndreOppgave(
+    val versjon: Int,
+    val id: Int,
+    val beskrivelse: String,
+    val mappeId: Int?,
+)
+
 data class OpprettOppgaveResponse(
     val id: Int,
     val versjon: Int,
