@@ -121,11 +121,7 @@ class ManuellOppgaveService(
     }
 
     private fun skalOppretteOppfolgingsOppgave(manuellOppgave: ManuellOppgaveKomplett): Boolean {
-        return manuellOppgave.receivedSykmelding.merknader?.any {
-            it.type == "UGYLDIG_TILBAKEDATERING" ||
-                it.type == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
-        }
-            ?: false
+        return manuellOppgave.receivedSykmelding.merknader?.any { it.type == "UGYLDIG_TILBAKEDATERING" } ?: false
     }
 
     private fun incrementCounters(
