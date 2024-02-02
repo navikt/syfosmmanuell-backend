@@ -27,8 +27,8 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.IstilgangskontrollClient
+import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.log

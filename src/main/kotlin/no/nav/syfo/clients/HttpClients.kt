@@ -16,8 +16,8 @@ import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
-import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.IstilgangskontrollClient
+import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.clients.exception.ServiceUnavailableException
 import no.nav.syfo.log
 import no.nav.syfo.oppgave.client.OppgaveClient

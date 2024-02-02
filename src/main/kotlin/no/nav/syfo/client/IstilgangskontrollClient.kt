@@ -43,9 +43,7 @@ class IstilgangskontrollClient(
             azureAdV2Client.getOnBehalfOfToken(token = accessToken, scope = scope).accessToken
 
         val httpResponse =
-            httpClient.get(
-                "$istilgangskontrollClientUrl/api/tilgang/navident/person"
-            ) {
+            httpClient.get("$istilgangskontrollClientUrl/api/tilgang/navident/person") {
                 accept(ContentType.Application.Json)
                 headers {
                     append("Authorization", "Bearer $oboToken")

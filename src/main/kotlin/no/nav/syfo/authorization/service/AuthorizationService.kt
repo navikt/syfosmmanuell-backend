@@ -1,8 +1,8 @@
 package no.nav.syfo.authorization.service
 
 import no.nav.syfo.authorization.db.getFnr
-import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.IstilgangskontrollClient
+import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.log
 import no.nav.syfo.sikkerlogg

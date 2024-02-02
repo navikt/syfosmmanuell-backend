@@ -26,8 +26,8 @@ import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.IstilgangskontrollClient
+import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
