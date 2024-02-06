@@ -46,7 +46,7 @@ class OppgaveService(
     suspend fun endreOppgave(
         manuellOppgave: ManuellOppgaveKomplett,
         loggingMeta: LoggingMeta,
-        enhet: String?,
+        enhet: String,
     ) {
         val oppgave =
             oppgaveClient.hentOppgave(
@@ -67,14 +67,17 @@ class OppgaveService(
                 beskrivelse =
                     "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken.",
                 fristFerdigstillelse = omToUker(LocalDate.now()),
-                mappeId =
-                    if (oppgave.tildeltEnhetsnr == enhet) {
-                        testMappeId
-                    } else {
-                        // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
-                        // har den aktuelle mappen
-                        null
-                    },
+                mappeId = null,
+//                mappeId =
+//                    if (oppgave.tildeltEnhetsnr == enhet) {
+//                        testMappeId
+//                    } else {
+//                        // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
+//                        // har den aktuelle mappen
+//                        null
+//                    },
+                mappeNavn = "foo",
+                tildeltEnhetsnr = enhet,
             )
         log.info(
             "Forsøker å endre oppgavebeskrivelse på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til {}",
