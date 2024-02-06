@@ -60,6 +60,7 @@ class OppgaveService(
 
         val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
         val testMappeId = 31565
+        val testEnhet = "2820"
         val endreOppgave =
             EndreOppgave(
                 versjon = oppgave.versjon,
@@ -76,8 +77,8 @@ class OppgaveService(
 //                        // har den aktuelle mappen
 //                        null
 //                    },
-                mappeNavn = "foo",
-                tildeltEnhetsnr = enhet,
+                mappeNavn = "Foo",
+                tildeltEnhetsnr = testEnhet,
             )
         log.info(
             "Forsøker å endre oppgavebeskrivelse på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til {}",
