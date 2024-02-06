@@ -35,6 +35,8 @@ data class EndreOppgave(
     val beskrivelse: String,
     val fristFerdigstillelse: LocalDate,
     val mappeId: Int?,
+    val mappeNavn: String,
+    val tildeltEnhetsnr: String,
 )
 
 data class OpprettOppgaveResponse(
