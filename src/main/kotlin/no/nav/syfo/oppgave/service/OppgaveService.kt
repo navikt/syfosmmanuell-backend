@@ -58,28 +58,32 @@ class OppgaveService(
             throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
         }
 
-        val endreOppgave = EndreOppgave(
-            versjon = oppgave.versjon,
-            id = manuellOppgave.oppgaveid,
-            beskrivelse = "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Send inn oppgaven på nytt når du har nødvendige opplysninger.",
-            mappeId =
-            if (oppgave.tildeltEnhetsnr == enhet) {
-                oppgave.mappeId
-            } else {
-                // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
-                // har den aktuelle mappen
-                null
-            },
-        )
+        val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
+        val endreOppgave =
+            EndreOppgave(
+                versjon = oppgave.versjon,
+                id = manuellOppgave.oppgaveid,
+                beskrivelse =
+                    "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Send inn oppgaven på nytt når du har nødvendige opplysninger.",
+                fristFerdigstillelse = omToUker(LocalDate.now()),
+                mappeId =
+                    if (oppgave.tildeltEnhetsnr == enhet) {
+                        MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON
+                    } else {
+                        // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
+                        // har den aktuelle mappen
+                        null
+                    },
+            )
         log.info(
-            "Forsøker å endre oppgavebeskrivelse på oppgave som trenger flere opplysninger {}, {}",
+            "Forsøker å endre oppgavebeskrivelse på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til {}",
             StructuredArguments.fields(endreOppgave),
-            StructuredArguments.fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta),
+            oppgave.mappeId,
+            MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON
         )
-        val oppgaveResponse = oppgaveClient.endreOppgave(
-            endreOppgave,
-            manuellOppgave.receivedSykmelding.msgId
-        )
+        val oppgaveResponse =
+            oppgaveClient.endreOppgave(endreOppgave, manuellOppgave.receivedSykmelding.msgId)
         log.info(
             "Endret oppgave på oppgave som trenger flere opplysninger med {}, {}",
             StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
@@ -221,6 +225,8 @@ class OppgaveService(
             DayOfWeek.TUESDAY -> idag.plusDays(3)
             else -> idag.plusDays(5)
         }
+
+    fun omToUker(idag: LocalDate): LocalDate = idag.plusWeeks(2)
 
     private fun getFomTomTekst(receivedSykmelding: ReceivedSykmelding) =
         "${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom)} -" +

@@ -33,6 +33,7 @@ data class EndreOppgave(
     val versjon: Int,
     val id: Int,
     val beskrivelse: String,
+    val fristFerdigstillelse: LocalDate,
     val mappeId: Int?,
 )
 
