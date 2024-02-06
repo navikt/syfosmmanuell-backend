@@ -77,7 +77,7 @@ class OppgaveService(
 //                        // har den aktuelle mappen
 //                        null
 //                    },
-                mappeNavn = "Foo",
+                mappeNavn = "Foo - 100031564",
                 tildeltEnhetsnr = testEnhet,
             )
         log.info(
