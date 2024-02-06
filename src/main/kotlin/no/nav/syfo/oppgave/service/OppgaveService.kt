@@ -64,7 +64,7 @@ class OppgaveService(
                 versjon = oppgave.versjon,
                 id = manuellOppgave.oppgaveid,
                 beskrivelse =
-                    "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Send inn oppgaven på nytt når du har nødvendige opplysninger.",
+                    "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken.",
                 fristFerdigstillelse = omToUker(LocalDate.now()),
                 mappeId =
                     if (oppgave.tildeltEnhetsnr == enhet) {
