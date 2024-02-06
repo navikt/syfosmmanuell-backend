@@ -59,7 +59,7 @@ class OppgaveService(
         }
 
         val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
-        val testMappeId = 100031565
+        val testMappeId = 31565
         val endreOppgave =
             EndreOppgave(
                 versjon = oppgave.versjon,
