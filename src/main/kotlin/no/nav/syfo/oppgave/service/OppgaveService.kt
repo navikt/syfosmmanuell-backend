@@ -59,6 +59,7 @@ class OppgaveService(
         }
 
         val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
+        val testMappeId = 100031565
         val endreOppgave =
             EndreOppgave(
                 versjon = oppgave.versjon,
@@ -68,7 +69,7 @@ class OppgaveService(
                 fristFerdigstillelse = omToUker(LocalDate.now()),
                 mappeId =
                     if (oppgave.tildeltEnhetsnr == enhet) {
-                        MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON
+                        testMappeId
                     } else {
                         // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
                         // har den aktuelle mappen
@@ -80,7 +81,7 @@ class OppgaveService(
             StructuredArguments.fields(endreOppgave),
             StructuredArguments.fields(loggingMeta),
             oppgave.mappeId,
-            MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON
+            testMappeId
         )
         val oppgaveResponse =
             oppgaveClient.endreOppgave(endreOppgave, manuellOppgave.receivedSykmelding.msgId)
