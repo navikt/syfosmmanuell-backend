@@ -81,54 +81,50 @@ class OppgaveClient(
         }
     }
 
-        suspend fun endreOppgave(
-            endreOppgave: EndreOppgave,
-            msgId: String
-        ): OpprettOppgaveResponse {
-            val response =
-                httpClient.patch(url + "/" + endreOppgave.id) {
-                    contentType(ContentType.Application.Json)
-                    val token = azureAdV2Client.getAccessToken(scope)
-                    header("Authorization", "Bearer $token")
-                    header("X-Correlation-ID", msgId)
-                    setBody(endreOppgave)
-                }
-
-            if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
-                return response.body<OpprettOppgaveResponse>()
-            } else if (cluster == "dev-gcp" && endreOppgave.mappeId == null) {
-                log.info(
-                    "Skipping endring av oppgave med in dev due to mappeId is null id ${endreOppgave.id}: ${response.status}"
-                )
-                return OpprettOppgaveResponse(endreOppgave.id, endreOppgave.versjon)
-            } else {
-                log.error(
-                    "Noe gikk galt ved endring av oppgave med id ${endreOppgave.id}: ${response.status}"
-                )
-                throw RuntimeException(
-                    "Noe gikk galt ved endring av oppgave med id ${endreOppgave.id}: ${response.status}"
-                )
+    suspend fun endreOppgave(endreOppgave: EndreOppgave, msgId: String): OpprettOppgaveResponse {
+        val response =
+            httpClient.patch(url + "/" + endreOppgave.id) {
+                contentType(ContentType.Application.Json)
+                val token = azureAdV2Client.getAccessToken(scope)
+                header("Authorization", "Bearer $token")
+                header("X-Correlation-ID", msgId)
+                setBody(endreOppgave)
             }
-        }
 
-
-        suspend fun hentOppgave(oppgaveId: Int, msgId: String): OpprettOppgaveResponse? {
-            val response =
-                httpClient.get("$url/$oppgaveId") {
-                    contentType(ContentType.Application.Json)
-                    val token = azureAdV2Client.getAccessToken(scope)
-                    header("Authorization", "Bearer $token")
-                    header("X-Correlation-ID", msgId)
-                }
-            if (response.status == HttpStatusCode.OK) {
-                return response.body<OpprettOppgaveResponse>()
-            } else if (response.status == HttpStatusCode.NotFound) {
-                return null
-            } else {
-                log.error("Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}")
-                throw RuntimeException(
-                    "Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}"
-                )
-            }
+        if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
+            return response.body<OpprettOppgaveResponse>()
+        } else if (cluster == "dev-gcp" && endreOppgave.mappeId == null) {
+            log.info(
+                "Skipping endring av oppgave med in dev due to mappeId is null id ${endreOppgave.id}: ${response.status}"
+            )
+            return OpprettOppgaveResponse(endreOppgave.id, endreOppgave.versjon)
+        } else {
+            log.error(
+                "Noe gikk galt ved endring av oppgave med id ${endreOppgave.id}: ${response.status}"
+            )
+            throw RuntimeException(
+                "Noe gikk galt ved endring av oppgave med id ${endreOppgave.id}: ${response.status}"
+            )
         }
     }
+
+    suspend fun hentOppgave(oppgaveId: Int, msgId: String): OpprettOppgaveResponse? {
+        val response =
+            httpClient.get("$url/$oppgaveId") {
+                contentType(ContentType.Application.Json)
+                val token = azureAdV2Client.getAccessToken(scope)
+                header("Authorization", "Bearer $token")
+                header("X-Correlation-ID", msgId)
+            }
+        if (response.status == HttpStatusCode.OK) {
+            return response.body<OpprettOppgaveResponse>()
+        } else if (response.status == HttpStatusCode.NotFound) {
+            return null
+        } else {
+            log.error("Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}")
+            throw RuntimeException(
+                "Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}"
+            )
+        }
+    }
+}

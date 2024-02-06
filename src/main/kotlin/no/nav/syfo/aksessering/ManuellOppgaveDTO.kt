@@ -1,8 +1,8 @@
 package no.nav.syfo.aksessering
 
+import java.time.LocalDateTime
 import no.nav.syfo.model.Sykmelding
 import no.nav.syfo.model.ValidationResult
-import java.time.LocalDateTime
 
 data class ManuellOppgaveDTO(
     val oppgaveid: Int,
