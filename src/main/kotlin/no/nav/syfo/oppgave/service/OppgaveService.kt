@@ -59,7 +59,7 @@ class OppgaveService(
         }
 
         val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
-        val testMappeId = 100031565
+        val testMappeId = 100031564
         // - 100031564
         val testEnhet = "2820"
         val endreOppgave =
@@ -69,15 +69,15 @@ class OppgaveService(
                 beskrivelse =
                     "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken.",
                 fristFerdigstillelse = omToUker(LocalDate.now()),
-                mappeId = null,
-//                mappeId =
-//                    if (oppgave.tildeltEnhetsnr == enhet) {
-//                        testMappeId
-//                    } else {
-//                        // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
-//                        // har den aktuelle mappen
-//                        null
-//                    },
+//                mappeId = null,
+                mappeId =
+                    if (oppgave.tildeltEnhetsnr == enhet) {
+                        testMappeId
+                    } else {
+                        // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
+                        // har den aktuelle mappen
+                        null
+                    },
                 mappeNavn = "Foo",
                 tildeltEnhetsnr = testEnhet,
             )
