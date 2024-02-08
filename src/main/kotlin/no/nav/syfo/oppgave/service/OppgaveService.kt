@@ -59,9 +59,6 @@ class OppgaveService(
         }
 
         val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
-        val testMappeId = 100031564
-        // - 100031564
-        val testEnhet = "2820"
         val endreOppgave =
             EndreOppgave(
                 versjon = oppgave.versjon,
@@ -69,24 +66,24 @@ class OppgaveService(
                 beskrivelse =
                     "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken.",
                 fristFerdigstillelse = omToUker(LocalDate.now()),
-//                mappeId = null,
                 mappeId =
-                    if (oppgave.tildeltEnhetsnr == testEnhet) {
-                        testMappeId
+                    if (oppgave.tildeltEnhetsnr == enhet) {
+                        MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON
                     } else {
                         // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
                         // har den aktuelle mappen
                         null
                     },
-                mappeNavn = "Foo",
-                tildeltEnhetsnr = testEnhet,
+                mappeNavn = "Tilbakedatert sykmelding - Avventer dokumentasjon",
+                tildeltEnhetsnr = enhet,
             )
         log.info(
-            "Forsøker å endre oppgavebeskrivelse på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til {}",
+            "Forsøker å endre oppgavebeskrivelse på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til id: {} med navn: {}",
             StructuredArguments.fields(endreOppgave),
             StructuredArguments.fields(loggingMeta),
             oppgave.mappeId,
-            testMappeId
+            endreOppgave.mappeId,
+            endreOppgave.mappeNavn
         )
         val oppgaveResponse =
             oppgaveClient.endreOppgave(endreOppgave, manuellOppgave.receivedSykmelding.msgId)
