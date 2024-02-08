@@ -59,7 +59,8 @@ class OppgaveService(
         }
 
         val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
-        val testMappeId = 31565
+        val testMappeId = 100031565
+        // - 100031564
         val testEnhet = "2820"
         val endreOppgave =
             EndreOppgave(
@@ -77,7 +78,7 @@ class OppgaveService(
 //                        // har den aktuelle mappen
 //                        null
 //                    },
-                mappeNavn = "Foo - 100031564",
+                mappeNavn = "Foo",
                 tildeltEnhetsnr = testEnhet,
             )
         log.info(
