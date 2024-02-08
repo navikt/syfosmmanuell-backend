@@ -71,7 +71,7 @@ class OppgaveService(
                 fristFerdigstillelse = omToUker(LocalDate.now()),
 //                mappeId = null,
                 mappeId =
-                    if (oppgave.tildeltEnhetsnr == enhet) {
+                    if (oppgave.tildeltEnhetsnr == testEnhet) {
                         testMappeId
                     } else {
                         // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
