@@ -46,6 +46,7 @@ data class OpprettOppgaveResponse(
     val tildeltEnhetsnr: String? = null,
     val mappeId: Int? = null,
     val endretTidspunkt: ZonedDateTime? = null,
+    val beskrivelse: String? = null,
 )
 
 enum class OppgaveStatus(val status: String) {

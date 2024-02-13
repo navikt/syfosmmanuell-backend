@@ -59,12 +59,13 @@ class OppgaveService(
         }
 
         val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
+        val endretBeskrivelse = "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken."
+
         val endreOppgave =
             EndreOppgave(
                 versjon = oppgave.versjon,
                 id = manuellOppgave.oppgaveid,
-                beskrivelse =
-                    "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken.",
+                beskrivelse = oppgave.beskrivelse?.plus(endretBeskrivelse) ?: endretBeskrivelse,
                 fristFerdigstillelse = omToUker(LocalDate.now()),
                 mappeId =
                     if (oppgave.tildeltEnhetsnr == enhet) {
