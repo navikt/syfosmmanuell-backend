@@ -60,7 +60,7 @@ class OppgaveService(
 
         val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
         val endretBeskrivelse =
-            "SyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken."
+            "\nSyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken. \n SyfosmManuell: Fjernet eksisterende saksbehandler fra saken."
 
         val endreOppgave =
             EndreOppgave(
