@@ -37,6 +37,7 @@ data class EndreOppgave(
     val mappeId: Int?,
     val mappeNavn: String,
     val tildeltEnhetsnr: String,
+    val tilordnetRessurs: String? = null,
 )
 
 data class OpprettOppgaveResponse(
