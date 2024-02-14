@@ -78,7 +78,7 @@ class ManuellOppgaveService(
         )
 
         if (trengerFlereOpplysninger(manuellOppgave)) {
-            oppgaveService.endreOppgave(manuellOppgave, loggingMeta, enhet)
+            oppgaveService.endreOppgave(manuellOppgave, loggingMeta)
             return
         }
 
