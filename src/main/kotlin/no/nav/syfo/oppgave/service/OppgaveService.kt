@@ -5,6 +5,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.getEnvVar
 import no.nav.syfo.log
 import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.ManuellOppgave
@@ -58,10 +59,9 @@ class OppgaveService(
             throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
         }
 
-        val MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON = 100026580
         val endretBeskrivelse =
             "\nSyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken. \n SyfosmManuell: Fjernet eksisterende saksbehandler fra saken."
-
+        val oppgaveEnhet = getEnvVar("OPPGAVE_ENHET")
         val endreOppgave =
             EndreOppgave(
                 versjon = oppgave.versjon,
@@ -69,15 +69,15 @@ class OppgaveService(
                 beskrivelse = oppgave.beskrivelse?.plus(endretBeskrivelse) ?: endretBeskrivelse,
                 fristFerdigstillelse = omToUker(LocalDate.now()),
                 mappeId =
-                    if (oppgave.tildeltEnhetsnr == enhet) {
-                        MAPPEID_TILBAKEDATERT_AVVENTER_DOKUMENTASJON
+                    if (oppgave.tildeltEnhetsnr == oppgaveEnhet) {
+                        getEnvVar("OPPGAVE_MAPPE_ID").toInt()
                     } else {
                         // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
                         // har den aktuelle mappen
                         null
                     },
-                mappeNavn = "Tilbakedatert sykmelding - Avventer dokumentasjon",
-                tildeltEnhetsnr = enhet,
+                mappeNavn = getEnvVar("OPPGAVE_MAPPENAVN"),
+                tildeltEnhetsnr = oppgaveEnhet,
             )
         log.info(
             "Forsøker å endre oppgavebeskrivelse på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til id: {} med navn: {}",
@@ -96,7 +96,7 @@ class OppgaveService(
         )
     }
 
-    fun opprettOppfoligingsOppgave(
+    fun opprettOppfolgingsOppgave(
         manuellOppgave: ManuellOppgaveKomplett,
         enhet: String,
         veileder: String,

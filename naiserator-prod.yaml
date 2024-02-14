@@ -92,6 +92,12 @@ spec:
       value: https://oppgave.prod-fss-pub.nais.io/api/v1/oppgaver
     - name: OPPGAVE_HENDELSE_TOPIC
       value: oppgavehandtering.oppgavehendelse-v1
+    - name: OPPGAVE_MAPPE_ID
+      value: "100026580"
+    - name: OPPGAVE_MAPPENAVN
+      value: Tilbakedatert sykmelding - Avventer dokumentasjon
+    - name: OPPGAVE_ENHET
+      value: "4488"
     - name: KAFKA_CLIENT_ID
       valueFrom:
         fieldRef:
