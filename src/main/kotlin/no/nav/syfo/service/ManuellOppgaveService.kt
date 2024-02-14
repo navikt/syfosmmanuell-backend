@@ -72,7 +72,7 @@ class ManuellOppgaveService(
         incrementCounters(validationResult, manuellOppgave)
 
         if (trengerFlereOpplysninger(manuellOppgave)) {
-            oppgaveService.endreOppgave(manuellOppgave, loggingMeta, enhet)
+            oppgaveService.endreOppgave(manuellOppgave, loggingMeta)
             return
         }
 

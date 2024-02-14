@@ -47,7 +47,6 @@ class OppgaveService(
     suspend fun endreOppgave(
         manuellOppgave: ManuellOppgaveKomplett,
         loggingMeta: LoggingMeta,
-        enhet: String,
     ) {
         val oppgave =
             oppgaveClient.hentOppgave(
@@ -58,7 +57,6 @@ class OppgaveService(
         requireNotNull(oppgave) {
             throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
         }
-
         val endretBeskrivelse =
             "\nSyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken. \n SyfosmManuell: Fjernet eksisterende saksbehandler fra saken."
         val oppgaveEnhet = getEnvVar("OPPGAVE_ENHET")
@@ -80,7 +78,7 @@ class OppgaveService(
                 tildeltEnhetsnr = oppgaveEnhet,
             )
         log.info(
-            "Forsøker å endre oppgavebeskrivelse på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til id: {} med navn: {}",
+            "Forsøker å endre oppgavebeskrivelse, mappe og enhet på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til id: {} med navn: {}",
             StructuredArguments.fields(endreOppgave),
             StructuredArguments.fields(loggingMeta),
             oppgave.mappeId,
