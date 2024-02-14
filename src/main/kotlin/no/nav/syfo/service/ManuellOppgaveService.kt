@@ -89,7 +89,7 @@ class ManuellOppgaveService(
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
 
         if (skalOppretteOppfolgingsOppgave(manuellOppgave)) {
-            oppgaveService.opprettOppfoligingsOppgave(manuellOppgave, enhet, veileder, loggingMeta)
+            oppgaveService.opprettOppfolgingsOppgave(manuellOppgave, enhet, veileder, loggingMeta)
         }
 
         if (manuellOppgave.opprinneligValidationResult == null) {

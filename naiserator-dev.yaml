@@ -92,6 +92,12 @@ spec:
       value: https://oppgave-q1.dev-fss-pub.nais.io/api/v1/oppgaver
     - name: OPPGAVE_HENDELSE_TOPIC
       value: oppgavehandtering.oppgavehendelse-q1-v1
+    - name: OPPGAVE_MAPPE_ID
+      value: "100031565"
+    - name: OPPGAVE_MAPPENAVN
+      value: Tilbakedatert_trenger_mer_informasjon
+    - name: OPPGAVE_ENHET
+      value: "2820"
     - name: KAFKA_CLIENT_ID
       valueFrom:
         fieldRef:

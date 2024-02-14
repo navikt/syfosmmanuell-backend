@@ -128,7 +128,7 @@ class ManuellOppgaveServiceTest :
 
                 coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
                 coVerify { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) }
-                coVerify { oppgaveService.opprettOppfoligingsOppgave(any(), any(), any(), any()) }
+                coVerify { oppgaveService.opprettOppfolgingsOppgave(any(), any(), any(), any()) }
                 val oppgaveliste = database.hentKomplettManuellOppgave(oppgaveid)
                 assertEquals(1, oppgaveliste.size)
                 val oppgaveFraDb = oppgaveliste.first()
