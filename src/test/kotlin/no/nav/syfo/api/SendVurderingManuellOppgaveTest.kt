@@ -247,6 +247,23 @@ class SendVurderingManuellOppgaveTest :
                 )
             }
 
+            test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad DELVIS_GODKJENT") {
+                val result =
+                    Result(
+                        status = ResultStatus.GODKJENT_MED_MERKNAD,
+                        merknad = MerknadType.DELVIS_GODKJENT
+                    )
+                val merknad = result.toMerknad()
+
+                assertEquals(
+                    Merknad(
+                        type = "DELVIS_GODKJENT",
+                        beskrivelse = null,
+                    ),
+                    merknad,
+                )
+            }
+
             test(
                 "Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
             ) {

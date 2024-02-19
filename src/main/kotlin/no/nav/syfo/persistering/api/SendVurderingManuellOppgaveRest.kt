@@ -96,6 +96,7 @@ fun Route.sendVurderingManuellOppgave(
 enum class MerknadType {
     UGYLDIG_TILBAKEDATERING,
     TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER,
+    DELVIS_GODKJENT,
 }
 
 enum class ResultStatus {
@@ -120,6 +121,12 @@ data class Result(
                     MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER -> {
                         Merknad(
                             type = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER.name,
+                            beskrivelse = null,
+                        )
+                    }
+                    MerknadType.DELVIS_GODKJENT -> {
+                        Merknad(
+                            type = MerknadType.DELVIS_GODKJENT.name,
                             beskrivelse = null,
                         )
                     }
