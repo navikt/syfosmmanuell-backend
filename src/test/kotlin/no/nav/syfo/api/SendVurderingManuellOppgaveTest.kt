@@ -24,7 +24,6 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
-import kotlin.test.assertFailsWith
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
@@ -40,7 +39,6 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
-import no.nav.syfo.persistering.api.MerknadType
 import no.nav.syfo.persistering.api.Result
 import no.nav.syfo.persistering.api.ResultStatus
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
@@ -233,8 +231,7 @@ class SendVurderingManuellOppgaveTest :
             test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
                 val result =
                     Result(
-                        status = ResultStatus.GODKJENT_MED_MERKNAD,
-                        merknad = MerknadType.UGYLDIG_TILBAKEDATERING
+                        status = ResultStatus.UGYLDIG_TILBAKEDATERING,
                     )
                 val merknad = result.toMerknad()
 
@@ -250,8 +247,7 @@ class SendVurderingManuellOppgaveTest :
             test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad DELVIS_GODKJENT") {
                 val result =
                     Result(
-                        status = ResultStatus.GODKJENT_MED_MERKNAD,
-                        merknad = MerknadType.DELVIS_GODKJENT
+                        status = ResultStatus.DELVIS_GODKJENT,
                     )
                 val merknad = result.toMerknad()
 
@@ -269,8 +265,7 @@ class SendVurderingManuellOppgaveTest :
             ) {
                 val result =
                     Result(
-                        status = ResultStatus.GODKJENT_MED_MERKNAD,
-                        merknad = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER,
+                        status = ResultStatus.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER,
                     )
                 val merknad = result.toMerknad()
 
@@ -283,11 +278,13 @@ class SendVurderingManuellOppgaveTest :
                 )
             }
 
-            test("Kaster TypeCastException for status GODKJENT_MED_MERKNAD merknad NULL") {
-                assertFailsWith<IllegalArgumentException> {
-                    Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad = null).toMerknad()
-                }
-            }
+            //            test("Kaster TypeCastException for status GODKJENT_MED_MERKNAD merknad
+            // NULL") {
+            //                assertFailsWith<IllegalArgumentException> {
+            //                    Result(status = ResultStatus.GODKJENT_MED_MERKNAD, merknad =
+            // null).toMerknad()
+            //                }
+            //            }
         }
     })
 

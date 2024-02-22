@@ -93,51 +93,40 @@ fun Route.sendVurderingManuellOppgave(
     }
 }
 
-enum class MerknadType {
+enum class ResultStatus {
+    GODKJENT,
     UGYLDIG_TILBAKEDATERING,
     TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER,
     DELVIS_GODKJENT,
 }
 
-enum class ResultStatus {
-    GODKJENT,
-    GODKJENT_MED_MERKNAD,
-}
-
 data class Result(
     val status: ResultStatus,
-    val merknad: MerknadType?,
+    val merknad: Merknad? = null,
 ) {
     fun toMerknad(): Merknad? {
         return when (status) {
-            ResultStatus.GODKJENT_MED_MERKNAD -> {
-                return when (merknad) {
-                    MerknadType.UGYLDIG_TILBAKEDATERING -> {
-                        Merknad(
-                            type = MerknadType.UGYLDIG_TILBAKEDATERING.name,
-                            beskrivelse = null,
-                        )
-                    }
-                    MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER -> {
-                        Merknad(
-                            type = MerknadType.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER.name,
-                            beskrivelse = null,
-                        )
-                    }
-                    MerknadType.DELVIS_GODKJENT -> {
-                        Merknad(
-                            type = MerknadType.DELVIS_GODKJENT.name,
-                            beskrivelse = null,
-                        )
-                    }
-                    else -> {
-                        throw IllegalArgumentException(
-                            "Result with status GODKJENT_MED_MERKNAD missing merknad property"
-                        )
-                    }
-                }
+            ResultStatus.UGYLDIG_TILBAKEDATERING -> {
+                Merknad(
+                    type = ResultStatus.UGYLDIG_TILBAKEDATERING.name,
+                    beskrivelse = null,
+                )
             }
-            else -> null
+            ResultStatus.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER -> {
+                Merknad(
+                    type = ResultStatus.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER.name,
+                    beskrivelse = null,
+                )
+            }
+            ResultStatus.DELVIS_GODKJENT -> {
+                Merknad(
+                    type = ResultStatus.DELVIS_GODKJENT.name,
+                    beskrivelse = null,
+                )
+            }
+            else -> {
+                null
+            }
         }
     }
 }
