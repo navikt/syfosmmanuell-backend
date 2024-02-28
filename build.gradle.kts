@@ -6,7 +6,6 @@ val ktorVersion = "2.3.8"
 val logbackVersion = "1.4.14"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "2.0.8"
 val sykmeldingVersion = "2.0.1"
 val fellesformatVersion = "2.0.1"
 val kithHodemeldingVersion = "2.0.1"
@@ -42,7 +41,7 @@ application {
 }
 
 repositories {
-    mavenCentral() 
+    mavenCentral()
     maven {
         url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
@@ -73,10 +72,6 @@ dependencies {
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
-
-    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
     constraints {

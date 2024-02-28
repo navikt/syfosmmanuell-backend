@@ -22,9 +22,10 @@ import no.nav.syfo.model.ApprecStatus
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.Merknad
-import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.model.toReceivedSykmeldingWithValidation
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.oppdaterApprecStatus
 import no.nav.syfo.persistering.db.oppdaterManuellOppgave
@@ -71,7 +72,10 @@ class ManuellOppgaveService(
 
         incrementCounters(validationResult, manuellOppgave)
 
-        sendReceivedSykmelding(manuellOppgave.receivedSykmelding, loggingMeta)
+        sendReceivedSykmelding(
+            manuellOppgave.receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
+            loggingMeta
+        )
 
         if (!erApprecSendt(oppgaveId)) {
             /**
@@ -203,7 +207,10 @@ class ManuellOppgaveService(
                 },
         )
 
-    fun sendReceivedSykmelding(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
+    fun sendReceivedSykmelding(
+        receivedSykmelding: ReceivedSykmeldingWithValidation,
+        loggingMeta: LoggingMeta
+    ) {
         val topic = kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic
         try {
             kafkaProducers.kafkaRecievedSykmeldingProducer.producer
