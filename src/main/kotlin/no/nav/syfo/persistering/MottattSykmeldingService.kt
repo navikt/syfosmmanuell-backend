@@ -11,6 +11,9 @@ import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Merknad
+import no.nav.syfo.model.Status
+import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.model.toReceivedSykmeldingWithValidation
 import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
@@ -102,7 +105,12 @@ class MottattSykmeldingService(
                 )
                 manuellOppgaveService.sendApprec(oppgave.id, oppdatertApprec, loggingMeta)
                 manuellOppgaveService.sendReceivedSykmelding(
-                    manuellOppgave.receivedSykmelding,
+                    manuellOppgave.receivedSykmelding.toReceivedSykmeldingWithValidation(
+                        ValidationResult(
+                            status = Status.OK,
+                            ruleHits = emptyList(),
+                        )
+                    ),
                     loggingMeta
                 )
                 MESSAGE_STORED_IN_DB_COUNTER.inc()
