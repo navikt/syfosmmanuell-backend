@@ -29,6 +29,17 @@ data class FerdigstillOppgave(
     val mappeId: Int?,
 )
 
+data class EndreOppgave(
+    val versjon: Int,
+    val id: Int,
+    val beskrivelse: String,
+    val fristFerdigstillelse: LocalDate,
+    val mappeId: Int?,
+    val mappeNavn: String,
+    val tildeltEnhetsnr: String,
+    val tilordnetRessurs: String? = null,
+)
+
 data class OpprettOppgaveResponse(
     val id: Int,
     val versjon: Int,
@@ -36,6 +47,7 @@ data class OpprettOppgaveResponse(
     val tildeltEnhetsnr: String? = null,
     val mappeId: Int? = null,
     val endretTidspunkt: ZonedDateTime? = null,
+    val beskrivelse: String? = null,
 )
 
 enum class OppgaveStatus(val status: String) {

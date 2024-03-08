@@ -72,6 +72,11 @@ class ManuellOppgaveService(
 
         incrementCounters(validationResult, manuellOppgave)
 
+        if (trengerFlereOpplysninger(manuellOppgave)) {
+            oppgaveService.endreOppgave(manuellOppgave, loggingMeta)
+            return
+        }
+
         sendReceivedSykmelding(
             manuellOppgave.receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
             loggingMeta
@@ -85,11 +90,10 @@ class ManuellOppgaveService(
              */
             sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
         }
-
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
 
         if (skalOppretteOppfolgingsOppgave(manuellOppgave)) {
-            oppgaveService.opprettOppfoligingsOppgave(manuellOppgave, enhet, veileder, loggingMeta)
+            oppgaveService.opprettOppfolgingsOppgave(manuellOppgave, enhet, veileder, loggingMeta)
         }
 
         if (manuellOppgave.opprinneligValidationResult == null) {
@@ -112,10 +116,16 @@ class ManuellOppgaveService(
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
     }
 
+    private fun trengerFlereOpplysninger(manuellOppgave: ManuellOppgaveKomplett): Boolean {
+        return manuellOppgave.receivedSykmelding.merknader?.any {
+            it.type == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
+        }
+            ?: false
+    }
+
     private fun skalOppretteOppfolgingsOppgave(manuellOppgave: ManuellOppgaveKomplett): Boolean {
         return manuellOppgave.receivedSykmelding.merknader?.any {
-            it.type == "UGYLDIG_TILBAKEDATERING" ||
-                it.type == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
+            it.type == "UGYLDIG_TILBAKEDATERING"
         }
             ?: false
     }

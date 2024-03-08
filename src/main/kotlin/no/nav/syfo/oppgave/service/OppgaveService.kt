@@ -5,12 +5,14 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.getEnvVar
 import no.nav.syfo.log
 import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.Periode
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.oppgave.EndreOppgave
 import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
@@ -42,7 +44,57 @@ class OppgaveService(
         return oppgaveResponse
     }
 
-    fun opprettOppfoligingsOppgave(
+    suspend fun endreOppgave(
+        manuellOppgave: ManuellOppgaveKomplett,
+        loggingMeta: LoggingMeta,
+    ) {
+        val oppgave =
+            oppgaveClient.hentOppgave(
+                manuellOppgave.oppgaveid,
+                manuellOppgave.receivedSykmelding.msgId
+            )
+
+        requireNotNull(oppgave) {
+            throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
+        }
+        val endretBeskrivelse =
+            "\nSyfosmManuell: Trenger flere opplysninger før denne oppgaven kan ferdigstilles. Du kan ferdigstille oppgaven i appen når vi har mottatt etterlyst dokumentasjon og er klare til å fatte en beslutning i saken. \n SyfosmManuell: Fjernet eksisterende saksbehandler fra saken."
+        val oppgaveEnhet = getEnvVar("OPPGAVE_ENHET")
+        val endreOppgave =
+            EndreOppgave(
+                versjon = oppgave.versjon,
+                id = manuellOppgave.oppgaveid,
+                beskrivelse = oppgave.beskrivelse?.plus(endretBeskrivelse) ?: endretBeskrivelse,
+                fristFerdigstillelse = omToUker(LocalDate.now()),
+                mappeId =
+                    if (oppgave.tildeltEnhetsnr == oppgaveEnhet) {
+                        getEnvVar("OPPGAVE_MAPPE_ID").toInt()
+                    } else {
+                        // Det skaper trøbbel i Oppgave-apiet hvis enheten som blir satt ikke
+                        // har den aktuelle mappen
+                        null
+                    },
+                mappeNavn = getEnvVar("OPPGAVE_MAPPENAVN"),
+                tildeltEnhetsnr = oppgaveEnhet,
+            )
+        log.info(
+            "Forsøker å endre oppgavebeskrivelse, mappe og enhet på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til id: {} med navn: {}",
+            StructuredArguments.fields(endreOppgave),
+            StructuredArguments.fields(loggingMeta),
+            oppgave.mappeId,
+            endreOppgave.mappeId,
+            endreOppgave.mappeNavn
+        )
+        val oppgaveResponse =
+            oppgaveClient.endreOppgave(endreOppgave, manuellOppgave.receivedSykmelding.msgId)
+        log.info(
+            "Endret oppgave på oppgave som trenger flere opplysninger med {}, {}",
+            StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
+            StructuredArguments.fields(loggingMeta),
+        )
+    }
+
+    fun opprettOppfolgingsOppgave(
         manuellOppgave: ManuellOppgaveKomplett,
         enhet: String,
         veileder: String,
@@ -176,6 +228,8 @@ class OppgaveService(
             DayOfWeek.TUESDAY -> idag.plusDays(3)
             else -> idag.plusDays(5)
         }
+
+    fun omToUker(idag: LocalDate): LocalDate = idag.plusWeeks(2)
 
     private fun getFomTomTekst(receivedSykmelding: ReceivedSykmelding) =
         "${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom)} -" +
