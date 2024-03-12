@@ -82,6 +82,11 @@ class ManuellOppgaveService(
             loggingMeta
         )
 
+        if (trengerFlereOpplysninger(manuellOppgave)) {
+            oppgaveService.endreOppgave(manuellOppgave, loggingMeta)
+            return
+        }
+
         if (!erApprecSendt(oppgaveId)) {
             /**
              * Fallback for å sende apprec for oppgaver hvor apprec ikke har blitt sendt Tidligere
