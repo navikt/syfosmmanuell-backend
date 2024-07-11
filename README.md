@@ -17,7 +17,7 @@ code: https://github.com/navikt/syfosmmanuell
 
 ## Requirements
 
-* JDK 17
+* JDK 21
 * Docker
 
 ## FlowChart
