@@ -67,8 +67,7 @@ class KafkaConsumer(
                             consumerRecord.key(),
                             consumerRecord.value()
                         )
-                    oppgaveTopic ->
-                        oppgaveHendelseService.handleOppgaveHendelse(consumerRecord.value())
+                    oppgaveTopic -> oppgaveHendelseService.handleOppgaveHendelse(consumerRecord)
                     else ->
                         throw IllegalArgumentException(
                             "Topic ${consumerRecord.topic()} is not handled"
