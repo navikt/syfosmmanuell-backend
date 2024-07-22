@@ -132,6 +132,12 @@ class OppgaveService(
                 manuellOppgave.oppgaveid,
                 manuellOppgave.receivedSykmelding.msgId
             )
+        val tildeltEnhet = enhet ?: oppgave?.tildeltEnhetsnr
+        if (enhet == null) {
+            log.warn(
+                "Enhet er null, bruker tildelt enhet fra oppgaven ${oppgave?.tildeltEnhetsnr} for id ${manuellOppgave.oppgaveid}"
+            )
+        }
         requireNotNull(oppgave) {
             throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
         }
@@ -143,7 +149,7 @@ class OppgaveService(
                     versjon = oppgaveVersjon,
                     id = manuellOppgave.oppgaveid,
                     status = OppgaveStatus.FERDIGSTILT,
-                    tildeltEnhetsnr = enhet,
+                    tildeltEnhetsnr = tildeltEnhet,
                     tilordnetRessurs = veileder,
                     mappeId =
                         if (oppgave.tildeltEnhetsnr == enhet) {
