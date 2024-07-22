@@ -114,7 +114,7 @@ fun main() {
         )
     applicationState.ready = true
 
-   // createListener(applicationState) { kafkaConsumer.startAivenConsumer() }
+    createListener(applicationState) { kafkaConsumer.startAivenConsumer() }
 
     ApplicationServer(applicationEngine, applicationState).start()
 }
