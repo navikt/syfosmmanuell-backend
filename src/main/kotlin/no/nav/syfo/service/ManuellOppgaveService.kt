@@ -170,7 +170,9 @@ class ManuellOppgaveService(
 
     suspend fun slettOppgave(sykmeldingId: String) {
         val manuellOppgave = database.hentManuellOppgaveForSykmeldingId(sykmeldingId)
-
+        if(manuellOppgave != null) {
+            log.warn("Fant ikke oppgave for sykmeldingId $sykmeldingId")
+        }
         manuellOppgave?.let {
             if (!it.ferdigstilt) {
                 oppgaveService.ferdigstillOppgave(
