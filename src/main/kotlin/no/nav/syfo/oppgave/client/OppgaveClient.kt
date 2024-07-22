@@ -73,7 +73,7 @@ class OppgaveClient(
             return OpprettOppgaveResponse(ferdigstilloppgave.id, ferdigstilloppgave.versjon)
         } else {
             log.error(
-                "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}"
+                "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}: ${response.body<String>()}"
             )
             throw RuntimeException(
                 "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}"
