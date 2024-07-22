@@ -16,7 +16,6 @@ fun Route.sykmeldingsApi(
         get("/sykmelding/{sykmeldingsId}") {
             val sykmeldingsId = call.parameters["sykmeldingsId"]!!
 
-            log.info("Mottok kall til /api/v1/sykmelding/$sykmeldingsId")
             try {
                 val finnesSykmelding = manuellOppgaveService.finnesSykmelding(sykmeldingsId)
 
