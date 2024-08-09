@@ -1,40 +1,82 @@
 package no.nav.syfo.testutil
 
-import io.mockk.every
-import io.mockk.mockk
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import java.sql.Connection
-import no.nav.syfo.Environment
-import no.nav.syfo.db.Database
 import no.nav.syfo.db.DatabaseInterface
+import no.nav.syfo.log
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.toPGObject
+import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
+
+class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:14")
+
+class TestDatabase(
+    private val connectionName: String,
+    private val dbUsername: String,
+    private val dbPassword: String
+) : DatabaseInterface {
+    private val dataSource: HikariDataSource =
+        HikariDataSource(
+            HikariConfig().apply {
+                jdbcUrl = connectionName
+                username = dbUsername
+                password = dbPassword
+                maximumPoolSize = 1
+                minimumIdle = 1
+                isAutoCommit = false
+                connectionTimeout = 10_000
+                transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+                validate()
+            },
+        )
+    override val connection: Connection
+        get() = dataSource.connection
+
+    init {
+        runFlywayMigrations()
+    }
+
+    private fun runFlywayMigrations() =
+        Flyway.configure().run {
+            locations("db")
+            configuration(mapOf("flyway.postgresql.transactional.lock" to "false"))
+            dataSource(connectionName, dbUsername, dbPassword)
+            load().migrate()
+        }
+}
 
 class TestDB private constructor() {
 
     companion object {
-        var database: DatabaseInterface
-        val mockEnv = mockk<Environment>(relaxed = true)
+        val database: DatabaseInterface
+
+        private val psqlContainer: PsqlContainer
 
         init {
-            val postgres =
-                PostgreSQLContainer<Nothing>("postgres:14").apply {
-                    withCommand("postgres", "-c", "wal_level=logical")
-                    withUsername("username")
-                    withPassword("password")
-                    withDatabaseName("database")
-                    withInitScript("db/db-init.sql")
-                    start()
-                    println(
-                        "Database: jdbc:postgresql://localhost:$firstMappedPort/test startet opp, credentials: test og test"
-                    )
-                }
+            try {
+                psqlContainer =
+                    PsqlContainer()
+                        .withCommand("postgres", "-c", "wal_level=logical")
+                        .withExposedPorts(5432)
+                        .withUsername("username")
+                        .withPassword("password")
+                        .withDatabaseName("database")
+                        .withInitScript("db/db-init.sql")
 
-            every { mockEnv.databaseUsername } returns postgres.username
-            every { mockEnv.databasePassword } returns postgres.password
-            every { mockEnv.dbName } returns postgres.databaseName
-            every { mockEnv.dbPort } returns postgres.firstMappedPort.toString()
-            database = Database(mockEnv)
+                psqlContainer.waitingFor(HostPortWaitStrategy())
+                psqlContainer.start()
+                val username = "username"
+                val password = "password"
+                val connectionName = psqlContainer.jdbcUrl
+
+                database = TestDatabase(connectionName, username, password)
+            } catch (ex: Exception) {
+                log.error("Error", ex)
+                throw ex
+            }
         }
     }
 }
