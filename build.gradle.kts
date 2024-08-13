@@ -25,11 +25,12 @@ val commonsCodecVersion = "1.17.1"
 val logbacksyslog4jVersion = "1.0.0"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.6"
+val commonsCompressVersion = "1.27.0"
 
 plugins {
     id("application")
     kotlin("jvm") version "2.0.10"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.0"
     id("com.diffplug.spotless") version "6.25.0"
 }
 
@@ -104,6 +105,11 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
 
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
+    constraints {
+        testImplementation("org.apache.commons:commons-compress:$commonsCompressVersion") {
+            because("overrides vulnerable dependency from org.testcontainers:postgresql")
+        }
+    }
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
