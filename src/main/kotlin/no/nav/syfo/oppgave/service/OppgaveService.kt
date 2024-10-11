@@ -12,11 +12,7 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.Periode
 import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.oppgave.EndreOppgave
-import no.nav.syfo.oppgave.FerdigstillOppgave
-import no.nav.syfo.oppgave.OppgaveStatus
-import no.nav.syfo.oppgave.OpprettOppgave
-import no.nav.syfo.oppgave.OpprettOppgaveResponse
+import no.nav.syfo.oppgave.*
 import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.oppgave.model.PrioritetType
@@ -53,7 +49,6 @@ class OppgaveService(
                 manuellOppgave.oppgaveid,
                 manuellOppgave.receivedSykmelding.msgId
             )
-
         requireNotNull(oppgave) {
             throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
         }
