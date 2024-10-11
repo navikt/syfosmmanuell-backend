@@ -50,36 +50,37 @@ class OppgaveHendelseService(
                     )
                     kafkaTimestamp
                 }
-        val manuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
-        if (manuellOppgave != null) {
-            if (!manuellOppgave.ferdigstilt) {
-                val loggingMeta =
+        val manuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull() ?: return
+        if (
+            !manuellOppgave.ferdigstilt &&
+                (oppgaveStatus == ManuellOppgaveStatus.FERDIGSTILT ||
+                    oppgaveStatus == ManuellOppgaveStatus.FEILREGISTRERT)
+        ) {
+            val loggingMeta =
+                manuellOppgave.receivedSykmelding.let {
                     LoggingMeta(
-                        mottakId = manuellOppgave.receivedSykmelding.navLogId,
-                        orgNr = manuellOppgave.receivedSykmelding.legekontorOrgNr,
-                        msgId = manuellOppgave.receivedSykmelding.msgId,
-                        sykmeldingId = manuellOppgave.receivedSykmelding.sykmelding.id,
-                    )
-                // oppretter ny oppgave i gosys
-                oppgaveService.opprettOppgave(manuellOppgave.toManuellOppgave(), loggingMeta)
-            } else {
-                log.info("Oppdaterer oppgave for oppgaveId: {} til {}", oppgaveId, oppgaveStatus)
-                retry {
-                    database.oppdaterOppgaveHendelse(
-                        oppgaveId = oppgaveId,
-                        status = oppgaveStatus,
-                        statusTimestamp = timestamp,
+                        mottakId = it.navLogId,
+                        orgNr = it.legekontorOrgNr,
+                        msgId = it.msgId,
+                        sykmeldingId = it.sykmelding.id
                     )
                 }
+            log.info(
+                "Gjenoppretter oppgave for oppgaveId: {} fra {} til APEN",
+                oppgaveId,
+                oppgaveStatus
+            )
+            // database.slettOppgave(oppgaveId)
+            oppgaveService.gjenopprettOppgave(manuellOppgave, loggingMeta)
+        } else {
+            log.info("Oppdaterer oppgave for oppgaveId: {} til {}", oppgaveId, oppgaveStatus)
+            retry {
+                database.oppdaterOppgaveHendelse(
+                    oppgaveId = oppgaveId,
+                    status = oppgaveStatus,
+                    statusTimestamp = timestamp
+                )
             }
         }
-    }
-
-    fun ManuellOppgaveKomplett.toManuellOppgave(): ManuellOppgave {
-        return ManuellOppgave(
-            receivedSykmelding = this.receivedSykmelding,
-            validationResult = this.validationResult,
-            apprec = this.apprec
-        )
     }
 }
