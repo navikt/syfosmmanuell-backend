@@ -71,7 +71,7 @@ suspend fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
         }
     }
 
-suspend fun DatabaseInterface.hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
+suspend fun DatabaseInterface.hentManuellOppgave(oppgaveId: Int): ManuellOppgaveDTO? =
     withContext(Dispatchers.IO) {
         connection.use { connection ->
             connection

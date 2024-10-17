@@ -7,8 +7,8 @@ import no.nav.syfo.aksessering.db.finnesOppgave
 import no.nav.syfo.aksessering.db.finnesSykmelding
 import no.nav.syfo.aksessering.db.getUlosteOppgaver
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
+import no.nav.syfo.aksessering.db.hentManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
-import no.nav.syfo.aksessering.db.hentManuellOppgaver
 import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
@@ -42,7 +42,7 @@ class ManuellOppgaveService(
     private val oppgaveService: OppgaveService,
 ) {
     suspend fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
-        database.hentManuellOppgaver(oppgaveId)
+        database.hentManuellOppgave(oppgaveId)
 
     suspend fun finnesOppgave(oppgaveId: Int): Boolean = database.finnesOppgave(oppgaveId)
 

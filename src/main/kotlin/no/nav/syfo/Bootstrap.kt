@@ -98,10 +98,7 @@ fun main() {
             manuellOppgaveService = manuellOppgaveService,
         )
 
-    val oppgaveHendelseService =
-        OppgaveHendelseService(
-            database,
-        )
+    val oppgaveHendelseService = OppgaveHendelseService(database, oppgaveService)
 
     val kafkaConsumer =
         KafkaConsumer(

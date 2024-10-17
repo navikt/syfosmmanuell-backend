@@ -7,15 +7,13 @@ import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.*
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.log
-import no.nav.syfo.oppgave.EndreOppgave
-import no.nav.syfo.oppgave.FerdigstillOppgave
-import no.nav.syfo.oppgave.OpprettOppgave
-import no.nav.syfo.oppgave.OpprettOppgaveResponse
+import no.nav.syfo.oppgave.*
 import no.nav.syfo.util.retry
 
 class OppgaveClient(
@@ -104,6 +102,37 @@ class OppgaveClient(
             )
             throw RuntimeException(
                 "Noe gikk galt ved endring av oppgave med id ${endreOppgave.id}: ${response.status}"
+            )
+        }
+    }
+
+    suspend fun gjenopprettOppgave(
+        gjenopprettOppgave: GjenopprettOppgave,
+        msgId: String
+    ): OpprettOppgaveResponse {
+        log.info("oppgaveId på oppgaven vis skal gjenpoprette ${gjenopprettOppgave.id}")
+        log.info("urlen på oppgaven vi skal gjennopprette ${url + "/" + gjenopprettOppgave.id}")
+        val response =
+            httpClient.patch(url + "/" + gjenopprettOppgave.id) {
+                contentType(ContentType.Application.Json)
+                val token = azureAdV2Client.getAccessToken(scope)
+                header("Authorization", "Bearer $token")
+                header("X-Correlation-ID", msgId)
+                setBody(gjenopprettOppgave)
+            }
+
+        log.info(
+            "Response fra server for oppgave id ${gjenopprettOppgave.id}: ${response.bodyAsText()}"
+        )
+
+        if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
+            return response.body<OpprettOppgaveResponse>()
+        } else {
+            log.error(
+                "Noe gikk galt ved gjenoppretting av oppgave med id ${gjenopprettOppgave.id}: ${response.status}"
+            )
+            throw RuntimeException(
+                "Noe gikk galt ved gjenoppretting av oppgave med id ${gjenopprettOppgave.id}: ${response.status}"
             )
         }
     }

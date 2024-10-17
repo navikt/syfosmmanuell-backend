@@ -12,4 +12,12 @@ data class ManuellOppgaveKomplett(
     fun updateMerknader(merknadList: List<Merknad>?): ManuellOppgaveKomplett {
         return this.copy(receivedSykmelding = this.receivedSykmelding.copy(merknader = merknadList))
     }
+
+    fun toManuellOppgave(): ManuellOppgave {
+        return ManuellOppgave(
+            receivedSykmelding = receivedSykmelding,
+            validationResult = validationResult,
+            apprec = apprec,
+        )
+    }
 }

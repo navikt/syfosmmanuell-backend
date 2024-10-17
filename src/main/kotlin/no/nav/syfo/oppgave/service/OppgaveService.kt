@@ -7,16 +7,13 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.getEnvVar
 import no.nav.syfo.log
+import no.nav.syfo.metrics.GJENOPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.Periode
 import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.oppgave.EndreOppgave
-import no.nav.syfo.oppgave.FerdigstillOppgave
-import no.nav.syfo.oppgave.OppgaveStatus
-import no.nav.syfo.oppgave.OpprettOppgave
-import no.nav.syfo.oppgave.OpprettOppgaveResponse
+import no.nav.syfo.oppgave.*
 import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.oppgave.model.PrioritetType
@@ -44,6 +41,58 @@ class OppgaveService(
         return oppgaveResponse
     }
 
+    suspend fun gjenopprettOppgave(
+        manuellOppgave: ManuellOppgaveKomplett,
+        loggingMeta: LoggingMeta
+    ): OpprettOppgaveResponse {
+        val oppgave =
+            oppgaveClient.hentOppgave(
+                manuellOppgave.oppgaveid,
+                manuellOppgave.receivedSykmelding.msgId
+            )
+
+        log.info("fant oppgave vi skal gjenopprette: $oppgave")
+        requireNotNull(oppgave) {
+            throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
+        }
+
+        val gjenopprettOppgave = tilGjenopprettOppgave(oppgave, manuellOppgave)
+        log.info("Forsøker å gjenopprette oppgave $gjenopprettOppgave, $loggingMeta")
+
+        val oppgaveResponse =
+            oppgaveClient.opprettOppgave(
+                gjenopprettOppgave,
+                manuellOppgave.receivedSykmelding.msgId
+            )
+        GJENOPPRETT_OPPGAVE_COUNTER.inc()
+        log.info(
+            "Gjennopprettet manuell sykmeldingsoppgave med oppgaveId ${oppgaveResponse.id}, lg hele responsen $oppgaveResponse"
+        )
+        return oppgaveResponse
+    }
+
+    fun tilGjenopprettOppgave(
+        oppgave: OpprettOppgaveResponse,
+        manuellOppgave: ManuellOppgaveKomplett
+    ): OpprettOppgave =
+        OpprettOppgave(
+            aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
+            opprettetAvEnhetsnr = "9999",
+            behandlesAvApplikasjon = "SMM",
+            beskrivelse =
+                oppgave.beskrivelse.plus(
+                    "\n" +
+                        "SyfosmManuell: oppgaven er ferdigstilt i gosys, " +
+                        "men må ferdigstilles i syfosmmanuell for at den skal digitaliseres"
+                ),
+            tema = "SYM",
+            oppgavetype = "BEH_EL_SYM",
+            behandlingstype = "ae0239",
+            aktivDato = LocalDate.now(),
+            fristFerdigstillelse = oppgave.fristFerdigstillelse ?: omTreUkedager(LocalDate.now()),
+            prioritet = "HOY",
+        )
+
     suspend fun endreOppgave(
         manuellOppgave: ManuellOppgaveKomplett,
         loggingMeta: LoggingMeta,
@@ -53,7 +102,6 @@ class OppgaveService(
                 manuellOppgave.oppgaveid,
                 manuellOppgave.receivedSykmelding.msgId
             )
-
         requireNotNull(oppgave) {
             throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
         }
