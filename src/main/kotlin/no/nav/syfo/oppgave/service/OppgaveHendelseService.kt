@@ -13,10 +13,13 @@ import no.nav.syfo.model.*
 import no.nav.syfo.oppgave.kafka.OppgaveKafkaAivenRecord
 import no.nav.syfo.oppgave.kafka.manuellOppgaveStatus
 import no.nav.syfo.persistering.db.oppdaterOppgaveHendelse
+import no.nav.syfo.persistering.db.opprettManuellOppgave
+import no.nav.syfo.persistering.db.slettOppgave
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.retry
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 
 class OppgaveHendelseService(
     private val database: DatabaseInterface,
@@ -50,14 +53,14 @@ class OppgaveHendelseService(
                     )
                     kafkaTimestamp
                 }
-        val manuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull() ?: return
+        val eksisterendeManuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull() ?: return
         if (
-            !manuellOppgave.ferdigstilt &&
+            !eksisterendeManuellOppgave.ferdigstilt &&
                 (oppgaveStatus == ManuellOppgaveStatus.FERDIGSTILT ||
                     oppgaveStatus == ManuellOppgaveStatus.FEILREGISTRERT)
         ) {
             val loggingMeta =
-                manuellOppgave.receivedSykmelding.let {
+                eksisterendeManuellOppgave.receivedSykmelding.let {
                     LoggingMeta(
                         mottakId = it.navLogId,
                         orgNr = it.legekontorOrgNr,
@@ -70,8 +73,18 @@ class OppgaveHendelseService(
                 oppgaveId,
                 oppgaveStatus
             )
-            // database.slettOppgave(oppgaveId)
-            oppgaveService.gjenopprettOppgave(manuellOppgave, loggingMeta)
+            database.slettOppgave(oppgaveId)
+            val oppgaveResponse = oppgaveService.gjenopprettOppgave(eksisterendeManuellOppgave, loggingMeta)
+            val gjenopprettetManuellOppgave = eksisterendeManuellOppgave.toManuellOppgave()
+            val statusTimestamp =
+                oppgaveResponse.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now()
+            database.opprettManuellOppgave(
+                gjenopprettetManuellOppgave,
+                gjenopprettetManuellOppgave.apprec,
+                oppgaveResponse.id,
+                ManuellOppgaveStatus.APEN,
+                statusTimestamp
+            )
         } else {
             log.info("Oppdaterer oppgave for oppgaveId: {} til {}", oppgaveId, oppgaveStatus)
             retry {
