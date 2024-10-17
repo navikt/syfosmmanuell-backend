@@ -55,9 +55,7 @@ class OppgaveHendelseService(
                 }
         val eksisterendeManuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull() ?: return
         if (
-            !eksisterendeManuellOppgave.ferdigstilt &&
-                (oppgaveStatus == ManuellOppgaveStatus.FERDIGSTILT ||
-                    oppgaveStatus == ManuellOppgaveStatus.FEILREGISTRERT)
+            !eksisterendeManuellOppgave.ferdigstilt && oppgaveStatus == ManuellOppgaveStatus.FERDIGSTILT
         ) {
             val loggingMeta =
                 eksisterendeManuellOppgave.receivedSykmelding.let {
