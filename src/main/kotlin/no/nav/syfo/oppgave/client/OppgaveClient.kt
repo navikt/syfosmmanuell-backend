@@ -106,37 +106,6 @@ class OppgaveClient(
         }
     }
 
-    suspend fun gjenopprettOppgave(
-        gjenopprettOppgave: GjenopprettOppgave,
-        msgId: String
-    ): OpprettOppgaveResponse {
-        log.info("oppgaveId på oppgaven vis skal gjenpoprette ${gjenopprettOppgave.id}")
-        log.info("urlen på oppgaven vi skal gjennopprette ${url + "/" + gjenopprettOppgave.id}")
-        val response =
-            httpClient.patch(url + "/" + gjenopprettOppgave.id) {
-                contentType(ContentType.Application.Json)
-                val token = azureAdV2Client.getAccessToken(scope)
-                header("Authorization", "Bearer $token")
-                header("X-Correlation-ID", msgId)
-                setBody(gjenopprettOppgave)
-            }
-
-        log.info(
-            "Response fra server for oppgave id ${gjenopprettOppgave.id}: ${response.bodyAsText()}"
-        )
-
-        if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
-            return response.body<OpprettOppgaveResponse>()
-        } else {
-            log.error(
-                "Noe gikk galt ved gjenoppretting av oppgave med id ${gjenopprettOppgave.id}: ${response.status}"
-            )
-            throw RuntimeException(
-                "Noe gikk galt ved gjenoppretting av oppgave med id ${gjenopprettOppgave.id}: ${response.status}"
-            )
-        }
-    }
-
     suspend fun hentOppgave(oppgaveId: Int, msgId: String): OpprettOppgaveResponse? {
         val response =
             httpClient.get("$url/$oppgaveId") {

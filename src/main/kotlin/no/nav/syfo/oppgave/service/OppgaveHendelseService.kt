@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.db.DatabaseInterface
@@ -19,7 +20,6 @@ import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.retry
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 
 class OppgaveHendelseService(
     private val database: DatabaseInterface,
@@ -53,9 +53,11 @@ class OppgaveHendelseService(
                     )
                     kafkaTimestamp
                 }
-        val eksisterendeManuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull() ?: return
+        val eksisterendeManuellOppgave =
+            database.hentKomplettManuellOppgave(oppgaveId).firstOrNull() ?: return
         if (
-            !eksisterendeManuellOppgave.ferdigstilt && oppgaveStatus == ManuellOppgaveStatus.FERDIGSTILT
+            !eksisterendeManuellOppgave.ferdigstilt &&
+                oppgaveStatus == ManuellOppgaveStatus.FERDIGSTILT
         ) {
             val loggingMeta =
                 eksisterendeManuellOppgave.receivedSykmelding.let {
@@ -72,7 +74,8 @@ class OppgaveHendelseService(
                 oppgaveStatus
             )
             database.slettOppgave(oppgaveId)
-            val oppgaveResponse = oppgaveService.gjenopprettOppgave(eksisterendeManuellOppgave, loggingMeta)
+            val oppgaveResponse =
+                oppgaveService.gjenopprettOppgave(eksisterendeManuellOppgave, loggingMeta)
             val gjenopprettetManuellOppgave = eksisterendeManuellOppgave.toManuellOppgave()
             val statusTimestamp =
                 oppgaveResponse.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now()
