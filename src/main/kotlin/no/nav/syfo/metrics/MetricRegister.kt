@@ -19,6 +19,13 @@ val OPPRETT_OPPGAVE_COUNTER: Counter =
         .help("Registers a counter for each oppgave that is created")
         .register()
 
+val GJENOPPRETT_OPPGAVE_COUNTER: Counter =
+    Counter.Builder()
+        .namespace(METRICS_NS)
+        .name("gjenopprett_oppgave_counter")
+        .help("Registers a counter for each oppgave that is created")
+        .register()
+
 val HTTP_HISTOGRAM: Histogram =
     Histogram.Builder()
         .labelNames("path")

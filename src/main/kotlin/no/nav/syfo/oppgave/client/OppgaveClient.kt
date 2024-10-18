@@ -7,15 +7,13 @@ import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.*
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.log
-import no.nav.syfo.oppgave.EndreOppgave
-import no.nav.syfo.oppgave.FerdigstillOppgave
-import no.nav.syfo.oppgave.OpprettOppgave
-import no.nav.syfo.oppgave.OpprettOppgaveResponse
+import no.nav.syfo.oppgave.*
 import no.nav.syfo.util.retry
 
 class OppgaveClient(
