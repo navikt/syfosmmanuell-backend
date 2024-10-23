@@ -4,7 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.sql.Connection
 import no.nav.syfo.db.DatabaseInterface
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.toPGObject
 import org.flywaydb.core.Flyway
@@ -74,7 +74,7 @@ class TestDB private constructor() {
 
                 database = TestDatabase(connectionName, username, password)
             } catch (ex: Exception) {
-                log.error("Error", ex)
+                logger.error("Error", ex)
                 throw ex
             }
         }

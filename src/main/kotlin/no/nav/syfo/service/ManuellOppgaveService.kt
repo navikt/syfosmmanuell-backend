@@ -12,7 +12,7 @@ import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
 import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.metrics.FERDIGSTILT_OPPGAVE_COUNTER
 import no.nav.syfo.metrics.MERKNAD_COUNTER
 import no.nav.syfo.metrics.RULE_HIT_COUNTER
@@ -102,7 +102,7 @@ class ManuellOppgaveService(
         }
 
         if (manuellOppgave.opprinneligValidationResult == null) {
-            log.info(
+            logger.info(
                 "Mangler opprinnelig validation result, oppdaterer ved ferdigstilling av oppgaveId $oppgaveId"
             )
             database.oppdaterManuellOppgaveUtenOpprinneligValidationResult(
@@ -152,7 +152,7 @@ class ManuellOppgaveService(
     ): ManuellOppgaveKomplett {
         val manuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
         if (manuellOppgave == null) {
-            log.error("Fant ikke oppgave med id $oppgaveId")
+            logger.error("Fant ikke oppgave med id $oppgaveId")
             throw OppgaveNotFoundException("Fant ikke oppgave med id $oppgaveId")
         }
         val harTilgangTilOppgave =
@@ -181,7 +181,7 @@ class ManuellOppgaveService(
                 )
             }
             val antallSlettedeOppgaver = database.slettOppgave(it.oppgaveid)
-            log.info("Slettet $antallSlettedeOppgaver oppgaver")
+            logger.info("Slettet $antallSlettedeOppgaver oppgaver")
         }
     }
 
@@ -190,14 +190,14 @@ class ManuellOppgaveService(
             kafkaProducers.kafkaApprecProducer.producer
                 .send(ProducerRecord(kafkaProducers.kafkaApprecProducer.apprecTopic, apprec))
                 .get()
-            log.info(
+            logger.info(
                 "Apprec kvittering sent til kafka topic {} {}",
                 kafkaProducers.kafkaApprecProducer.apprecTopic,
                 loggingMeta
             )
             toggleApprecSendt(oppgaveId)
         } catch (ex: Exception) {
-            log.error("Failed to send apprec {}", loggingMeta)
+            logger.error("Failed to send apprec {}", loggingMeta)
             throw ex
         }
     }
@@ -238,14 +238,14 @@ class ManuellOppgaveService(
                     ),
                 )
                 .get()
-            log.info(
+            logger.info(
                 "Sendt sykmelding {} to topic {} {}",
                 receivedSykmelding.sykmelding.id,
                 topic,
                 loggingMeta
             )
         } catch (ex: Exception) {
-            log.error(
+            logger.error(
                 "Failed to send sykmelding {} to topic {} {}",
                 receivedSykmelding.sykmelding.id,
                 topic,

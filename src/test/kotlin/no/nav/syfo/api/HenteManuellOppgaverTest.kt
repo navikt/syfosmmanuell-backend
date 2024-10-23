@@ -6,8 +6,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.install
@@ -15,8 +16,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -31,7 +31,7 @@ import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveStatus
@@ -100,42 +100,41 @@ class HenteManuellOppgaverTest :
 
         context("Test av henting av manuelle oppgaver") {
             test("Skal hente ut manuell oppgave basert på oppgaveid") {
-                with(TestApplicationEngine()) {
-                    start()
-                    application.routing {
-                        hentManuellOppgaver(manuellOppgaveService, authorizationService)
-                    }
-                    application.install(ContentNegotiation) {
-                        jackson {
-                            registerKotlinModule()
-                            registerModule(JavaTimeModule())
-                            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        }
-                    }
-                    application.install(StatusPages) {
-                        exception<NumberFormatException> { call, cause ->
-                            call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
-                            log.error("Caught exception", cause)
-                            throw cause
-                        }
-                        exception<IkkeTilgangException> { call, cause ->
-                            call.respond(HttpStatusCode.Forbidden)
-                            log.error("Caught exception", cause)
-                            throw cause
-                        }
-                        exception<Throwable> { call, cause ->
-                            call.respond(
-                                HttpStatusCode.InternalServerError,
-                                cause.message ?: "Unknown error"
-                            )
-                            log.error("Caught exception", cause)
-                            if (cause is ExecutionException) {
-                                log.error("Exception is ExecutionException, restarting..")
-                                applicationState.ready = false
-                                applicationState.alive = false
+                testApplication {
+                    application {
+                        routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                        install(ContentNegotiation) {
+                            jackson {
+                                registerKotlinModule()
+                                registerModule(JavaTimeModule())
+                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                             }
-                            throw cause
+                        }
+                        install(StatusPages) {
+                            exception<NumberFormatException> { call, cause ->
+                                call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
+                                logger.error("Caught exception", cause)
+                                throw cause
+                            }
+                            exception<IkkeTilgangException> { call, cause ->
+                                call.respond(HttpStatusCode.Forbidden)
+                                logger.error("Caught exception", cause)
+                                throw cause
+                            }
+                            exception<Throwable> { call, cause ->
+                                call.respond(
+                                    HttpStatusCode.InternalServerError,
+                                    cause.message ?: "Unknown error"
+                                )
+                                logger.error("Caught exception", cause)
+                                if (cause is ExecutionException) {
+                                    logger.error("Exception is ExecutionException, restarting..")
+                                    applicationState.ready = false
+                                    applicationState.alive = false
+                                }
+                                throw cause
+                            }
                         }
                     }
                     database.opprettManuellOppgave(
@@ -145,85 +144,35 @@ class HenteManuellOppgaverTest :
                         ManuellOppgaveStatus.APEN,
                         LocalDateTime.now(),
                     )
-                    with(
-                        handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${generateJWT(
-                                "2",
-                                "clientId",
-                                Claim("preferred_username", "firstname.lastname@nav.no"),
-                            )}",
-                            )
-                        },
-                    ) {
-                        assertEquals(HttpStatusCode.OK, response.status())
-                        assertEquals(
-                            oppgaveid,
-                            objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid
-                        )
-                    }
-                }
-            }
-            test("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
-                with(TestApplicationEngine()) {
-                    start()
-                    application.routing {
-                        hentManuellOppgaver(manuellOppgaveService, authorizationService)
-                    }
-                    application.install(ContentNegotiation) {
-                        jackson {
-                            registerKotlinModule()
-                            registerModule(JavaTimeModule())
-                            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        }
-                    }
-                    application.install(StatusPages) {
-                        exception<NumberFormatException> { call, cause ->
-                            call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
-                            log.error("Caught exception", cause)
-                            throw cause
-                        }
-                        exception<IkkeTilgangException> { call, cause ->
-                            call.respond(HttpStatusCode.Forbidden)
-                            log.error("Caught exception", cause)
-                            throw cause
-                        }
-                        exception<Throwable> { call, cause ->
-                            call.respond(
-                                HttpStatusCode.InternalServerError,
-                                cause.message ?: "Unknown error"
-                            )
-                            log.error("Caught exception", cause)
-                            if (cause is ExecutionException) {
-                                log.error("Exception is ExecutionException, restarting..")
-                                applicationState.ready = false
-                                applicationState.alive = false
+                    val response =
+                        client.get("/api/v1/manuellOppgave/$oppgaveid") {
+                            headers {
+                                append(
+                                    HttpHeaders.Authorization,
+                                    "Bearer ${
+                                    generateJWT(
+                                        "2",
+                                        "clientId",
+                                        Claim("preferred_username", "firstname.lastname@nav.no"),
+                                    )
+                                }",
+                                )
                             }
-                            throw cause
                         }
-                    }
-                    database.opprettManuellOppgave(
-                        manuellOppgave,
-                        manuellOppgave.apprec,
-                        oppgaveid,
-                        ManuellOppgaveStatus.APEN,
-                        LocalDateTime.now(),
-                    )
-                    assertFailsWith<NumberFormatException> {
-                        handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/1h2j32k")
-                    }
-                }
-            }
 
-            test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
-                with(TestApplicationEngine()) {
-                    start()
-                    application.routing {
-                        hentManuellOppgaver(manuellOppgaveService, authorizationService)
-                    }
-                    application.install(ContentNegotiation) {
+                    assertEquals(HttpStatusCode.OK, response.status)
+                    assertEquals(
+                        oppgaveid,
+                        objectMapper.readValue<ManuellOppgaveDTO>(response.bodyAsText()).oppgaveid
+                    )
+                }
+            }
+        }
+        test("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
+            testApplication {
+                application {
+                    routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                    install(ContentNegotiation) {
                         jackson {
                             registerKotlinModule()
                             registerModule(JavaTimeModule())
@@ -231,15 +180,15 @@ class HenteManuellOppgaverTest :
                             configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                         }
                     }
-                    application.install(StatusPages) {
+                    install(StatusPages) {
                         exception<NumberFormatException> { call, cause ->
                             call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
-                            log.error("Caught exception", cause)
+                            logger.error("Caught exception", cause)
                             throw cause
                         }
                         exception<IkkeTilgangException> { call, cause ->
                             call.respond(HttpStatusCode.Forbidden)
-                            log.error("Caught exception", cause)
+                            logger.error("Caught exception", cause)
                             throw cause
                         }
                         exception<Throwable> { call, cause ->
@@ -247,26 +196,79 @@ class HenteManuellOppgaverTest :
                                 HttpStatusCode.InternalServerError,
                                 cause.message ?: "Unknown error"
                             )
-                            log.error("Caught exception", cause)
+                            logger.error("Caught exception", cause)
                             if (cause is ExecutionException) {
-                                log.error("Exception is ExecutionException, restarting..")
+                                logger.error("Exception is ExecutionException, restarting..")
                                 applicationState.ready = false
                                 applicationState.alive = false
                             }
                             throw cause
                         }
                     }
-                    with(
-                        handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                            addHeader(
+                }
+                database.opprettManuellOppgave(
+                    manuellOppgave,
+                    manuellOppgave.apprec,
+                    oppgaveid,
+                    ManuellOppgaveStatus.APEN,
+                    LocalDateTime.now(),
+                )
+                assertFailsWith<NumberFormatException> {
+                    client.get("/api/v1/manuellOppgave/1h2j32k")
+                }
+            }
+        }
+
+        test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
+            testApplication {
+                application {
+                    routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                    install(ContentNegotiation) {
+                        jackson {
+                            registerKotlinModule()
+                            registerModule(JavaTimeModule())
+                            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        }
+                    }
+                    install(StatusPages) {
+                        exception<NumberFormatException> { call, cause ->
+                            call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
+                            logger.error("Caught exception", cause)
+                            throw cause
+                        }
+                        exception<IkkeTilgangException> { call, cause ->
+                            call.respond(HttpStatusCode.Forbidden)
+                            logger.error("Caught exception", cause)
+                            throw cause
+                        }
+                        exception<Throwable> { call, cause ->
+                            call.respond(
+                                HttpStatusCode.InternalServerError,
+                                cause.message ?: "Unknown error"
+                            )
+                            logger.error("Caught exception", cause)
+                            if (cause is ExecutionException) {
+                                logger.error("Exception is ExecutionException, restarting..")
+                                applicationState.ready = false
+                                applicationState.alive = false
+                            }
+                            throw cause
+                        }
+                    }
+                }
+
+                val response =
+                    client.get("/api/v1/manuellOppgave/1h2j32k") {
+                        headers {
+                            append(
                                 HttpHeaders.Authorization,
                                 "Bearer ${generateJWT("2", "clientId")}"
                             )
-                        },
-                    ) {
-                        assertEquals(HttpStatusCode.NotFound, response.status())
+                        }
                     }
-                }
+
+                assertEquals(HttpStatusCode.NotFound, response.status)
             }
         }
     })

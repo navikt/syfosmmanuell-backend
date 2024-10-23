@@ -12,7 +12,7 @@ import io.ktor.http.HttpStatusCode
 import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
-import no.nav.syfo.log
+import no.nav.syfo.logger
 
 class IstilgangskontrollClient(
     environment: Environment,
@@ -36,7 +36,7 @@ class IstilgangskontrollClient(
         personFnr: String
     ): Tilgang {
         istilgangskontrollCache.getIfPresent(mapOf(Pair(accessToken, personFnr)))?.let {
-            log.debug("Traff cache for istilgangskontroll")
+            logger.debug("Traff cache for istilgangskontroll")
             return it
         }
         val oboToken =
@@ -52,23 +52,23 @@ class IstilgangskontrollClient(
             }
         return when (httpResponse.status) {
             HttpStatusCode.OK -> {
-                log.debug(
+                logger.debug(
                     "istilgangskontroll svarer med httpResponse status kode: {}",
                     httpResponse.status.value
                 )
-                log.info("Sjekker tilgang for veileder på person")
+                logger.info("Sjekker tilgang for veileder på person")
                 val tilgang = httpResponse.body<Tilgang>()
                 istilgangskontrollCache.put(mapOf(Pair(accessToken, personFnr)), tilgang)
                 tilgang
             }
             HttpStatusCode.Forbidden -> {
-                log.warn("istilgangskontroll svarte med ${httpResponse.status.value}")
+                logger.warn("istilgangskontroll svarte med ${httpResponse.status.value}")
                 Tilgang(
                     erGodkjent = false,
                 )
             }
             else -> {
-                log.error("istilgangskontroll svarte med ${httpResponse.status.value}")
+                logger.error("istilgangskontroll svarte med ${httpResponse.status.value}")
                 Tilgang(
                     erGodkjent = false,
                 )

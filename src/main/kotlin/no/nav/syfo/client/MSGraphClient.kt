@@ -11,7 +11,7 @@ import java.io.Serializable
 import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
-import no.nav.syfo.log
+import no.nav.syfo.logger
 
 class MSGraphClient(
     environment: Environment,
@@ -31,7 +31,7 @@ class MSGraphClient(
 
     suspend fun getSubjectFromMsGraph(accessToken: String): String {
         subjectCache.getIfPresent(accessToken)?.let {
-            log.debug("Traff subject cache for MSGraph")
+            logger.debug("Traff subject cache for MSGraph")
             return it
         }
 

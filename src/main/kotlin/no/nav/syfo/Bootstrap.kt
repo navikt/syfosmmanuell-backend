@@ -41,7 +41,7 @@ val objectMapper: ObjectMapper =
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
-val log: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
+val logger: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 val sikkerlogg = LoggerFactory.getLogger("securelog")
 val auditlogg = LoggerFactory.getLogger("auditLogger")
 
@@ -126,7 +126,7 @@ fun createListener(
         try {
             action()
         } catch (e: TrackableException) {
-            log.error(
+            logger.error(
                 "En uhåndtert feil oppstod, applikasjonen restarter {}",
                 fields(e.loggingMeta),
                 e.cause,

@@ -5,15 +5,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
+import io.ktor.client.request.*
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.mockk
 import java.time.LocalDateTime
@@ -75,14 +74,15 @@ class SykmeldingsApiTest :
         afterTest { database.connection.dropData() }
 
         context("Test av henting av manuelle oppgaver api") {
-            with(TestApplicationEngine()) {
-                start()
-                application.routing { sykmeldingsApi(manuellOppgaveService) }
-                application.install(ContentNegotiation) {
-                    jackson {
-                        registerKotlinModule()
-                        registerModule(JavaTimeModule())
-                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            testApplication {
+                application {
+                    routing { sykmeldingsApi(manuellOppgaveService) }
+                    install(ContentNegotiation) {
+                        jackson {
+                            registerKotlinModule()
+                            registerModule(JavaTimeModule())
+                            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        }
                     }
                 }
 
@@ -94,28 +94,29 @@ class SykmeldingsApiTest :
                         ManuellOppgaveStatus.APEN,
                         LocalDateTime.now(),
                     )
-                    with(
-                        handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId") {
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${generateJWT("2", "clientId")}"
-                            )
-                        },
-                    ) {
-                        assertEquals(HttpStatusCode.OK, response.status())
-                    }
+                    val response =
+                        client.get("/api/v1/sykmelding/$sykmeldingsId") {
+                            headers {
+                                append(
+                                    HttpHeaders.Authorization,
+                                    "Bearer ${generateJWT("2", "clientId")}"
+                                )
+                            }
+                        }
+                    assertEquals(HttpStatusCode.OK, response.status)
                 }
                 test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
-                    with(
-                        handleRequest(HttpMethod.Get, "/api/v1/sykmelding/$sykmeldingsId") {
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${generateJWT("2", "clientId")}"
-                            )
-                        },
-                    ) {
-                        assertEquals(HttpStatusCode.NotFound, response.status())
-                    }
+                    val response =
+                        client.get("/api/v1/sykmelding/$sykmeldingsId") {
+                            headers {
+                                append(
+                                    HttpHeaders.Authorization,
+                                    "Bearer ${generateJWT("2", "clientId")}"
+                                )
+                            }
+                        }
+
+                    assertEquals(HttpStatusCode.NotFound, response.status)
                 }
             }
         }

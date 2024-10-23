@@ -6,18 +6,16 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.FunSpec
+import io.ktor.client.request.*
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
-import io.ktor.server.application.install
+import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
+import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
@@ -30,7 +28,7 @@ import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveStatus
@@ -99,76 +97,80 @@ class SendVurderingManuellOppgaveTest :
             test(
                 "Skal returnere InternalServerError når oppdatering av manuelloppgave sitt ValidationResults feilet fordi oppgave ikke finnes"
             ) {
-                with(TestApplicationEngine()) {
-                    start()
-
-                    database.opprettManuellOppgave(
-                        manuellOppgave,
-                        manuellOppgave.apprec,
-                        oppgaveid,
-                        ManuellOppgaveStatus.APEN,
-                        LocalDateTime.now(),
-                    )
-
-                    application.routing {
-                        sendVurderingManuellOppgave(
-                            manuellOppgaveService,
-                            authorizationService,
-                        )
-                    }
-                    application.install(ContentNegotiation) {
-                        jackson {
-                            registerKotlinModule()
-                            registerModule(JavaTimeModule())
-                            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                        }
-                    }
-                    application.install(StatusPages) {
-                        exception<Throwable> { call, cause ->
-                            call.respond(
-                                HttpStatusCode.InternalServerError,
-                                cause.message ?: "Unknown error"
+                testApplication {
+                    application {
+                        runBlocking {
+                            database.opprettManuellOppgave(
+                                manuellOppgave,
+                                manuellOppgave.apprec,
+                                oppgaveid,
+                                ManuellOppgaveStatus.APEN,
+                                LocalDateTime.now(),
                             )
-                            log.error("Caught exception", cause)
+                        }
+
+                        routing {
+                            sendVurderingManuellOppgave(
+                                manuellOppgaveService,
+                                authorizationService,
+                            )
+                        }
+                        install(ContentNegotiation) {
+                            jackson {
+                                registerKotlinModule()
+                                registerModule(JavaTimeModule())
+                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                            }
+                        }
+                        install(StatusPages) {
+                            exception<Throwable> { call, cause ->
+                                call.respond(
+                                    HttpStatusCode.InternalServerError,
+                                    cause.message ?: "Unknown error"
+                                )
+                                logger.error("Caught exception", cause)
+                            }
                         }
                     }
 
                     val result = Result(status = ResultStatus.GODKJENT, merknad = null)
 
-                    with(
-                        handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/21314") {
-                            addHeader("Accept", "application/json")
-                            addHeader("Content-Type", "application/json")
-                            addHeader("X-Nav-Enhet", "1234")
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${generateJWT(
-                                "2",
-                                "clientId",
-                                Claim("preferred_username", "firstname.lastname@nav.no"),
-                            )}",
-                            )
+                    val response =
+                        client.get("/api/v1/vurderingmanuelloppgave/21314") {
+                            headers {
+                                append("Accept", "application/json")
+                                append("Content-Type", "application/json")
+                                append("X-Nav-Enhet", "1234")
+                                append(
+                                    HttpHeaders.Authorization,
+                                    "Bearer ${generateJWT(
+                                        "2",
+                                        "clientId",
+                                        Claim("preferred_username", "firstname.lastname@nav.no"),
+                                    )}",
+                                )
+                            }
                             setBody(objectMapper.writeValueAsString(result))
-                        },
-                    ) {
-                        assertEquals(HttpStatusCode.NotFound, response.status())
-                    }
+                        }
+
+                    assertEquals(HttpStatusCode.NotFound, response.status)
                 }
             }
 
             test("should fail when writing sykmelding to kafka fails with status OK") {
-                with(TestApplicationEngine()) {
-                    start()
-                    setUpTest(
-                        this,
-                        kafkaProducers,
-                        istilgangskontrollClient,
-                        msGraphClient,
-                        authorizationService,
-                        oppgaveService,
-                        database,
-                        manuellOppgaveService
-                    )
+                testApplication {
+                    application {
+                        setUpTest(
+                            this,
+                            kafkaProducers,
+                            istilgangskontrollClient,
+                            msGraphClient,
+                            authorizationService,
+                            oppgaveService,
+                            database,
+                            manuellOppgaveService
+                        )
+                    }
 
                     val result = Result(status = ResultStatus.GODKJENT, merknad = null)
                     every {
@@ -182,37 +184,38 @@ class SendVurderingManuellOppgaveTest :
             }
 
             test("noContent oppdatering av manuelloppgave med status OK") {
-                with(TestApplicationEngine()) {
-                    start()
-                    setUpTest(
-                        this,
-                        kafkaProducers,
-                        istilgangskontrollClient,
-                        msGraphClient,
-                        authorizationService,
-                        oppgaveService,
-                        database,
-                        manuellOppgaveService
-                    )
-
+                testApplication {
+                    application {
+                        setUpTest(
+                            this,
+                            kafkaProducers,
+                            istilgangskontrollClient,
+                            msGraphClient,
+                            authorizationService,
+                            oppgaveService,
+                            database,
+                            manuellOppgaveService
+                        )
+                    }
                     val result = Result(status = ResultStatus.GODKJENT, merknad = null)
                     sendRequest(result, HttpStatusCode.NoContent, oppgaveid)
                 }
             }
 
             test("should fail when X-Nav-Enhet header is empty") {
-                with(TestApplicationEngine()) {
-                    start()
-                    setUpTest(
-                        this,
-                        kafkaProducers,
-                        istilgangskontrollClient,
-                        msGraphClient,
-                        authorizationService,
-                        oppgaveService,
-                        database,
-                        manuellOppgaveService
-                    )
+                testApplication {
+                    application {
+                        setUpTest(
+                            this,
+                            kafkaProducers,
+                            istilgangskontrollClient,
+                            msGraphClient,
+                            authorizationService,
+                            oppgaveService,
+                            database,
+                            manuellOppgaveService
+                        )
+                    }
 
                     val result = Result(status = ResultStatus.GODKJENT, merknad = null)
                     sendRequest(result, HttpStatusCode.BadRequest, oppgaveid, "")
@@ -288,34 +291,38 @@ class SendVurderingManuellOppgaveTest :
         }
     })
 
-fun TestApplicationEngine.sendRequest(
+fun ApplicationTestBuilder.sendRequest(
     result: Result,
     statusCode: HttpStatusCode,
     oppgaveId: Int,
     navEnhet: String = "1234"
 ) {
-    with(
-        handleRequest(HttpMethod.Post, "/api/v1/vurderingmanuelloppgave/$oppgaveId") {
-            addHeader("Accept", "application/json")
-            addHeader("Content-Type", "application/json")
-            addHeader("X-Nav-Enhet", navEnhet)
-            addHeader(
-                HttpHeaders.Authorization,
-                "Bearer ${generateJWT(
-                    "2",
-                    "clientId",
-                    Claim("preferred_username", "firstname.lastname@nav.no"),
-                )}",
-            )
-            setBody(objectMapper.writeValueAsString(result))
-        },
-    ) {
-        assertEquals(statusCode, response.status())
+    runBlocking {
+        val response =
+            client.post("/api/v1/vurderingmanuelloppgave/$oppgaveId") {
+                headers {
+                    append("Accept", "application/json")
+                    append("Content-Type", "application/json")
+                    append("X-Nav-Enhet", navEnhet)
+                    append(
+                        HttpHeaders.Authorization,
+                        "Bearer ${
+                        generateJWT(
+                            "2",
+                            "clientId",
+                            Claim("preferred_username", "firstname.lastname@nav.no"),
+                        )
+                    }",
+                    )
+                }
+                setBody(objectMapper.writeValueAsString(result))
+            }
+        assertEquals(statusCode, response.status)
     }
 }
 
 fun setUpTest(
-    testApplicationEngine: TestApplicationEngine,
+    application: Application,
     kafkaProducers: KafkaProducers,
     istilgangskontrollClient: IstilgangskontrollClient,
     msGraphClient: MSGraphClient,
@@ -353,23 +360,23 @@ fun setUpTest(
         )
     }
 
-    testApplicationEngine.application.routing {
+    application.routing {
         sendVurderingManuellOppgave(
             manuellOppgaveService,
             authorizationService,
         )
     }
-    testApplicationEngine.application.install(ContentNegotiation) {
+    application.install(ContentNegotiation) {
         jackson {
             registerKotlinModule()
             registerModule(JavaTimeModule())
             configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
         }
     }
-    testApplicationEngine.application.install(StatusPages) {
+    application.install(StatusPages) {
         exception<Throwable> { call, cause ->
             call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-            log.error("Caught exception", cause)
+            logger.error("Caught exception", cause)
         }
     }
 }

@@ -11,9 +11,8 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
-import io.ktor.server.engine.ApplicationEngine
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
@@ -25,7 +24,7 @@ import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.aksessering.api.sykmeldingsApi
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.IkkeTilgangException
@@ -38,13 +37,12 @@ fun createApplicationEngine(
     jwkProvider: JwkProvider,
     issuer: String,
     authorizationService: AuthorizationService,
-): ApplicationEngine =
+): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration> =
     embeddedServer(
-        Netty,
-        env.applicationPort,
+        factory = Netty,
         configure = {
-            // Increase timeout of Netty to handle large content bodies
             responseWriteTimeoutSeconds = 40
+            connector { port = env.applicationPort }
         }
     ) {
         setupAuth(env, jwkProvider, issuer)
@@ -59,19 +57,19 @@ fun createApplicationEngine(
         install(StatusPages) {
             exception<NumberFormatException> { call, cause ->
                 call.respond(HttpStatusCode.BadRequest, "oppgaveid is not a number")
-                log.error("Caught exception", cause)
+                logger.error("Caught exception", cause)
                 throw cause
             }
             exception<IkkeTilgangException> { call, cause ->
                 call.respond(HttpStatusCode.Forbidden)
-                log.error("Caught exception", cause)
+                logger.error("Caught exception", cause)
                 throw cause
             }
             exception<Throwable> { call, cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-                log.error("Caught exception", cause)
+                logger.error("Caught exception", cause)
                 if (cause is ExecutionException) {
-                    log.error("Exception is ExecutionException, restarting..")
+                    logger.error("Exception is ExecutionException, restarting..")
                     applicationState.ready = false
                     applicationState.alive = false
                 }

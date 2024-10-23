@@ -6,7 +6,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -16,7 +16,7 @@ suspend fun retry(times: Int = 3, delay: Duration = 1.seconds, block: suspend ()
             block()
             return
         } catch (e: Exception) {
-            log.warn("Error in retry function", e)
+            logger.warn("Error in retry function", e)
             if (it == times - 1) {
                 throw e
             }
@@ -41,7 +41,7 @@ suspend inline fun <reified T> retry(
             if (!isCausedBy(e, exceptionCausedByDepth, legalExceptions)) {
                 throw e
             }
-            log.warn(
+            logger.warn(
                 "Failed to execute {}, retrying in $interval ms",
                 StructuredArguments.keyValue("callName", callName),
                 e

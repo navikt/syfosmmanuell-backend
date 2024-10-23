@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.getEnvVar
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.metrics.GJENOPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.metrics.OPPRETT_OPPGAVE_COUNTER
 import no.nav.syfo.model.ManuellOppgave
@@ -33,7 +33,7 @@ class OppgaveService(
         val oppgaveResponse =
             oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
         OPPRETT_OPPGAVE_COUNTER.inc()
-        log.info(
+        logger.info(
             "Opprettet manuell sykmeldingsoppgave med {}, {}",
             StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
             StructuredArguments.fields(loggingMeta),
@@ -51,13 +51,13 @@ class OppgaveService(
                 manuellOppgave.receivedSykmelding.msgId
             )
 
-        log.info("fant oppgave vi skal gjenopprette: $oppgave")
+        logger.info("fant oppgave vi skal gjenopprette: $oppgave")
         requireNotNull(oppgave) {
             throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
         }
 
         val gjenopprettOppgave = tilGjenopprettOppgave(oppgave, manuellOppgave)
-        log.info("Forsøker å gjenopprette oppgave $gjenopprettOppgave, $loggingMeta")
+        logger.info("Forsøker å gjenopprette oppgave $gjenopprettOppgave, $loggingMeta")
 
         val oppgaveResponse =
             oppgaveClient.opprettOppgave(
@@ -65,7 +65,7 @@ class OppgaveService(
                 manuellOppgave.receivedSykmelding.msgId
             )
         GJENOPPRETT_OPPGAVE_COUNTER.inc()
-        log.info(
+        logger.info(
             "Gjennopprettet manuell sykmeldingsoppgave med oppgaveId ${oppgaveResponse.id}, lg hele responsen $oppgaveResponse"
         )
         return oppgaveResponse
@@ -125,7 +125,7 @@ class OppgaveService(
                 mappeNavn = getEnvVar("OPPGAVE_MAPPENAVN"),
                 tildeltEnhetsnr = oppgaveEnhet,
             )
-        log.info(
+        logger.info(
             "Forsøker å endre oppgavebeskrivelse, mappe og enhet på oppgave som trenger flere opplysninger {}, {}. \n der mappeId var {} og er satt til id: {} med navn: {}",
             StructuredArguments.fields(endreOppgave),
             StructuredArguments.fields(loggingMeta),
@@ -135,7 +135,7 @@ class OppgaveService(
         )
         val oppgaveResponse =
             oppgaveClient.endreOppgave(endreOppgave, manuellOppgave.receivedSykmelding.msgId)
-        log.info(
+        logger.info(
             "Endret oppgave på oppgave som trenger flere opplysninger med {}, {}",
             StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
             StructuredArguments.fields(loggingMeta),
@@ -159,11 +159,11 @@ class OppgaveService(
         try {
             kafkaProduceTaskProducer.producer.send(producerRecord).get()
         } catch (e: Exception) {
-            log.error("Sending til {} feilet", kafkaProduceTaskProducer.topic)
+            logger.error("Sending til {} feilet", kafkaProduceTaskProducer.topic)
             throw e
         }
 
-        log.info(
+        logger.info(
             "Opprettelse av oppfølgingsoppgave forespurt for sykmelding med merknad {}",
             StructuredArguments.fields(loggingMeta),
         )
@@ -182,7 +182,7 @@ class OppgaveService(
             )
         val tildeltEnhet = enhet ?: oppgave?.tildeltEnhetsnr
         if (enhet == null) {
-            log.warn(
+            logger.warn(
                 "Enhet er null, bruker tildelt enhet fra oppgaven ${oppgave?.tildeltEnhetsnr} for id ${manuellOppgave.oppgaveid}"
             )
         }
@@ -209,7 +209,7 @@ class OppgaveService(
                         },
                 )
 
-            log.info(
+            logger.info(
                 "Forsøker å ferdigstille oppgave {}, {}",
                 StructuredArguments.fields(ferdigstillOppgave),
                 StructuredArguments.fields(loggingMeta)
@@ -220,13 +220,13 @@ class OppgaveService(
                     ferdigstillOppgave,
                     manuellOppgave.receivedSykmelding.msgId
                 )
-            log.info(
+            logger.info(
                 "Ferdigstilt oppgave med {}, {}",
                 StructuredArguments.keyValue("oppgaveId", oppgaveResponse.id),
                 StructuredArguments.fields(loggingMeta),
             )
         } else {
-            log.info(
+            logger.info(
                 "Oppgaven er allerede ferdigstillt oppgaveId: ${oppgave.id} {}",
                 StructuredArguments.fields(loggingMeta)
             )
