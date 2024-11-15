@@ -5,7 +5,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.delay
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.oppgave.service.OppgaveHendelseService
 import no.nav.syfo.persistering.MottattSykmeldingService
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -39,12 +39,12 @@ class KafkaConsumer(
                     }
                     else -> {
                         if (cluster == "dev-gcp") {
-                            log.error(
+                            logger.error(
                                 "Aiven: Caught exception could not process record skipping in dev",
                                 ex
                             )
                         } else {
-                            log.error("Aiven: Caught exception, unsubscribing and retrying", ex)
+                            logger.error("Aiven: Caught exception, unsubscribing and retrying", ex)
                             kafkaAivenConsumer.unsubscribe()
                             delay(DELAY_ON_ERROR_SECONDS.seconds)
                         }
@@ -57,7 +57,7 @@ class KafkaConsumer(
     private suspend fun runAivenConsumer() {
         val topics = listOf(manuellOppgaveTopic, oppgaveTopic)
         kafkaAivenConsumer.subscribe(topics)
-        log.info("Starting consuming topic $topics")
+        logger.info("Starting consuming topic $topics")
         while (applicationState.ready) {
             kafkaAivenConsumer.poll(Duration.ofSeconds(POLL_TIME_SECONDS)).forEach { consumerRecord
                 ->

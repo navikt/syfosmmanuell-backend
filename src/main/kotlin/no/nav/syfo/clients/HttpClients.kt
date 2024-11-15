@@ -19,7 +19,7 @@ import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.clients.exception.ServiceUnavailableException
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.oppgave.client.OppgaveClient
 
 class HttpClients(env: Environment) {
@@ -46,12 +46,12 @@ class HttpClients(env: Environment) {
             install(HttpRequestRetry) {
                 constantDelay(50, 0, false)
                 retryOnExceptionIf(3) { request, throwable ->
-                    log.warn("Caught exception ${throwable.message}, for url ${request.url}")
+                    logger.warn("Caught exception ${throwable.message}, for url ${request.url}")
                     true
                 }
                 retryIf(maxRetries) { request, response ->
                     if (response.status.value.let { it in 500..599 }) {
-                        log.warn(
+                        logger.warn(
                             "Retrying for statuscode ${response.status.value}, for url ${request.url}"
                         )
                         true

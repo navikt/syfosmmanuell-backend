@@ -7,12 +7,11 @@ import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.*
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import no.nav.syfo.azuread.v2.AzureAdV2Client
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.oppgave.*
 import no.nav.syfo.util.retry
 
@@ -37,10 +36,10 @@ class OppgaveClient(
                     setBody(opprettOppgave)
                 }
             if (response.status == HttpStatusCode.Created) {
-                log.info("Opprettet oppgave for msgId $msgId")
+                logger.info("Opprettet oppgave for msgId $msgId")
                 return@retry response.body<OpprettOppgaveResponse>()
             } else {
-                log.error(
+                logger.error(
                     "Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}"
                 )
                 throw RuntimeException(
@@ -65,12 +64,12 @@ class OppgaveClient(
         if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
             return response.body<OpprettOppgaveResponse>()
         } else if (cluster == "dev-gcp" && ferdigstilloppgave.mappeId == null) {
-            log.info(
+            logger.info(
                 "Skipping ferdigstilt oppgave med in dev due to mappeId is null id ${ferdigstilloppgave.id}: ${response.status}"
             )
             return OpprettOppgaveResponse(ferdigstilloppgave.id, ferdigstilloppgave.versjon)
         } else {
-            log.error(
+            logger.error(
                 "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}: ${response.body<String>()}"
             )
             throw RuntimeException(
@@ -92,12 +91,12 @@ class OppgaveClient(
         if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
             return response.body<OpprettOppgaveResponse>()
         } else if (cluster == "dev-gcp" && endreOppgave.mappeId == null) {
-            log.info(
+            logger.info(
                 "Skipping endring av oppgave med in dev due to mappeId is null id ${endreOppgave.id}: ${response.status}"
             )
             return OpprettOppgaveResponse(endreOppgave.id, endreOppgave.versjon)
         } else {
-            log.error(
+            logger.error(
                 "Noe gikk galt ved endring av oppgave med id ${endreOppgave.id}: ${response.status}"
             )
             throw RuntimeException(
@@ -119,7 +118,9 @@ class OppgaveClient(
         } else if (response.status == HttpStatusCode.NotFound) {
             return null
         } else {
-            log.error("Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}")
+            logger.error(
+                "Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}"
+            )
             throw RuntimeException(
                 "Noe gikk galt ved henting av oppgave med id $oppgaveId: ${response.status}"
             )

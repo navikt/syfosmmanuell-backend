@@ -4,13 +4,12 @@ import com.auth0.jwk.JwkProvider
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
-import io.ktor.server.auth.Principal
 import io.ktor.server.auth.jwt.JWTCredential
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.Environment
-import no.nav.syfo.log
+import no.nav.syfo.logger
 
 fun Application.setupAuth(
     env: Environment,
@@ -33,8 +32,8 @@ fun Application.setupAuth(
     }
 }
 
-fun unauthorized(credentials: JWTCredential): Principal? {
-    log.warn(
+fun unauthorized(credentials: JWTCredential): Unit? {
+    logger.warn(
         "Auth: Unexpected audience for jwt {}, {}",
         StructuredArguments.keyValue("issuer", credentials.payload.issuer),
         StructuredArguments.keyValue("audience", credentials.payload.audience),

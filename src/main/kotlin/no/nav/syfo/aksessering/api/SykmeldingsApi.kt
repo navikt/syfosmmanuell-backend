@@ -1,12 +1,11 @@
 package no.nav.syfo.aksessering.api
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.service.ManuellOppgaveService
 
 fun Route.sykmeldingsApi(
@@ -24,7 +23,7 @@ fun Route.sykmeldingsApi(
                     else -> call.respond(HttpStatusCode.NotFound)
                 }
             } catch (e: Exception) {
-                log.error("Noe gikk galt ved sjekk av sykmelding med id $sykmeldingsId", e)
+                logger.error("Noe gikk galt ved sjekk av sykmelding med id $sykmeldingsId", e)
                 throw e
             }
         }

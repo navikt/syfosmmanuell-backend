@@ -6,8 +6,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.install
@@ -16,8 +17,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -32,7 +32,7 @@ import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.clients.KafkaProducers
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveStatus
@@ -126,68 +126,102 @@ class AuthenticateTest :
                     cluster = "dev-gcp",
                     oppgaveHendelseTopic = "oppgavehendlese",
                 )
-            with(TestApplicationEngine()) {
-                start()
-                application.setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
-                application.routing {
-                    authenticate("jwt") {
-                        hentManuellOppgaver(manuellOppgaveService, authorizationService)
-                    }
-                }
-                application.install(ContentNegotiation) {
-                    jackson {
-                        registerKotlinModule()
-                        registerModule(JavaTimeModule())
-                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                    }
-                }
-                application.install(StatusPages) {
-                    exception<Throwable> { call, cause ->
-                        call.respond(
-                            HttpStatusCode.InternalServerError,
-                            cause.message ?: "Unknown error"
-                        )
-                        log.error("Caught exception", cause)
-                        throw cause
-                    }
-                }
 
-                test("Aksepterer gyldig JWT med riktig audience") {
-                    with(
-                        handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${generateJWT(
-                                "2",
-                                "clientId",
-                                Claim("preferred_username", "firstname.lastname@nav.no"),
-                            )}",
-                            )
-                        },
-                    ) {
-                        assertEquals(HttpStatusCode.OK, response.status())
-                        assertEquals(
-                            oppgaveid,
-                            objectMapper.readValue<ManuellOppgaveDTO>(response.content!!).oppgaveid
-                        )
+            test("Aksepterer gyldig JWT med riktig audience") {
+                testApplication {
+                    application {
+                        setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
+                        routing {
+                            authenticate("jwt") {
+                                hentManuellOppgaver(manuellOppgaveService, authorizationService)
+                            }
+                        }
+                        install(ContentNegotiation) {
+                            jackson {
+                                registerKotlinModule()
+                                registerModule(JavaTimeModule())
+                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                            }
+                        }
+                        install(StatusPages) {
+                            exception<Throwable> { call, cause ->
+                                call.respond(
+                                    HttpStatusCode.InternalServerError,
+                                    cause.message ?: "Unknown error"
+                                )
+                                logger.error("Caught exception", cause)
+                                throw cause
+                            }
+                        }
                     }
+                    val response =
+                        client.get("/api/v1/manuellOppgave/$oppgaveid") {
+                            headers {
+                                append(
+                                    HttpHeaders.Authorization,
+                                    "Bearer ${
+                                    generateJWT(
+                                        "2",
+                                        "clientId",
+                                        Claim("preferred_username", "firstname.lastname@nav.no"),
+                                    )
+                                }"
+                                )
+                            }
+                        }
+
+                    assertEquals(HttpStatusCode.OK, response.status)
+                    assertEquals(
+                        oppgaveid,
+                        objectMapper.readValue<ManuellOppgaveDTO>(response.bodyAsText()).oppgaveid
+                    )
                 }
-                test("Gyldig JWT med feil audience gir Unauthorized") {
-                    with(
-                        handleRequest(HttpMethod.Get, "/api/v1/manuellOppgave/$oppgaveid") {
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${generateJWT(
-                                "2",
-                                "annenClientId",
-                                Claim("preferred_username", "firstname.lastname@nav.no"),
-                            )}",
-                            )
-                        },
-                    ) {
-                        assertEquals(HttpStatusCode.Unauthorized, response.status())
-                        assertEquals(null, response.content)
+            }
+            test("Gyldig JWT med feil audience gir Unauthorized") {
+                testApplication {
+                    application {
+                        setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
+                        routing {
+                            authenticate("jwt") {
+                                hentManuellOppgaver(manuellOppgaveService, authorizationService)
+                            }
+                        }
+                        install(ContentNegotiation) {
+                            jackson {
+                                registerKotlinModule()
+                                registerModule(JavaTimeModule())
+                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                            }
+                        }
+                        install(StatusPages) {
+                            exception<Throwable> { call, cause ->
+                                call.respond(
+                                    HttpStatusCode.InternalServerError,
+                                    cause.message ?: "Unknown error"
+                                )
+                                logger.error("Caught exception", cause)
+                                throw cause
+                            }
+                        }
                     }
+                    val response =
+                        client.get("/api/v1/manuellOppgave/$oppgaveid") {
+                            headers {
+                                append(
+                                    HttpHeaders.Authorization,
+                                    "Bearer ${
+                                    generateJWT(
+                                        "2",
+                                        "annenClientId",
+                                        Claim("preferred_username", "firstname.lastname@nav.no"),
+                                    )
+                                }"
+                                )
+                            }
+                        }
+
+                    assertEquals(HttpStatusCode.Unauthorized, response.status)
+                    assertEquals("", response.bodyAsText())
                 }
             }
         }

@@ -1,60 +1,79 @@
 package no.nav.syfo
 
 import io.kotest.core.spec.style.FunSpec
-import io.ktor.http.HttpMethod
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.api.registerNaisApi
 import org.junit.jupiter.api.Assertions.assertEquals
 
-class SelfTest :
-    FunSpec({
-        context("Successfull liveness and readyness tests") {
-            with(TestApplicationEngine()) {
-                start()
-                val applicationState = ApplicationState()
-                applicationState.ready = true
-                applicationState.alive = true
-                application.routing { registerNaisApi(applicationState) }
-
+class SelftestSpek :
+    FunSpec(
+        {
+            context("Successfull liveness and readyness tests") {
                 test("Returns ok on is_alive") {
-                    with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
-                        assertEquals(HttpStatusCode.OK, response.status())
-                        assertEquals("I'm alive! :)", response.content)
+                    testApplication {
+                        application {
+                            val applicationState = ApplicationState()
+                            applicationState.ready = true
+                            applicationState.alive = true
+                            routing { registerNaisApi(applicationState) }
+                        }
+
+                        val response = client.get("/internal/is_alive")
+
+                        assertEquals(response.status, HttpStatusCode.OK)
+                        assertEquals(response.bodyAsText(), "I'm alive! :)")
                     }
                 }
                 test("Returns ok in is_ready") {
-                    with(handleRequest(HttpMethod.Get, "/internal/is_ready")) {
-                        assertEquals(HttpStatusCode.OK, response.status())
-                        assertEquals("I'm ready! :)", response.content)
+                    testApplication {
+                        application {
+                            val applicationState = ApplicationState()
+                            applicationState.ready = true
+                            applicationState.alive = true
+                            routing { registerNaisApi(applicationState) }
+                        }
+
+                        val response = client.get("/internal/is_ready")
+                        assertEquals(response.status, HttpStatusCode.OK)
+                        assertEquals(response.bodyAsText(), "I'm ready! :)")
                     }
                 }
             }
-        }
-        context("Unsuccessful liveness and readyness") {
-            with(TestApplicationEngine()) {
-                start()
-                val applicationState = ApplicationState()
-                applicationState.ready = false
-                applicationState.alive = false
-                application.routing { registerNaisApi(applicationState) }
-
+            context("Unsuccessful liveness and readyness") {
                 test("Returns internal server error when liveness check fails") {
-                    with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
-                        assertEquals(HttpStatusCode.InternalServerError, response.status())
-                        assertEquals("I'm dead x_x", response.content)
+                    testApplication {
+                        application {
+                            val applicationState = ApplicationState()
+                            applicationState.ready = false
+                            applicationState.alive = false
+                            routing { registerNaisApi(applicationState) }
+                        }
+                        val response = client.get("/internal/is_alive")
+
+                        assertEquals(response.status, HttpStatusCode.InternalServerError)
+                        assertEquals(response.bodyAsText(), "I'm dead x_x")
                     }
                 }
 
                 test("Returns internal server error when readyness check fails") {
-                    with(handleRequest(HttpMethod.Get, "/internal/is_ready")) {
-                        assertEquals(HttpStatusCode.InternalServerError, response.status())
-                        assertEquals("Please wait! I'm not ready :(", response.content)
+                    testApplication {
+                        application {
+                            val applicationState = ApplicationState()
+                            applicationState.ready = false
+                            applicationState.alive = false
+                            routing { registerNaisApi(applicationState) }
+                        }
+                        val response = client.get("/internal/is_ready")
+
+                        assertEquals(response.status, HttpStatusCode.InternalServerError)
+                        assertEquals(response.bodyAsText(), "Please wait! I'm not ready :(")
                     }
                 }
             }
-        }
-    })
+        },
+    )

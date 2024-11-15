@@ -1,7 +1,6 @@
 package no.nav.syfo.persistering.api
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -10,7 +9,7 @@ import io.ktor.server.routing.route
 import no.nav.syfo.auditLogger.AuditLogger
 import no.nav.syfo.auditlogg
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
@@ -23,7 +22,7 @@ fun Route.sendVurderingManuellOppgave(
     route("/api/v1") {
         post("/vurderingmanuelloppgave/{oppgaveid}") {
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            log.info("Mottok kall til /api/v1/vurderingmanuelloppgave/$oppgaveId")
+            logger.info("Mottok kall til /api/v1/vurderingmanuelloppgave/$oppgaveId")
             val accessToken = getAccessTokenFromAuthHeader(call.request)
             val navEnhet = call.request.headers["X-Nav-Enhet"]
 
@@ -35,7 +34,7 @@ fun Route.sendVurderingManuellOppgave(
             val hasAccess = authorizationService.hasAccess(oppgaveId, accessToken)
 
             if (navEnhet.isNullOrEmpty()) {
-                log.error("Mangler X-Nav-Enhet i http header")
+                logger.error("Mangler X-Nav-Enhet i http header")
                 call.respond(HttpStatusCode.BadRequest, "Mangler X-Nav-Enhet i http header")
                 return@post
             }

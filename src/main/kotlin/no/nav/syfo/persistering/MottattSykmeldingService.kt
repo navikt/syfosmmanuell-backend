@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.db.DatabaseInterface
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.MESSAGE_STORED_IN_DB_COUNTER
 import no.nav.syfo.model.ManuellOppgave
@@ -39,7 +39,7 @@ class MottattSykmeldingService(
 
     suspend fun handleMottattSykmelding(sykmeldingId: String, manuellOppgaveInput: String?) {
         if (manuellOppgaveInput == null) {
-            log.info("Mottatt tombstone for sykmelding med id $sykmeldingId")
+            logger.info("Mottatt tombstone for sykmelding med id $sykmeldingId")
             manuellOppgaveService.slettOppgave(sykmeldingId)
         } else {
             val receivedManuellOppgave: ManuellOppgave = objectMapper.readValue(manuellOppgaveInput)
@@ -76,11 +76,11 @@ class MottattSykmeldingService(
         loggingMeta: LoggingMeta,
     ) {
         wrapExceptions(loggingMeta) {
-            log.info("Mottok en manuell oppgave, {}", fields(loggingMeta))
+            logger.info("Mottok en manuell oppgave, {}", fields(loggingMeta))
             INCOMING_MESSAGE_COUNTER.inc()
 
             if (database.erOpprettManuellOppgave(manuellOppgave.receivedSykmelding.sykmelding.id)) {
-                log.warn(
+                logger.warn(
                     "Manuell oppgave med sykmeldingsid {}, er allerede lagret i databasen, {}",
                     manuellOppgave.receivedSykmelding.sykmelding.id,
                     fields(loggingMeta),
@@ -98,7 +98,7 @@ class MottattSykmeldingService(
                     status,
                     statusTimestamp
                 )
-                log.info(
+                logger.info(
                     "Manuell oppgave lagret i databasen, for {}, {}",
                     StructuredArguments.keyValue("oppgaveId", oppgave.id),
                     fields(loggingMeta),
