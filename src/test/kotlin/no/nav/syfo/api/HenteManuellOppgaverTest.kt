@@ -259,7 +259,7 @@ class HenteManuellOppgaverTest :
                 }
 
                 val response =
-                    client.get("/api/v1/manuellOppgave/1h2j32k") {
+                    client.get("/api/v1/manuellOppgave/$oppgaveid") {
                         headers {
                             append(
                                 HttpHeaders.Authorization,

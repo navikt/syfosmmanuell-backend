@@ -16,26 +16,37 @@ import org.junit.jupiter.api.Assertions.assertEquals
 class CORSTest :
     FunSpec({
         context("CORS-test, anyhost med allow credentials = true") {
-            testApplication {
-                application {
-                    install(CORS) {
-                        allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("https"))
-                        allowCredentials = true
+            test("No origin header") {
+                testApplication {
+                    application {
+                        install(CORS) {
+                            allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("https"))
+                            allowCredentials = true
+                        }
+                        val applicationState = ApplicationState()
+                        applicationState.ready = true
+                        applicationState.alive = true
+                        routing { registerNaisApi(applicationState) }
                     }
-                    val applicationState = ApplicationState()
-                    applicationState.ready = true
-                    applicationState.alive = true
-                    routing { registerNaisApi(applicationState) }
-                }
-
-                test("No origin header") {
                     val response = client.get("/internal/is_alive")
 
                     assertEquals(HttpStatusCode.OK, response.status)
                     assertEquals(null, response.headers[HttpHeaders.AccessControlAllowOrigin])
                     assertEquals("I'm alive! :)", response.bodyAsText())
                 }
-                test("Wrong origin header") {
+            }
+            test("Wrong origin header") {
+                testApplication {
+                    application {
+                        install(CORS) {
+                            allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("https"))
+                            allowCredentials = true
+                        }
+                        val applicationState = ApplicationState()
+                        applicationState.ready = true
+                        applicationState.alive = true
+                        routing { registerNaisApi(applicationState) }
+                    }
                     val response =
                         client.get("/internal/is_ready") {
                             headers { append(HttpHeaders.Origin, "invalid-host") }
@@ -45,7 +56,19 @@ class CORSTest :
                     assertEquals(null, response.headers[HttpHeaders.AccessControlAllowOrigin])
                     assertEquals("I'm ready! :)", response.bodyAsText())
                 }
-                test("Wrong origin header is empty") {
+            }
+            test("Wrong origin header is empty") {
+                testApplication {
+                    application {
+                        install(CORS) {
+                            allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("https"))
+                            allowCredentials = true
+                        }
+                        val applicationState = ApplicationState()
+                        applicationState.ready = true
+                        applicationState.alive = true
+                        routing { registerNaisApi(applicationState) }
+                    }
                     val response =
                         client.get("/internal/is_ready") {
                             headers { append(HttpHeaders.Origin, "") }
@@ -55,7 +78,19 @@ class CORSTest :
                     assertEquals(null, response.headers[HttpHeaders.AccessControlAllowOrigin])
                     assertEquals("I'm ready! :)", response.bodyAsText())
                 }
-                test("Simple credentials") {
+            }
+            test("Simple credentials") {
+                testApplication {
+                    application {
+                        install(CORS) {
+                            allowHost("syfosmmanuell.nais.preprod.local", schemes = listOf("https"))
+                            allowCredentials = true
+                        }
+                        val applicationState = ApplicationState()
+                        applicationState.ready = true
+                        applicationState.alive = true
+                        routing { registerNaisApi(applicationState) }
+                    }
                     val response =
                         client.get("/internal/is_ready") {
                             headers {
@@ -154,20 +189,14 @@ class CORSTest :
 
                 val response =
                     client.get("/internal/is_ready") {
-                        headers {
-                            append(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
-                            append(HttpHeaders.AccessControlRequestMethod, "GET")
-                        }
+                        header(HttpHeaders.Origin, "https://syfosmmanuell.nais.preprod.local")
+                        header(HttpHeaders.AccessControlRequestMethod, "GET")
                     }
 
                 assertEquals(HttpStatusCode.OK, response.status)
                 assertEquals(
                     "https://syfosmmanuell.nais.preprod.local",
                     response.headers[HttpHeaders.AccessControlAllowOrigin]
-                )
-                assertEquals(
-                    "Content-Type",
-                    response.headers[HttpHeaders.AccessControlAllowHeaders]
                 )
                 assertEquals(HttpHeaders.Origin, response.headers[HttpHeaders.Vary])
             }

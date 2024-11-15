@@ -74,19 +74,18 @@ class SykmeldingsApiTest :
         afterTest { database.connection.dropData() }
 
         context("Test av henting av manuelle oppgaver api") {
-            testApplication {
-                application {
-                    routing { sykmeldingsApi(manuellOppgaveService) }
-                    install(ContentNegotiation) {
-                        jackson {
-                            registerKotlinModule()
-                            registerModule(JavaTimeModule())
-                            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            test("Skal få 200 OK hvis sykmelding finnes") {
+                testApplication {
+                    application {
+                        routing { sykmeldingsApi(manuellOppgaveService) }
+                        install(ContentNegotiation) {
+                            jackson {
+                                registerKotlinModule()
+                                registerModule(JavaTimeModule())
+                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                            }
                         }
                     }
-                }
-
-                test("Skal få 200 OK hvis sykmelding finnes") {
                     database.opprettManuellOppgave(
                         manuellOppgave,
                         manuellOppgave.apprec,
@@ -105,7 +104,19 @@ class SykmeldingsApiTest :
                         }
                     assertEquals(HttpStatusCode.OK, response.status)
                 }
-                test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
+            }
+            test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
+                testApplication {
+                    application {
+                        routing { sykmeldingsApi(manuellOppgaveService) }
+                        install(ContentNegotiation) {
+                            jackson {
+                                registerKotlinModule()
+                                registerModule(JavaTimeModule())
+                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                            }
+                        }
+                    }
                     val response =
                         client.get("/api/v1/sykmelding/$sykmeldingsId") {
                             headers {

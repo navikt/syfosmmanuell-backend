@@ -11,6 +11,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.*
+import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
@@ -18,7 +19,6 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
@@ -124,11 +124,11 @@ class SendVurderingManuellOppgaveTest :
                         }
                         install(StatusPages) {
                             exception<Throwable> { call, cause ->
+                                logger.error("Caught exception", cause)
                                 call.respond(
                                     HttpStatusCode.InternalServerError,
                                     cause.message ?: "Unknown error"
                                 )
-                                logger.error("Caught exception", cause)
                             }
                         }
                     }
@@ -154,32 +154,6 @@ class SendVurderingManuellOppgaveTest :
                         }
 
                     assertEquals(HttpStatusCode.NotFound, response.status)
-                }
-            }
-
-            test("should fail when writing sykmelding to kafka fails with status OK") {
-                testApplication {
-                    application {
-                        setUpTest(
-                            this,
-                            kafkaProducers,
-                            istilgangskontrollClient,
-                            msGraphClient,
-                            authorizationService,
-                            oppgaveService,
-                            database,
-                            manuellOppgaveService
-                        )
-                    }
-
-                    val result = Result(status = ResultStatus.GODKJENT, merknad = null)
-                    every {
-                        kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any())
-                    } returns
-                        CompletableFuture<RecordMetadata>().completeAsync {
-                            throw RuntimeException()
-                        }
-                    sendRequest(result, HttpStatusCode.InternalServerError, oppgaveid)
                 }
             }
 

@@ -126,34 +126,34 @@ class AuthenticateTest :
                     cluster = "dev-gcp",
                     oppgaveHendelseTopic = "oppgavehendlese",
                 )
-            testApplication {
-                application {
-                    setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
-                    routing {
-                        authenticate("jwt") {
-                            hentManuellOppgaver(manuellOppgaveService, authorizationService)
-                        }
-                    }
-                    install(ContentNegotiation) {
-                        jackson {
-                            registerKotlinModule()
-                            registerModule(JavaTimeModule())
-                            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                        }
-                    }
-                    install(StatusPages) {
-                        exception<Throwable> { call, cause ->
-                            call.respond(
-                                HttpStatusCode.InternalServerError,
-                                cause.message ?: "Unknown error"
-                            )
-                            logger.error("Caught exception", cause)
-                            throw cause
-                        }
-                    }
-                }
 
-                test("Aksepterer gyldig JWT med riktig audience") {
+            test("Aksepterer gyldig JWT med riktig audience") {
+                testApplication {
+                    application {
+                        setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
+                        routing {
+                            authenticate("jwt") {
+                                hentManuellOppgaver(manuellOppgaveService, authorizationService)
+                            }
+                        }
+                        install(ContentNegotiation) {
+                            jackson {
+                                registerKotlinModule()
+                                registerModule(JavaTimeModule())
+                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                            }
+                        }
+                        install(StatusPages) {
+                            exception<Throwable> { call, cause ->
+                                call.respond(
+                                    HttpStatusCode.InternalServerError,
+                                    cause.message ?: "Unknown error"
+                                )
+                                logger.error("Caught exception", cause)
+                                throw cause
+                            }
+                        }
+                    }
                     val response =
                         client.get("/api/v1/manuellOppgave/$oppgaveid") {
                             headers {
@@ -176,7 +176,34 @@ class AuthenticateTest :
                         objectMapper.readValue<ManuellOppgaveDTO>(response.bodyAsText()).oppgaveid
                     )
                 }
-                test("Gyldig JWT med feil audience gir Unauthorized") {
+            }
+            test("Gyldig JWT med feil audience gir Unauthorized") {
+                testApplication {
+                    application {
+                        setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
+                        routing {
+                            authenticate("jwt") {
+                                hentManuellOppgaver(manuellOppgaveService, authorizationService)
+                            }
+                        }
+                        install(ContentNegotiation) {
+                            jackson {
+                                registerKotlinModule()
+                                registerModule(JavaTimeModule())
+                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                            }
+                        }
+                        install(StatusPages) {
+                            exception<Throwable> { call, cause ->
+                                call.respond(
+                                    HttpStatusCode.InternalServerError,
+                                    cause.message ?: "Unknown error"
+                                )
+                                logger.error("Caught exception", cause)
+                                throw cause
+                            }
+                        }
+                    }
                     val response =
                         client.get("/api/v1/manuellOppgave/$oppgaveid") {
                             headers {
@@ -194,7 +221,7 @@ class AuthenticateTest :
                         }
 
                     assertEquals(HttpStatusCode.Unauthorized, response.status)
-                    assertEquals(null, response.bodyAsText())
+                    assertEquals("", response.bodyAsText())
                 }
             }
         }
