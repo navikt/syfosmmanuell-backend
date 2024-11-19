@@ -21,11 +21,13 @@ val caffeineVersion = "3.1.8"
 val testContainerVersion = "1.20.2"
 val kotlinVersion = "2.0.20"
 val kafkaVersion = "3.8.0"
-val commonsCodecVersion = "1.17.1"
 val logbacksyslog4jVersion = "1.0.0"
 val ktfmtVersion = "0.44"
-val snappyJavaVersion = "1.1.10.7"
+
+//Due to vulnerabilities
+val nettyCommonVersion = "4.1.115.Final"
 val commonsCompressVersion = "1.27.1"
+val commonsCodecVersion = "1.17.1"
 
 plugins {
     id("application")
@@ -55,7 +57,11 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
-
+    constraints {
+        implementation("io.netty:netty-common:$nettyCommonVersion") {
+            because("override transient from io.ktor:ktor-server-netty")
+        }
+    }
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
@@ -75,11 +81,6 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
-    constraints {
-        implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
-            because("override transient from org.apache.kafka:kafka_2.12")
-        }
-    }
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
     implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
