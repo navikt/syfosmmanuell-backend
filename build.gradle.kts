@@ -12,7 +12,7 @@ val kithHodemeldingVersion = "2.0.1"
 val jacksonVersion = "2.18.2"
 val mockkVersion = "1.13.13"
 val postgresVersion = "42.7.4"
-val flywayVersion = "11.0.1"
+val flywayVersion = "11.1.0"
 val hikariVersion = "6.2.1"
 val javaTimeAdapterVersion = "1.1.3"
 val kotestVersion = "5.9.1"
@@ -25,7 +25,7 @@ val logbacksyslog4jVersion = "1.0.0"
 val ktfmtVersion = "0.44"
 
 //Due to vulnerabilities
-val nettyCommonVersion = "4.1.115.Final"
+val nettyCommonVersion = "4.1.116.Final"
 val commonsCompressVersion = "1.27.1"
 val commonsCodecVersion = "1.17.1"
 
