@@ -19,7 +19,7 @@ val kotestVersion = "5.9.1"
 val nimbusdsVersion = "10.0.1"
 val caffeineVersion = "3.2.0"
 val testContainerVersion = "1.20.4"
-val kotlinVersion = "2.1.0"
+val kotlinVersion = "2.1.10"
 val kafkaVersion = "3.9.0"
 val logbacksyslog4jVersion = "1.0.0"
 val ktfmtVersion = "0.44"
@@ -27,11 +27,11 @@ val ktfmtVersion = "0.44"
 //Due to vulnerabilities
 val nettyCommonVersion = "4.1.117.Final"
 val commonsCompressVersion = "1.27.1"
-val commonsCodecVersion = "1.17.2"
+val commonsCodecVersion = "1.18.0"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.1.0"
+    kotlin("jvm") version "2.1.10"
     id("com.gradleup.shadow") version "8.3.5"
     id("com.diffplug.spotless") version "7.0.2"
 }
