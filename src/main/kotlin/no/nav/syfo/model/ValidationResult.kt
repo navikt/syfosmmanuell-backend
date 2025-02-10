@@ -1,6 +1,12 @@
 package no.nav.syfo.model
 
-data class ValidationResult(val status: Status, val ruleHits: List<RuleInfo>)
+import java.time.OffsetDateTime
+
+data class ValidationResult(
+    val status: Status,
+    val ruleHits: List<RuleInfo>,
+    val timestamp: OffsetDateTime
+)
 
 data class RuleInfo(
     val ruleName: String,

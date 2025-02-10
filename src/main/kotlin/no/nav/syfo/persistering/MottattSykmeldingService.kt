@@ -2,6 +2,8 @@ package no.nav.syfo.persistering
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.db.DatabaseInterface
@@ -109,6 +111,7 @@ class MottattSykmeldingService(
                         ValidationResult(
                             status = Status.OK,
                             ruleHits = emptyList(),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
                         )
                     ),
                     loggingMeta

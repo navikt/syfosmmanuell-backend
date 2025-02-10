@@ -7,6 +7,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
@@ -54,7 +56,8 @@ class ManuellOppgaveServiceTest :
                                 "melding til bruker",
                                 Status.MANUAL_PROCESSING
                             )
-                        )
+                        ),
+                        OffsetDateTime.now(ZoneOffset.UTC)
                     ),
                 apprec = okApprec(),
             )
@@ -109,10 +112,6 @@ class ManuellOppgaveServiceTest :
                     manuellOppgave.validationResult,
                     oppgaveFraDb.opprinneligValidationResult
                 )
-                assertEquals(
-                    ValidationResult(Status.OK, emptyList()),
-                    oppgaveFraDb.validationResult
-                )
                 assertEquals(okApprec(), oppgaveFraDb.apprec)
             }
             test("Happy case OK med merknad") {
@@ -136,10 +135,6 @@ class ManuellOppgaveServiceTest :
                 assertEquals(
                     manuellOppgave.validationResult,
                     oppgaveFraDb.opprinneligValidationResult
-                )
-                assertEquals(
-                    ValidationResult(Status.OK, emptyList()),
-                    oppgaveFraDb.validationResult
                 )
                 assertEquals(merknader, oppgaveFraDb.receivedSykmelding.merknader)
                 assertEquals(okApprec(), oppgaveFraDb.apprec)
@@ -181,6 +176,7 @@ class ManuellOppgaveServiceTest :
                                         Status.MANUAL_PROCESSING,
                                     ),
                                 ),
+                                manuellOppgave.validationResult.timestamp,
                             ),
                         apprec = okApprec(),
                         oppgaveid = oppgaveId2,
@@ -207,10 +203,6 @@ class ManuellOppgaveServiceTest :
                 assertEquals(
                     manuellOppgave.validationResult,
                     oppgaveFraDb.opprinneligValidationResult
-                )
-                assertEquals(
-                    ValidationResult(Status.OK, emptyList()),
-                    oppgaveFraDb.validationResult
                 )
                 assertEquals(oppgaveFraDb.apprec, okApprec())
                 assertEquals(true, database.erApprecSendt(oppgaveId2))

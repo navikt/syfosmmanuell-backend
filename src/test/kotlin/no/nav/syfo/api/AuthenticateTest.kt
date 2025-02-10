@@ -23,6 +23,8 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import java.nio.file.Paths
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.Environment
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
@@ -74,7 +76,8 @@ class AuthenticateTest :
         val manuellOppgave =
             ManuellOppgave(
                 receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-                validationResult = ValidationResult(Status.OK, emptyList()),
+                validationResult =
+                    ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC)),
                 apprec =
                     objectMapper.readValue(
                         Apprec::class

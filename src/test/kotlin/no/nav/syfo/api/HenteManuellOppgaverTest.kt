@@ -21,6 +21,8 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.concurrent.ExecutionException
 import kotlin.test.assertFailsWith
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
@@ -72,7 +74,8 @@ class HenteManuellOppgaverTest :
         val manuellOppgave =
             ManuellOppgave(
                 receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-                validationResult = ValidationResult(Status.OK, emptyList()),
+                validationResult =
+                    ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC)),
                 apprec =
                     objectMapper.readValue(
                         Apprec::class

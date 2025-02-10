@@ -6,6 +6,8 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
@@ -67,7 +69,8 @@ class MotattSykmeldingServiceTest :
                                 "melding til bruker",
                                 Status.MANUAL_PROCESSING
                             )
-                        )
+                        ),
+                        OffsetDateTime.now(ZoneOffset.UTC),
                     ),
                 apprec =
                     objectMapper.readValue(
