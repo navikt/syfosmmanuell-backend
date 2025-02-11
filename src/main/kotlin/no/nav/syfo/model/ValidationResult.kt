@@ -5,7 +5,7 @@ import java.time.OffsetDateTime
 data class ValidationResult(
     val status: Status,
     val ruleHits: List<RuleInfo>,
-    val timestamp: OffsetDateTime
+    val timestamp: OffsetDateTime?
 )
 
 data class RuleInfo(
