@@ -16,6 +16,8 @@ import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.mockk
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.aksessering.api.sykmeldingsApi
 import no.nav.syfo.client.IstilgangskontrollClient
@@ -55,7 +57,8 @@ class SykmeldingsApiTest :
             ManuellOppgave(
                 receivedSykmelding =
                     receivedSykmelding(sykmeldingsId, generateSykmelding(sykmeldingsId)),
-                validationResult = ValidationResult(Status.OK, emptyList()),
+                validationResult =
+                    ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC)),
                 apprec =
                     objectMapper.readValue(
                         Apprec::class

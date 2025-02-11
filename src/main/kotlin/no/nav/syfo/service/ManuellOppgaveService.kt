@@ -1,5 +1,7 @@
 package no.nav.syfo.service
 
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.UlosteOppgave
 import no.nav.syfo.aksessering.db.erApprecSendt
@@ -60,7 +62,8 @@ class ManuellOppgaveService(
         accessToken: String,
         merknader: List<Merknad>?
     ) {
-        val validationResult = ValidationResult(Status.OK, emptyList())
+        val validationResult =
+            ValidationResult(Status.OK, emptyList(), timestamp = OffsetDateTime.now(ZoneOffset.UTC))
         val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).updateMerknader(merknader)
         val loggingMeta =
             LoggingMeta(

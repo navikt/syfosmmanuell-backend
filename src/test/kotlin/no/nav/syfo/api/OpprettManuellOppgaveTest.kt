@@ -3,6 +3,8 @@ package no.nav.syfo.api
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -33,7 +35,8 @@ class OpprettManuellOppgaveTest :
                         Charsets.UTF_8,
                     ),
             )
-        val validationResult = ValidationResult(Status.OK, emptyList())
+        val validationResult =
+            ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC))
         val manuellOppgave =
             ManuellOppgave(
                 receivedSykmelding = receivedSykmelding,

@@ -21,6 +21,8 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.concurrent.CompletableFuture
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.IstilgangskontrollClient
@@ -57,7 +59,8 @@ const val manuelloppgaveId = "1314"
 val manuellOppgave =
     ManuellOppgave(
         receivedSykmelding = receivedSykmelding(manuelloppgaveId, generateSykmelding()),
-        validationResult = ValidationResult(Status.OK, emptyList()),
+        validationResult =
+            ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC)),
         apprec =
             objectMapper.readValue(
                 Apprec::class

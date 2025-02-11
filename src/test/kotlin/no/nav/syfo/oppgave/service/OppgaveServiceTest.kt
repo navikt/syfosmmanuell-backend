@@ -4,6 +4,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.mockk
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -44,7 +46,8 @@ class OppgaveServiceTest :
                     .readBytes()
                     .toString(Charsets.UTF_8),
             )
-        val validationResult = ValidationResult(Status.OK, emptyList())
+        val validationResult =
+            ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC))
         val manuellOppgave =
             ManuellOppgave(
                 receivedSykmelding = receivedSykmelding,
