@@ -98,6 +98,7 @@ class ManuellOppgaveService(
              */
             sendApprec(oppgaveId, manuellOppgave.apprec, loggingMeta)
         }
+
         oppgaveService.ferdigstillOppgave(manuellOppgave, loggingMeta, enhet, veileder)
 
         if (skalOppretteOppfolgingsOppgave(manuellOppgave)) {

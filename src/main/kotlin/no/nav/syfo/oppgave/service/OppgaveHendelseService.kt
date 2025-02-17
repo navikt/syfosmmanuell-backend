@@ -55,10 +55,20 @@ class OppgaveHendelseService(
                 }
         val eksisterendeManuellOppgave =
             database.hentKomplettManuellOppgave(oppgaveId).firstOrNull() ?: return
-        if (
+        val oppgaveFerdigstiltAvSyfosmmanuell =
+            oppgaveHendlese.utfortAv?.navIdent == "syfosmmanuell-backend"
+        val oppgaveFerdigstiltButNotInDB =
             !eksisterendeManuellOppgave.ferdigstilt &&
                 oppgaveStatus == ManuellOppgaveStatus.FERDIGSTILT
-        ) {
+        if (oppgaveFerdigstiltButNotInDB) {
+            log.info("Oppgave er ferdigstilt but not updated in DB, oppgaveId: $oppgaveId")
+            if (oppgaveFerdigstiltAvSyfosmmanuell) {
+                log.info(
+                    "oppgave is ferdigstilt by syfosmmanuell-backend, do not reopen, oppgaveId: $oppgaveId"
+                )
+            }
+        }
+        if (oppgaveFerdigstiltButNotInDB && !oppgaveFerdigstiltAvSyfosmmanuell) {
             val loggingMeta =
                 eksisterendeManuellOppgave.receivedSykmelding.let {
                     LoggingMeta(

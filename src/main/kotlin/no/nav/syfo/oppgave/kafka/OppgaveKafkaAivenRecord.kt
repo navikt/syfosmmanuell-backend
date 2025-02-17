@@ -5,11 +5,16 @@ import no.nav.syfo.model.ManuellOppgaveStatus
 
 data class OppgaveKafkaAivenRecord(
     val hendelse: Hendelse,
+    val utfortAv: UtfortAv?,
     val oppgave: Oppgave,
 )
 
 data class Oppgave(
     val oppgaveId: Long,
+)
+
+data class UtfortAv(
+    val navIdent: String?,
 )
 
 data class Hendelse(
