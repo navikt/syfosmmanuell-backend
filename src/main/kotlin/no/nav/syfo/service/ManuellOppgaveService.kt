@@ -75,11 +75,6 @@ class ManuellOppgaveService(
 
         incrementCounters(validationResult, manuellOppgave)
 
-        if (trengerFlereOpplysninger(manuellOppgave)) {
-            oppgaveService.endreOppgave(manuellOppgave, loggingMeta)
-            return
-        }
-
         sendReceivedSykmelding(
             manuellOppgave.receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
             loggingMeta
