@@ -154,6 +154,14 @@ class ManuellOppgaveService(
             logger.error("Fant ikke oppgave med id $oppgaveId")
             throw OppgaveNotFoundException("Fant ikke oppgave med id $oppgaveId")
         }
+
+        if (manuellOppgave.ferdigstilt) {
+            logger.warn(
+                "oppgaven er allerede ferdigstilt oppgaveId ${manuellOppgave.oppgaveid}, sykmeldingId: ${manuellOppgave.receivedSykmelding.sykmelding.id} merknader: ${manuellOppgave.receivedSykmelding.merknader}"
+            )
+            throw OppgaveNotFoundException("Fant ikke uløst oppgave med id $oppgaveId")
+        }
+
         val harTilgangTilOppgave =
             istilgangskontrollClient
                 .sjekkVeiledersTilgangTilPersonViaAzure(
