@@ -58,8 +58,8 @@ spec:
     limits:
       memory: 3Gi
     requests:
-      cpu: 100m
-      memory: 850Mi
+      cpu: 50m
+      memory: 756Mi
   kafka:
     pool: nav-prod
   azure:
