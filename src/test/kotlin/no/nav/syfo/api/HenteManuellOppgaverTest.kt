@@ -216,9 +216,11 @@ class HenteManuellOppgaverTest :
                     ManuellOppgaveStatus.APEN,
                     LocalDateTime.now(),
                 )
-                assertFailsWith<NumberFormatException> {
-                    client.get("/api/v1/manuellOppgave/1h2j32k")
-                }
+
+                val response = client.get("/api/v1/manuellOppgave/1h2j32k")
+
+                assertEquals(HttpStatusCode.BadRequest, response.status)
+                assertEquals("oppgaveid is not a number", response.bodyAsText())
             }
         }
 
