@@ -3,7 +3,7 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.10.1"
 val ktorVersion = "3.1.1"
-val logbackVersion = "1.5.17"
+val logbackVersion = "1.5.18"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
 val sykmeldingVersion = "2.0.1"
