@@ -1,5 +1,6 @@
 package no.nav.syfo.service
 
+import io.getunleash.Unleash
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
 import io.mockk.clearMocks
@@ -40,6 +41,7 @@ class ManuellOppgaveServiceTest :
         val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
+        val unleash = mockk<Unleash>(relaxed = true)
         val sykmeldingsId = UUID.randomUUID().toString()
         val msgId = "1314"
         val manuellOppgave =
@@ -68,7 +70,8 @@ class ManuellOppgaveServiceTest :
                 database,
                 istilgangskontrollClient,
                 kafkaProducers,
-                oppgaveService
+                oppgaveService,
+                unleash,
             )
 
         beforeTest {

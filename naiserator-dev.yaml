@@ -84,6 +84,9 @@ spec:
       external:
         - host: graph.microsoft.com
         - host: oppgave-q1.dev-fss-pub.nais.io
+        - host: teamsykmelding-unleash-api.nav.cloud.nais.io
+  envFrom:
+    - secret: syfosmmottak-unleash-api-token
   secureLogs:
     enabled: true
   env:
