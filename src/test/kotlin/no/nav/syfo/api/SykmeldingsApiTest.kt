@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.getunleash.Unleash
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.request.*
 import io.ktor.http.HttpHeaders
@@ -44,12 +45,14 @@ class SykmeldingsApiTest :
         val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
+        val unleash = mockk<Unleash>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
                 istilgangskontrollClient,
                 kafkaProducers,
-                oppgaveService
+                oppgaveService,
+                unleash,
             )
 
         val sykmeldingsId = UUID.randomUUID().toString()

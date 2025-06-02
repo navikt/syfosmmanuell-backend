@@ -1,6 +1,7 @@
 package no.nav.syfo.persistering
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.getunleash.Unleash
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -39,12 +40,14 @@ class MotattSykmeldingServiceTest :
         val oppgaveService = mockk<OppgaveService>()
         val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
+        val unleash = mockk<Unleash>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
                 istilgangskontrollClient,
                 kafkaProducers,
-                oppgaveService
+                oppgaveService,
+                unleash,
             )
         val mottattSykmeldingService =
             MottattSykmeldingService(
