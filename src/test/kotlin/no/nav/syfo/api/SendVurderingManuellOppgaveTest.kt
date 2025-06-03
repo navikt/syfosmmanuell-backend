@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.getunleash.Unleash
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.request.*
@@ -83,14 +82,13 @@ class SendVurderingManuellOppgaveTest :
             AuthorizationService(istilgangskontrollClient, msGraphClient, database)
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
-        val unleash = mockk<Unleash>(relaxed = true)
+
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
                 istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
-                unleash,
             )
 
         beforeTest {

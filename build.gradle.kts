@@ -28,7 +28,7 @@ val ktfmtVersion = "0.44"
 val nettyCommonVersion = "4.1.119.Final"
 val commonsCompressVersion = "1.27.1"
 val commonsCodecVersion = "1.18.0"
-val unleashVersion = "10.2.2"
+
 plugins {
     id("application")
     kotlin("jvm") version "2.1.10"
@@ -102,7 +102,6 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
 
     implementation("com.papertrailapp:logback-syslog4j:$logbacksyslog4jVersion")
-    implementation("io.getunleash:unleash-client-java:$unleashVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
 
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")

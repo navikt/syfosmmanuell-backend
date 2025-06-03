@@ -30,7 +30,6 @@ import no.nav.syfo.oppgave.service.OppgaveHendelseService
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.MottattSykmeldingService
 import no.nav.syfo.service.ManuellOppgaveService
-import no.nav.syfo.unleash.getUnleash
 import no.nav.syfo.util.TrackableException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -73,7 +72,6 @@ fun main() {
             httpClients.istilgangskontrollClient,
             kafkaProducers,
             oppgaveService,
-            getUnleash()
         )
 
     val authorizationService =

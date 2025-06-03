@@ -1,6 +1,5 @@
 package no.nav.syfo.service
 
-import io.getunleash.Unleash
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
@@ -46,7 +45,6 @@ class ManuellOppgaveService(
     private val istilgangskontrollClient: IstilgangskontrollClient,
     private val kafkaProducers: KafkaProducers,
     private val oppgaveService: OppgaveService,
-    private val unleash: Unleash
 ) {
     suspend fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
         database.hentManuellOppgave(oppgaveId)
@@ -241,7 +239,6 @@ class ManuellOppgaveService(
     ) {
         val topic = kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic
         try {
-            val tsmProcessingTarget = unleash.isEnabled("SYFOSMMOTTAK_PROCESSING_TARGET")
 
             val producerRecord =
                 ProducerRecord(
@@ -249,12 +246,14 @@ class ManuellOppgaveService(
                     receivedSykmelding.sykmelding.id,
                     receivedSykmelding,
                 )
-            if (tsmProcessingTarget) {
-                logger.info("setting $PROCESSING_TARGET_HEADER to $TSM_PROCESSING_TARGET_VALUE for sykmelding ${receivedSykmelding.sykmelding.id}")
-                producerRecord
-                    .headers()
-                    .add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
-            }
+
+            logger.info(
+                "setting $PROCESSING_TARGET_HEADER to $TSM_PROCESSING_TARGET_VALUE for sykmelding ${receivedSykmelding.sykmelding.id}"
+            )
+            producerRecord
+                .headers()
+                .add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
+
             kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(producerRecord).get()
             logger.info(
                 "Sendt sykmelding {} to topic {} {}",
