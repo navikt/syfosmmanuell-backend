@@ -80,7 +80,8 @@ class ManuellOppgaveService(
 
         sendReceivedSykmelding(
             manuellOppgave.receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
-            loggingMeta
+            loggingMeta,
+            isFerdigstiltSykmelding = true
         )
 
         if (trengerFlereOpplysninger(manuellOppgave)) {
@@ -235,7 +236,8 @@ class ManuellOppgaveService(
 
     fun sendReceivedSykmelding(
         receivedSykmelding: ReceivedSykmeldingWithValidation,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
+        isFerdigstiltSykmelding: Boolean = false,
     ) {
         val topic = kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic
         try {
@@ -250,6 +252,10 @@ class ManuellOppgaveService(
             logger.info(
                 "setting $PROCESSING_TARGET_HEADER to $TSM_PROCESSING_TARGET_VALUE for sykmelding ${receivedSykmelding.sykmelding.id}"
             )
+
+            if (isFerdigstiltSykmelding) {
+                producerRecord.headers().add("source", "syfosmmanuell-backend".toByteArray())
+            }
             producerRecord
                 .headers()
                 .add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
