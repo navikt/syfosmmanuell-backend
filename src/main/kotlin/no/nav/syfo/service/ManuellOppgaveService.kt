@@ -46,8 +46,8 @@ class ManuellOppgaveService(
     private val sourceNamespace: String,
 ) {
     companion object {
-        private const val SOURCE_APP = "source_app"
-        private const val SOURCE_NAMESPACE = "source_namespace"
+        private const val SOURCE_APP = "source-app"
+        private const val SOURCE_NAMESPACE = "source-namespace"
     }
 
     suspend fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
