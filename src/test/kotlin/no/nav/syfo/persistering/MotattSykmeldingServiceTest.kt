@@ -45,6 +45,8 @@ class MotattSykmeldingServiceTest :
                 istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
+                "app",
+                "namespace"
             )
         val mottattSykmeldingService =
             MottattSykmeldingService(
@@ -103,7 +105,8 @@ class MotattSykmeldingServiceTest :
             test("Happy-case") {
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
-                    manuellOppgaveString
+                    manuellOppgaveString,
+                    emptyMap()
                 )
 
                 assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
@@ -117,7 +120,8 @@ class MotattSykmeldingServiceTest :
 
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
-                    manuellOppgaveString
+                    manuellOppgaveString,
+                    emptyMap()
                 )
 
                 val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
@@ -130,7 +134,8 @@ class MotattSykmeldingServiceTest :
             test("Lagrer opprinnelig validation result") {
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
-                    manuellOppgaveString
+                    manuellOppgaveString,
+                    emptyMap(),
                 )
 
                 val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
@@ -143,11 +148,13 @@ class MotattSykmeldingServiceTest :
             test("Lagrer ikke melding som allerede finnes") {
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
-                    manuellOppgaveString
+                    manuellOppgaveString,
+                    emptyMap(),
                 )
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
-                    manuellOppgaveString
+                    manuellOppgaveString,
+                    emptyMap(),
                 )
 
                 assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
@@ -160,7 +167,8 @@ class MotattSykmeldingServiceTest :
                     runBlocking {
                         mottattSykmeldingService.handleMottattSykmelding(
                             sykmeldingsId,
-                            manuellOppgaveString
+                            manuellOppgaveString,
+                            emptyMap()
                         )
                     }
                 }

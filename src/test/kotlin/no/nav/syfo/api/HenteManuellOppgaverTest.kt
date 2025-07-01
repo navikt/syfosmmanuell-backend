@@ -67,6 +67,8 @@ class HenteManuellOppgaverTest :
                 istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
+                "app",
+                "namespace"
             )
 
         val manuelloppgaveId = "1314"

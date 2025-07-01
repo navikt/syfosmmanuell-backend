@@ -39,7 +39,11 @@ class MottattSykmeldingService(
             )
     }
 
-    suspend fun handleMottattSykmelding(sykmeldingId: String, manuellOppgaveInput: String?) {
+    suspend fun handleMottattSykmelding(
+        sykmeldingId: String,
+        manuellOppgaveInput: String?,
+        metadata: Map<String, ByteArray>
+    ) {
         if (manuellOppgaveInput == null) {
             logger.info("Mottatt tombstone for sykmelding med id $sykmeldingId")
             manuellOppgaveService.slettOppgave(sykmeldingId)
@@ -66,16 +70,14 @@ class MottattSykmeldingService(
                         ),
                 )
 
-            handleReceivedMessage(
-                receivedManuellOppgaveMedMerknad,
-                loggingMeta,
-            )
+            handleReceivedMessage(receivedManuellOppgaveMedMerknad, loggingMeta, metadata)
         }
     }
 
     private suspend fun handleReceivedMessage(
         manuellOppgave: ManuellOppgave,
         loggingMeta: LoggingMeta,
+        metadata: Map<String, ByteArray>,
     ) {
         wrapExceptions(loggingMeta) {
             logger.info("Mottok en manuell oppgave, {}", fields(loggingMeta))
@@ -114,7 +116,8 @@ class MottattSykmeldingService(
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC)
                         )
                     ),
-                    loggingMeta
+                    loggingMeta,
+                    metadata
                 )
                 MESSAGE_STORED_IN_DB_COUNTER.inc()
             }

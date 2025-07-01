@@ -69,6 +69,8 @@ class ManuellOppgaveServiceTest :
                 istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
+                "app",
+                "namespace",
             )
 
         beforeTest {

@@ -72,6 +72,8 @@ fun main() {
             httpClients.istilgangskontrollClient,
             kafkaProducers,
             oppgaveService,
+            env.sourceApp,
+            env.sourceNamespace
         )
 
     val authorizationService =

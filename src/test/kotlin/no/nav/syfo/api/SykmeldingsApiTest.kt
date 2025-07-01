@@ -50,6 +50,8 @@ class SykmeldingsApiTest :
                 istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
+                "app",
+                "namespace"
             )
 
         val sykmeldingsId = UUID.randomUUID().toString()

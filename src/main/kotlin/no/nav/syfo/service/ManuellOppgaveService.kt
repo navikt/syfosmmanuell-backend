@@ -37,15 +37,19 @@ import no.nav.syfo.persistering.error.OppgaveNotFoundException
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.ProducerRecord
 
-const val PROCESSING_TARGET_HEADER = "processing-target"
-const val TSM_PROCESSING_TARGET_VALUE = "tsm"
-
 class ManuellOppgaveService(
     private val database: DatabaseInterface,
     private val istilgangskontrollClient: IstilgangskontrollClient,
     private val kafkaProducers: KafkaProducers,
     private val oppgaveService: OppgaveService,
+    private val sourceApp: String,
+    private val sourceNamespace: String,
 ) {
+    companion object {
+        private const val SOURCE_APP = "source_app"
+        private const val SOURCE_NAMESPACE = "source_namespace"
+    }
+
     suspend fun hentManuellOppgaver(oppgaveId: Int): ManuellOppgaveDTO? =
         database.hentManuellOppgave(oppgaveId)
 
@@ -77,11 +81,15 @@ class ManuellOppgaveService(
             )
 
         incrementCounters(validationResult, manuellOppgave)
-
+        val metadata =
+            mapOf(
+                SOURCE_APP to sourceApp.toByteArray(),
+                SOURCE_NAMESPACE to sourceNamespace.toByteArray(),
+            )
         sendReceivedSykmelding(
             manuellOppgave.receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
             loggingMeta,
-            isFerdigstiltSykmelding = true
+            metadata
         )
 
         if (trengerFlereOpplysninger(manuellOppgave)) {
@@ -237,7 +245,7 @@ class ManuellOppgaveService(
     fun sendReceivedSykmelding(
         receivedSykmelding: ReceivedSykmeldingWithValidation,
         loggingMeta: LoggingMeta,
-        isFerdigstiltSykmelding: Boolean = false,
+        metadata: Map<String, ByteArray>,
     ) {
         val topic = kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic
         try {
@@ -249,16 +257,7 @@ class ManuellOppgaveService(
                     receivedSykmelding,
                 )
 
-            logger.info(
-                "setting $PROCESSING_TARGET_HEADER to $TSM_PROCESSING_TARGET_VALUE for sykmelding ${receivedSykmelding.sykmelding.id}"
-            )
-
-            if (isFerdigstiltSykmelding) {
-                producerRecord.headers().add("source", "syfosmmanuell-backend".toByteArray())
-            }
-            producerRecord
-                .headers()
-                .add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
+            metadata.forEach { producerRecord.headers().add(it.key, it.value) }
 
             kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(producerRecord).get()
             logger.info(

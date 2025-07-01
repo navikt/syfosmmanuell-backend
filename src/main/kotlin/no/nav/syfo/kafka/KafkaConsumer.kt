@@ -65,7 +65,8 @@ class KafkaConsumer(
                     manuellOppgaveTopic ->
                         mottattSykmeldingService.handleMottattSykmelding(
                             consumerRecord.key(),
-                            consumerRecord.value()
+                            consumerRecord.value(),
+                            consumerRecord.headers().associate { it.key() to it.value() },
                         )
                     oppgaveTopic -> oppgaveHendelseService.handleOppgaveHendelse(consumerRecord)
                     else ->

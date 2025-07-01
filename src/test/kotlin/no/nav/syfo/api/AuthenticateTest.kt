@@ -70,6 +70,8 @@ class AuthenticateTest :
                 istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
+                "app",
+                "namespace"
             )
         val manuelloppgaveId = "1314"
         val manuellOppgave =
@@ -127,6 +129,8 @@ class AuthenticateTest :
                     dbPort = "",
                     cluster = "dev-gcp",
                     oppgaveHendelseTopic = "oppgavehendlese",
+                    sourceApp = "app",
+                    sourceNamespace = "namespace",
                 )
 
             test("Aksepterer gyldig JWT med riktig audience") {

@@ -89,6 +89,8 @@ class SendVurderingManuellOppgaveTest :
                 istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
+                "app",
+                "namespace"
             )
 
         beforeTest {
