@@ -21,7 +21,6 @@ import no.nav.syfo.metrics.RULE_HIT_COUNTER
 import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
-import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
@@ -97,7 +96,7 @@ class ManuellOppgaveService(
             return
         }
 
-        if (!erApprecSendt(oppgaveId)) {
+        if (manuellOppgave.apprec != null && !erApprecSendt(oppgaveId)) {
             /**
              * Fallback for å sende apprec for oppgaver hvor apprec ikke har blitt sendt Tidligere
              * ble apprec sendt ved ferdigstilling, mens det nå blir sendt ved mottak i manuell Frem
@@ -221,22 +220,22 @@ class ManuellOppgaveService(
         }
     }
 
-    fun lagOppdatertApprec(manuellOppgave: ManuellOppgave): Apprec =
+    fun lagOppdatertApprec(apprec: Apprec, validationResult: ValidationResult): Apprec =
         Apprec(
-            ediloggid = manuellOppgave.apprec.ediloggid,
-            msgId = manuellOppgave.apprec.msgId,
-            msgTypeVerdi = manuellOppgave.apprec.msgTypeVerdi,
-            msgTypeBeskrivelse = manuellOppgave.apprec.msgTypeBeskrivelse,
-            genDate = manuellOppgave.apprec.genDate,
-            msgGenDate = manuellOppgave.apprec.msgGenDate,
+            ediloggid = apprec.ediloggid,
+            msgId = apprec.msgId,
+            msgTypeVerdi = apprec.msgTypeVerdi,
+            msgTypeBeskrivelse = apprec.msgTypeBeskrivelse,
+            genDate = apprec.genDate,
+            msgGenDate = apprec.msgGenDate,
             apprecStatus = ApprecStatus.OK,
             tekstTilSykmelder = "Sykmeldingen er til manuell vurdering for tilbakedatering",
-            senderOrganisasjon = manuellOppgave.apprec.senderOrganisasjon,
-            mottakerOrganisasjon = manuellOppgave.apprec.mottakerOrganisasjon,
-            validationResult = manuellOppgave.validationResult,
+            senderOrganisasjon = apprec.senderOrganisasjon,
+            mottakerOrganisasjon = apprec.mottakerOrganisasjon,
+            validationResult = validationResult,
             ebService =
-                if (manuellOppgave.apprec.ebService.isNullOrEmpty()) {
-                    manuellOppgave.apprec.ebService
+                if (apprec.ebService.isNullOrEmpty()) {
+                    apprec.ebService
                 } else {
                     "Sykmelding"
                 },

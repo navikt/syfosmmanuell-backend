@@ -114,7 +114,7 @@ fun Connection.opprettManuellOppgaveUtenOpprinneligValidationResult(
                 it.setString(1, manuellOppgaveKomplett.receivedSykmelding.sykmelding.id)
                 it.setObject(2, manuellOppgaveKomplett.receivedSykmelding.toPGObject())
                 it.setObject(3, manuellOppgaveKomplett.validationResult.toPGObject())
-                it.setObject(4, manuellOppgaveKomplett.apprec.toPGObject())
+                it.setObject(4, manuellOppgaveKomplett.apprec?.toPGObject())
                 it.setString(5, manuellOppgaveKomplett.receivedSykmelding.personNrPasient)
                 it.setBoolean(6, false)
                 it.setInt(7, manuellOppgaveKomplett.oppgaveid)

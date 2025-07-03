@@ -9,6 +9,7 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.UlosteOppgave
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
+import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.ReceivedSykmelding
@@ -167,7 +168,7 @@ fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
     ManuellOppgaveKomplett(
         receivedSykmelding = objectMapper.readValue(getString("receivedsykmelding")),
         validationResult = objectMapper.readValue(getString("validationresult")),
-        apprec = objectMapper.readValue(getString("apprec")),
+        apprec = getString("apprec")?.let { objectMapper.readValue<Apprec>(it) },
         oppgaveid = getInt("oppgaveid"),
         ferdigstilt = getBoolean("ferdigstilt"),
         sendtApprec = getBoolean("sendt_apprec"),

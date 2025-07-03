@@ -91,7 +91,13 @@ class MottattSykmeldingService(
                 )
             } else {
                 val oppgave = oppgaveService.opprettOppgave(manuellOppgave, loggingMeta)
-                val oppdatertApprec = manuellOppgaveService.lagOppdatertApprec(manuellOppgave)
+                val oppdatertApprec =
+                    manuellOppgave.apprec?.let {
+                        manuellOppgaveService.lagOppdatertApprec(
+                            it,
+                            manuellOppgave.validationResult
+                        )
+                    }
                 val status = statusMap[oppgave.status] ?: ManuellOppgaveStatus.APEN
                 val statusTimestamp =
                     oppgave.endretTidspunkt?.toLocalDateTime() ?: LocalDateTime.now()
@@ -107,7 +113,9 @@ class MottattSykmeldingService(
                     StructuredArguments.keyValue("oppgaveId", oppgave.id),
                     fields(loggingMeta),
                 )
-                manuellOppgaveService.sendApprec(oppgave.id, oppdatertApprec, loggingMeta)
+                if (oppdatertApprec != null) {
+                    manuellOppgaveService.sendApprec(oppgave.id, oppdatertApprec, loggingMeta)
+                }
                 manuellOppgaveService.sendReceivedSykmelding(
                     manuellOppgave.receivedSykmelding.toReceivedSykmeldingWithValidation(
                         ValidationResult(

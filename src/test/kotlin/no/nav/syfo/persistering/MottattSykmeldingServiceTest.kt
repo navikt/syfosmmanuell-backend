@@ -33,7 +33,7 @@ import no.nav.syfo.testutil.receivedSykmelding
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Assertions.assertEquals
 
-class MotattSykmeldingServiceTest :
+class MottattSykmeldingServiceTest :
     FunSpec({
         val database = TestDB.database
         val oppgaveService = mockk<OppgaveService>()
@@ -114,7 +114,17 @@ class MotattSykmeldingServiceTest :
                 coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
                 coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
             }
-
+            test("Save manuellOppgave from syk-inn (apprec is null)") {
+                val manuellOppgave = manuellOppgave.copy(apprec = null)
+                val manuellOppgaveString = objectMapper.writeValueAsString(manuellOppgave)
+                mottattSykmeldingService.handleMottattSykmelding(
+                    sykmeldingsId,
+                    manuellOppgaveString,
+                    emptyMap()
+                )
+                val oppgave = database.hentKomplettManuellOppgave(oppgaveid)
+                assertEquals(null, oppgave.first().apprec)
+            }
             test("Apprec oppdateres") {
                 assertEquals(false, database.erApprecSendt(oppgaveid))
 

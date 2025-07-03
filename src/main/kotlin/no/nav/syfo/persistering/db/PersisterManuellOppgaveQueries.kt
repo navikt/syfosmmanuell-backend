@@ -16,7 +16,7 @@ import no.nav.syfo.util.retry
 
 suspend fun DatabaseInterface.opprettManuellOppgave(
     manuellOppgave: ManuellOppgave,
-    apprec: Apprec,
+    apprec: Apprec?,
     oppgaveId: Int,
     status: ManuellOppgaveStatus,
     statusTimestamp: LocalDateTime,
@@ -47,7 +47,7 @@ suspend fun DatabaseInterface.opprettManuellOppgave(
                         it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
                         it.setObject(2, manuellOppgave.receivedSykmelding.toPGObject())
                         it.setObject(3, manuellOppgave.validationResult.toPGObject())
-                        it.setObject(4, apprec.toPGObject())
+                        it.setObject(4, apprec?.toPGObject())
                         it.setString(5, manuellOppgave.receivedSykmelding.personNrPasient)
                         it.setBoolean(6, false)
                         it.setInt(7, oppgaveId)
