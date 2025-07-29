@@ -12,6 +12,7 @@ import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.logger
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.service.ManuellOppgaveService
+import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
 import no.nav.syfo.util.logNAVEpostFromTokenWhenNoAccessToSecureLogs
 
@@ -65,7 +66,7 @@ fun Route.sendVurderingManuellOppgave(
                     val merknad = result.toMerknad()
 
                     val veileder = authorizationService.getVeileder(oppgaveId, accessToken)
-
+                    sikkerlogg.info("Ferdigstill manuelloppgave for $result.status for oppgave $oppgaveId med veileder $veileder")
                     manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveId = oppgaveId,
                         enhet = navEnhet,
