@@ -70,6 +70,8 @@ spec:
   accessPolicy:
     inbound:
       rules:
+        - application: logging
+          namespace: nais-system
         - application: syfosminfotrygd
           namespace: teamsykmelding
           cluster: prod-gcp
