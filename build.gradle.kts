@@ -21,7 +21,6 @@ val caffeineVersion = "3.2.2"
 val testContainerVersion = "1.21.3"
 val kotlinVersion = "2.2.0"
 val kafkaVersion = "3.9.1"
-val logbacksyslog4jVersion = "1.0.0"
 val ktfmtVersion = "0.44"
 
 //Due to vulnerabilities
@@ -101,7 +100,6 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
 
-    implementation("com.papertrailapp:logback-syslog4j:$logbacksyslog4jVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
 
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
