@@ -12,7 +12,7 @@ val kithHodemeldingVersion = "2.0.1"
 val jacksonVersion = "2.19.2"
 val mockkVersion = "1.14.5"
 val postgresVersion = "42.7.7"
-val flywayVersion = "11.10.4"
+val flywayVersion = "11.10.5"
 val hikariVersion = "7.0.0"
 val javaTimeAdapterVersion = "1.1.3"
 val kotestVersion = "5.9.1"
@@ -32,7 +32,7 @@ val commonsCodecVersion = "1.19.0"
 plugins {
     id("application")
     kotlin("jvm") version "2.2.0"
-    id("com.gradleup.shadow") version "8.3.8"
+    id("com.gradleup.shadow") version "8.3.9"
     id("com.diffplug.spotless") version "7.2.1"
 }
 
