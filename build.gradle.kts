@@ -12,26 +12,26 @@ val kithHodemeldingVersion = "2.0.1"
 val jacksonVersion = "2.19.2"
 val mockkVersion = "1.14.5"
 val postgresVersion = "42.7.7"
-val flywayVersion = "11.10.4"
-val hikariVersion = "7.0.0"
+val flywayVersion = "11.11.1"
+val hikariVersion = "7.0.2"
 val javaTimeAdapterVersion = "1.1.3"
-val kotestVersion = "5.9.1"
-val nimbusdsVersion = "10.4"
+val kotestVersion = "6.0.0"
+val nimbusdsVersion = "10.4.2"
 val caffeineVersion = "3.2.2"
 val testContainerVersion = "1.21.3"
-val kotlinVersion = "2.2.0"
+val kotlinVersion = "2.2.10"
 val kafkaVersion = "3.9.1"
 val ktfmtVersion = "0.44"
 
 //Due to vulnerabilities
-val nettyCommonVersion = "4.2.3.Final"
+val nettyCommonVersion = "4.2.4.Final"
 val commonsCompressVersion = "1.28.0"
 val commonsCodecVersion = "1.19.0"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.2.0"
-    id("com.gradleup.shadow") version "8.3.8"
+    kotlin("jvm") version "2.2.10"
+    id("com.gradleup.shadow") version "9.0.2"
     id("com.diffplug.spotless") version "7.2.1"
 }
 
