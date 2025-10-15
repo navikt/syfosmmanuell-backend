@@ -24,6 +24,12 @@ spec:
         flags:
           - name: cloudsql.logical_decoding
             value: "on"
+          - name: cloudsql.enable_pgaudit
+            value: "true"
+          - name: pgaudit.log
+            value: "write,ddl,role"
+          - name: pgaudit.log_parameter
+            value: "on"
         pointInTimeRecovery: true
         tier: db-custom-1-3840
   image: {{ image }}
