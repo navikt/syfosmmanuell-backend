@@ -63,7 +63,7 @@ class TestDB private constructor() {
                         .withExposedPorts(5432)
                         .withUsername("username")
                         .withPassword("password")
-                        .withDatabaseName("database")
+                        .withDatabaseName("syfosmmanuell-backend")
                         .withInitScript("db/db-init.sql")
 
                 psqlContainer.waitingFor(HostPortWaitStrategy())

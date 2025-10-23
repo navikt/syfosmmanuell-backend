@@ -66,7 +66,9 @@ fun Route.sendVurderingManuellOppgave(
                     val merknad = result.toMerknad()
 
                     val veileder = authorizationService.getVeileder(oppgaveId, accessToken)
-                    sikkerlogg.info("Ferdigstill manuelloppgave for $result.status for oppgave $oppgaveId med veileder $veileder")
+                    sikkerlogg.info(
+                        "Ferdigstill manuelloppgave for $result.status for oppgave $oppgaveId med veileder $veileder"
+                    )
                     manuellOppgaveService.ferdigstillManuellBehandling(
                         oppgaveId = oppgaveId,
                         enhet = navEnhet,
