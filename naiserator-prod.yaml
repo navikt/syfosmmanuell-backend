@@ -86,6 +86,9 @@ spec:
         - application: syfosmmanuell
           namespace: teamsykmelding
           cluster: prod-gcp
+        - application: tsm-manuell-api
+          namespace: tsm
+          cluster: prod-gcp
     outbound:
       rules:
         - application: istilgangskontroll

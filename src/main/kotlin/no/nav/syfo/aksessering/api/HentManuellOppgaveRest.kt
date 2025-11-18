@@ -73,5 +73,22 @@ fun Route.hentManuellOppgaver(
             }
         }
         get("/oppgaver") { call.respond(manuellOppgaveService.getOppgaver()) }
+        get("/oppgave/sykmelding/{sykmeldingId}") {
+            val sykmeldingId = call.parameters["sykmeldingId"]
+            if (sykmeldingId == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+
+            val manuellOppgave = manuellOppgaveService.hentOppgaveMedId(sykmeldingId)
+            if (manuellOppgave != null) {
+                logger.info(
+                    "Fant oppgaveId ${manuellOppgave.oppgaveId} for sykmelding med id $sykmeldingId"
+                )
+                call.respond(manuellOppgave)
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
+        }
     }
 }
