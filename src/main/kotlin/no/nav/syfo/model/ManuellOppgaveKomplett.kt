@@ -21,3 +21,5 @@ data class ManuellOppgaveKomplett(
         )
     }
 }
+
+data class ManuellOppgaveMedId(val oppgaveId: Int, val sykmeldingId: String)

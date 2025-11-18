@@ -22,6 +22,7 @@ import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ApprecStatus
 import no.nav.syfo.model.ManuellOppgaveKomplett
+import no.nav.syfo.model.ManuellOppgaveMedId
 import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
@@ -278,5 +279,11 @@ class ManuellOppgaveService(
 
     suspend fun getOppgaver(): List<UlosteOppgave> {
         return database.getUlosteOppgaver()
+    }
+
+    suspend fun hentOppgaveMedId(sykmeldingId: String): ManuellOppgaveMedId? {
+        return database.hentManuellOppgaveForSykmeldingId(sykmeldingId)?.let {
+            ManuellOppgaveMedId(oppgaveId = it.oppgaveid, sykmeldingId = sykmeldingId)
+        }
     }
 }
