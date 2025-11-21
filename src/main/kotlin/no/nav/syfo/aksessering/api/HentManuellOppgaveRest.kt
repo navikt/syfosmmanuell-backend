@@ -74,6 +74,7 @@ fun Route.hentManuellOppgaver(
         }
         get("/oppgaver") { call.respond(manuellOppgaveService.getOppgaver()) }
         get("/oppgave/sykmelding/{sykmeldingId}") {
+            logger.info("Mottok kall til /api/v1/oppgave/sykmelding/{sykmeldingId}")
             val sykmeldingId = call.parameters["sykmeldingId"]
             if (sykmeldingId == null) {
                 call.respond(HttpStatusCode.BadRequest)
