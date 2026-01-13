@@ -98,8 +98,6 @@ spec:
         - host: teamsykmelding-unleash-api.nav.cloud.nais.io
   envFrom:
     - secret: syfosmmottak-unleash-api-token
-  secureLogs:
-    enabled: true
   env:
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.intern.dev.nav.no

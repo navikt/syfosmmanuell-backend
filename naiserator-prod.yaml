@@ -78,8 +78,6 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        - application: logging
-          namespace: nais-system
         - application: syfosminfotrygd
           namespace: teamsykmelding
           cluster: prod-gcp
@@ -91,6 +89,8 @@ spec:
           cluster: prod-gcp
     outbound:
       rules:
+        - application: logging
+          namespace: nais-system
         - application: istilgangskontroll
           namespace: teamsykefravr
           cluster: prod-gcp
@@ -100,8 +100,6 @@ spec:
         - host: teamsykmelding-unleash-api.nav.cloud.nais.io
   envFrom:
     - secret: syfosmmottak-unleash-api-token
-  secureLogs:
-    enabled: true
   env:
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.intern.nav.no
