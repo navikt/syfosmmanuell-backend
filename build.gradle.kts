@@ -2,36 +2,36 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.10.2"
-val ktorVersion = "3.3.1"
-val logbackVersion = "1.5.20"
+val ktorVersion = "3.3.3"
+val logbackVersion = "1.5.24"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
 val sykmeldingVersion = "2.0.1"
 val fellesformatVersion = "2.0.1"
 val kithHodemeldingVersion = "2.0.1"
 val jacksonVersion = "2.20.1"
-val mockkVersion = "1.14.6"
+val mockkVersion = "1.14.7"
 val postgresVersion = "42.7.8"
-val flywayVersion = "11.15.0"
+val flywayVersion = "11.20.1"
 val hikariVersion = "7.0.2"
 val javaTimeAdapterVersion = "1.1.3"
-val kotestVersion = "5.9.1"
-val nimbusdsVersion = "10.5"
+val kotestVersion = "6.0.7"
+val nimbusdsVersion = "10.7"
 val caffeineVersion = "3.2.3"
-val testContainerVersion = "1.21.3"
-val kotlinVersion = "2.2.21"
+val testContainerVersion = "1.21.4"
+val kotlinVersion = "2.3.0"
 val kafkaVersion = "3.9.1"
 val ktfmtVersion = "0.44"
 
 //Due to vulnerabilities
-val nettyCommonVersion = "4.2.7.Final"
+val nettyCommonVersion = "4.2.9.Final"
 val commonsCompressVersion = "1.28.0"
-val commonsCodecVersion = "1.19.0"
+val commonsCodecVersion = "1.20.0"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.2.21"
-    id("com.diffplug.spotless") version "8.0.0"
+    kotlin("jvm") version "2.3.0"
+    id("com.diffplug.spotless") version "8.1.0"
 }
 
 application {
