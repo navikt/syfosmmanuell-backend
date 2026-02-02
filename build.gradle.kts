@@ -2,14 +2,14 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.10.2"
-val ktorVersion = "3.3.1"
+val ktorVersion = "3.4.0"
 val logbackVersion = "1.5.20"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
 val sykmeldingVersion = "2.0.1"
 val fellesformatVersion = "2.0.1"
 val kithHodemeldingVersion = "2.0.1"
-val jacksonVersion = "2.20.1"
+val jacksonVersion = "2.20.2"
 val mockkVersion = "1.14.6"
 val postgresVersion = "42.7.8"
 val flywayVersion = "11.15.0"
@@ -24,9 +24,7 @@ val kafkaVersion = "3.9.1"
 val ktfmtVersion = "0.44"
 
 //Due to vulnerabilities
-val nettyCommonVersion = "4.2.7.Final"
 val commonsCompressVersion = "1.28.0"
-val commonsCodecVersion = "1.19.0"
 
 plugins {
     id("application")
@@ -55,11 +53,6 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    constraints {
-        implementation("io.netty:netty-common:$nettyCommonVersion") {
-            because("override transient from io.ktor:ktor-server-netty")
-        }
-    }
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
@@ -68,11 +61,6 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    constraints {
-        implementation("commons-codec:commons-codec:$commonsCodecVersion") {
-            because("override transient from io.ktor:ktor-client-apache")
-        }
-    }
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")

@@ -65,7 +65,6 @@ fun Route.sendVurderingManuellOppgave(
                     val result = call.receive<Result>()
                     val merknad = result.toMerknad()
 
-
                     val veileder = authorizationService.getVeileder(oppgaveId, accessToken)
                     sikkerlogg.info(
                         "Ferdigstill manuelloppgave for $result.status for oppgave $oppgaveId med veileder $veileder"

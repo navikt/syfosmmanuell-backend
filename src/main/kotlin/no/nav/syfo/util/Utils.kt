@@ -4,9 +4,9 @@ import com.auth0.jwt.JWT
 import io.ktor.http.auth.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
-import no.nav.syfo.sikkerlogg
 import java.io.IOException
 import java.net.URISyntaxException
+import no.nav.syfo.sikkerlogg
 
 @Throws(IOException::class, URISyntaxException::class)
 fun getAccessTokenFromAuthHeader(request: ApplicationRequest): String {
