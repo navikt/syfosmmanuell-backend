@@ -93,7 +93,7 @@ spec:
           cluster: dev-gcp
       external:
         - host: graph.microsoft.com
-        - host: oppgave-q1.dev-fss-pub.nais.io
+        - host: oppgave.dev-fss-pub.nais.io
         - host: teamsykmelding-unleash-api.nav.cloud.nais.io
   envFrom:
     - secret: syfosmmottak-unleash-api-token
@@ -107,11 +107,11 @@ spec:
     - name: MS_GRAPH_API_URL
       value: https://graph.microsoft.com/v1.0
     - name: OPPGAVE_SCOPE
-      value: api://dev-fss.oppgavehandtering.oppgave-q1/.default
+      value: api://dev-fss.oppgavehandtering.oppgave/.default
     - name: OPPGAVEBEHANDLING_URL
-      value: https://oppgave-q1.dev-fss-pub.nais.io/api/v1/oppgaver
+      value: https://oppgave.dev-fss-pub.nais.io/api/v1/oppgaver
     - name: OPPGAVE_HENDELSE_TOPIC
-      value: oppgavehandtering.oppgavehendelse-q1-v1
+      value: oppgavehandtering.oppgavehendelse-v1
     - name: OPPGAVE_MAPPE_ID
       value: "100031565"
     - name: OPPGAVE_MAPPENAVN
