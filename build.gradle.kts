@@ -3,7 +3,7 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.10.2"
 val ktorVersion = "3.4.0"
-val logbackVersion = "1.5.20"
+val logbackVersion = "1.5.26"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
 val sykmeldingVersion = "2.0.1"
@@ -18,13 +18,10 @@ val javaTimeAdapterVersion = "1.1.3"
 val kotestVersion = "5.9.1"
 val nimbusdsVersion = "10.5"
 val caffeineVersion = "3.2.3"
-val testContainerVersion = "1.21.3"
+val testcontainerVersion = "2.0.1"
 val kotlinVersion = "2.2.21"
 val kafkaVersion = "3.9.1"
 val ktfmtVersion = "0.44"
-
-//Due to vulnerabilities
-val commonsCompressVersion = "1.28.0"
 
 plugins {
     id("application")
@@ -66,7 +63,7 @@ dependencies {
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
-    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
     implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
@@ -89,12 +86,7 @@ dependencies {
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
 
-    testImplementation("org.testcontainers:postgresql:$testContainerVersion")
-    constraints {
-        testImplementation("org.apache.commons:commons-compress:$commonsCompressVersion") {
-            because("overrides vulnerable dependency from org.testcontainers:postgresql")
-        }
-    }
+    testImplementation("org.testcontainers:testcontainers-postgresql:$testcontainerVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
