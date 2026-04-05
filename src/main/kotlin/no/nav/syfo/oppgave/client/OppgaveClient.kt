@@ -43,7 +43,7 @@ class OppgaveClient(
                 logger.error(
                     "Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}"
                 )
-                sikkerlogg.info("Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status} body: ${response.bodyAsText()}"
+                sikkerlogg.info("Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status} body: ${response.bodyAsText()}")
                 throw RuntimeException(
                     "Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}"
                 )
