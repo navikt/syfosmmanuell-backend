@@ -12,6 +12,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.logger
+import no.nav.syfo.sikkerlogg
 import no.nav.syfo.oppgave.*
 import no.nav.syfo.util.retry
 
@@ -42,6 +43,7 @@ class OppgaveClient(
                 logger.error(
                     "Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}"
                 )
+                sikkerlogg.info("Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status} message: ${response.body()}"
                 throw RuntimeException(
                     "Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}"
                 )
