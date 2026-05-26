@@ -93,6 +93,9 @@ spec:
         - application: istilgangskontroll
           namespace: teamsykefravr
           cluster: dev-gcp
+        - application: populasjonstilgangskontroll
+          namespace: tilgangsmaskin
+          cluster: dev-gcp
       external:
         - host: graph.microsoft.com
         - host: oppgave.dev-fss-pub.nais.io

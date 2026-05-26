@@ -14,7 +14,7 @@ import no.nav.syfo.testutil.HttpClientTest
 import no.nav.syfo.testutil.ResponseData
 import org.junit.jupiter.api.Assertions.assertEquals
 
-class IstilgangskontrollClientTest :
+class TilgangsmaskinClientTest :
     FunSpec({
         val httpClient = HttpClientTest()
         val environment = mockk<Environment>()
