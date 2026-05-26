@@ -20,13 +20,14 @@ data class TexasToken(val token: String)
 class TexasClient(httpClient: HttpClient, private val environment: Environment) {
     private val texasHttpClient = httpClient.config { install(ContentNegotiation) { jackson {} } }
 
-    suspend fun requestToken(
+    suspend fun exchangeToken(
         scope: String,
+        userToken: String,
     ): TexasToken {
-        val requestBody = TokenRequest(identityProvider = "entra_id", target = scope)
+        val requestBody = TexasExchangeRequest(identityProvider = "entra_id", target = scope, user_token = userToken)
 
         val response =
-            texasHttpClient.post(environment.texasTokenEndpoint) {
+            texasHttpClient.post(environment.texasTokenExchangeEndpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(requestBody)
             }
@@ -52,9 +53,10 @@ class TexasClient(httpClient: HttpClient, private val environment: Environment) 
         }
     }
 
-    internal data class TokenRequest(
+    internal data class TexasExchangeRequest(
         @param:JsonProperty("identity_provider") val identityProvider: String,
         val target: String,
+        @get:JsonProperty("user_token") val user_token: String
     )
 
     internal data class TokenResponse(
