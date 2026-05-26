@@ -24,7 +24,12 @@ class TexasClient(httpClient: HttpClient, private val environment: Environment) 
         scope: String,
         userToken: String,
     ): TexasToken {
-        val requestBody = TexasExchangeRequest(identityProvider = "entra_id", target = scope, user_token = userToken)
+        val requestBody =
+            TexasExchangeRequest(
+                identityProvider = "entra_id",
+                target = scope,
+                user_token = userToken
+            )
 
         val response =
             texasHttpClient.post(environment.texasTokenExchangeEndpoint) {

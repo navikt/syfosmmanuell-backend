@@ -20,7 +20,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.aksessering.api.sykmeldingsApi
-import no.nav.syfo.client.IstilgangskontrollClient
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -41,13 +41,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 class SykmeldingsApiTest :
     FunSpec({
         val database = TestDB.database
-        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
+        val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
-                istilgangskontrollClient,
+                tilgangsmaskinClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",
@@ -74,7 +74,7 @@ class SykmeldingsApiTest :
             )
         val oppgaveid = 308076319
 
-        beforeTest { clearMocks(istilgangskontrollClient, kafkaProducers, oppgaveService) }
+        beforeTest { clearMocks(tilgangsmaskinClient, kafkaProducers, oppgaveService) }
 
         afterTest { database.connection.dropData() }
 

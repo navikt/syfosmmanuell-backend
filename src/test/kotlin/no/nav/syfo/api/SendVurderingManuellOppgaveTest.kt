@@ -25,9 +25,9 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.CompletableFuture
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.logger
@@ -76,17 +76,17 @@ val manuellOppgave =
 class SendVurderingManuellOppgaveTest :
     FunSpec({
         val database = TestDB.database
-        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
+        val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val authorizationService =
-            AuthorizationService(istilgangskontrollClient, msGraphClient, database)
+            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
 
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
-                istilgangskontrollClient,
+                tilgangsmaskinClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",
@@ -94,7 +94,7 @@ class SendVurderingManuellOppgaveTest :
             )
 
         beforeTest {
-            clearMocks(istilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(tilgangsmaskinClient, msGraphClient, kafkaProducers, oppgaveService)
         }
 
         afterTest { database.connection.dropData() }
@@ -169,7 +169,7 @@ class SendVurderingManuellOppgaveTest :
                         setUpTest(
                             this,
                             kafkaProducers,
-                            istilgangskontrollClient,
+                            tilgangsmaskinClient,
                             msGraphClient,
                             authorizationService,
                             oppgaveService,
@@ -188,7 +188,7 @@ class SendVurderingManuellOppgaveTest :
                         setUpTest(
                             this,
                             kafkaProducers,
-                            istilgangskontrollClient,
+                            tilgangsmaskinClient,
                             msGraphClient,
                             authorizationService,
                             oppgaveService,
@@ -304,7 +304,7 @@ fun ApplicationTestBuilder.sendRequest(
 fun setUpTest(
     application: Application,
     kafkaProducers: KafkaProducers,
-    istilgangskontrollClient: IstilgangskontrollClient,
+    tilgangsmaskinClient: TilgangsmaskinClient,
     msGraphClient: MSGraphClient,
     authorizationService: AuthorizationService,
     oppgaveService: OppgaveService,
@@ -320,9 +320,8 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer } returns mockk()
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic } returns
         sm2013AutomaticHandlingTopic
-    coEvery {
-        istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
-    } returns Tilgang(true)
+    coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
+        Tilgang(true)
     coEvery { msGraphClient.getSubjectFromMsGraph(any()) } returns "4321"
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns

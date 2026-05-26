@@ -9,8 +9,9 @@ import io.mockk.mockk
 import io.mockk.spyk
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.azuread.v2.AzureAdV2TokenResponse
-import no.nav.syfo.client.IstilgangskontrollClient
+import no.nav.syfo.client.TexasClient
 import no.nav.syfo.client.Tilgang
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.testutil.HttpClientTest
 import no.nav.syfo.testutil.ResponseData
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,24 +22,25 @@ class IstilgangskontrollClientTest :
         val environment = mockk<Environment>()
         val azureAdV2Client =
             spyk(AzureAdV2Client("foo", "bar", "http://obo", httpClient.httpClient))
+        val texasClient = TexasClient(httpClient.httpClient, environment)
 
         val pasientFnr = "123145"
 
-        coEvery { environment.istilgangskontrollClientUrl } returns "http://foo"
-        coEvery { environment.istilgangskontrollScope } returns "scope"
+        coEvery { environment.tilgangsmaskinUrl } returns "http://foo"
+        coEvery { environment.tilgangsmaskinScope } returns "scope"
 
-        val istilgangskontrollClient =
+        val tilgangsmaskinClient =
             spyk(
-                IstilgangskontrollClient(
+                TilgangsmaskinClient(
                     environment = environment,
                     httpClient = httpClient.httpClient,
-                    azureAdV2Client = azureAdV2Client,
+                    texasClient = texasClient
                 ),
             )
 
         beforeTest {
             clearMocks(environment, azureAdV2Client)
-            istilgangskontrollClient.istilgangskontrollCache.invalidateAll()
+            tilgangsmaskinClient.tilgangsmaskinCache.invalidateAll()
         }
 
         context("Tilgangskontroll-test") {
@@ -54,10 +56,7 @@ class IstilgangskontrollClientTest :
                     ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(true)))
 
                 val tilgang =
-                    istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                        "sdfsdfsfs",
-                        pasientFnr
-                    )
+                    tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson("sdfsdfsfs", pasientFnr)
 
                 assertEquals(true, tilgang.erGodkjent)
             }
@@ -75,10 +74,7 @@ class IstilgangskontrollClientTest :
                     ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(Tilgang(false)))
 
                 val tilgang =
-                    istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                        "sdfsdfsfs",
-                        pasientFnr
-                    )
+                    tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson("sdfsdfsfs", pasientFnr)
 
                 assertEquals(false, tilgang.erGodkjent)
             }
@@ -86,38 +82,20 @@ class IstilgangskontrollClientTest :
 
         context("Test av cache") {
             test("Henter fra cache hvis kallet er cachet") {
-                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                    "sdfsdfsfs",
-                    pasientFnr
-                )
-                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                    "sdfsdfsfs",
-                    pasientFnr
-                )
+                tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson("sdfsdfsfs", pasientFnr)
+                tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson("sdfsdfsfs", pasientFnr)
 
                 coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken("sdfsdfsfs", "scope") }
             }
             test("Henter ikke fra cache hvis samme accesstoken men ulikt fnr") {
-                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                    "sdfsdfsfs",
-                    pasientFnr
-                )
-                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                    "sdfsdfsfs",
-                    "987654"
-                )
+                tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson("sdfsdfsfs", pasientFnr)
+                tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson("sdfsdfsfs", "987654")
 
                 coVerify(exactly = 2) { azureAdV2Client.getOnBehalfOfToken("sdfsdfsfs", "scope") }
             }
             test("Henter ikke fra cache hvis samme fnr men ulikt accesstoken") {
-                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                    "sdfsdfsfs",
-                    pasientFnr
-                )
-                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
-                    "xxxxxxxxx",
-                    pasientFnr
-                )
+                tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson("sdfsdfsfs", pasientFnr)
+                tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson("xxxxxxxxx", pasientFnr)
 
                 coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken("sdfsdfsfs", "scope") }
                 coVerify(exactly = 1) { azureAdV2Client.getOnBehalfOfToken("xxxxxxxxx", "scope") }

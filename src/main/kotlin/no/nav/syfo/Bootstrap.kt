@@ -69,7 +69,7 @@ fun main() {
     val manuellOppgaveService =
         ManuellOppgaveService(
             database,
-            httpClients.istilgangskontrollClient,
+            httpClients.tilgangsmaskinClient,
             kafkaProducers,
             oppgaveService,
             env.sourceApp,
@@ -78,7 +78,7 @@ fun main() {
 
     val authorizationService =
         AuthorizationService(
-            httpClients.istilgangskontrollClient,
+            httpClients.tilgangsmaskinClient,
             httpClients.msGraphClient,
             database,
         )

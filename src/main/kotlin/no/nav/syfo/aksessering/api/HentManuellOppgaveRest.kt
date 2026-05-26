@@ -22,12 +22,18 @@ fun Route.hentManuellOppgaver(
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
             logger.info("Mottok kall til /api/v1/manuellOppgave/$oppgaveId")
             val accessToken = getAccessTokenFromAuthHeader(call.request)
+            val navEnhet = call.request.headers["X-Nav-Enhet"]
 
             if (!manuellOppgaveService.finnesOppgave(oppgaveId)) {
                 call.respond(HttpStatusCode.NotFound)
                 return@get
             }
-
+            if (navEnhet.isNullOrEmpty()) {
+                logger.error("Mangler X-Nav-Enhet i http header")
+                call.respond(HttpStatusCode.BadRequest, "Mangler X-Nav-Enhet i http header")
+                return@get
+            }
+            // TODO: legg inn sjekk på navenhet i hasAcess
             val hasAccess = authorizationService.hasAccess(oppgaveId, accessToken)
 
             when (hasAccess) {

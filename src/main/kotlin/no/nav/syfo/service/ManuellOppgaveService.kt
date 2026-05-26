@@ -11,7 +11,7 @@ import no.nav.syfo.aksessering.db.getUlosteOppgaver
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
-import no.nav.syfo.client.IstilgangskontrollClient
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.logger
@@ -39,7 +39,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 class ManuellOppgaveService(
     private val database: DatabaseInterface,
-    private val istilgangskontrollClient: IstilgangskontrollClient,
+    private val tilgangsmaskinClient: TilgangsmaskinClient,
     private val kafkaProducers: KafkaProducers,
     private val oppgaveService: OppgaveService,
     private val sourceApp: String,
@@ -175,8 +175,8 @@ class ManuellOppgaveService(
         }
 
         val harTilgangTilOppgave =
-            istilgangskontrollClient
-                .sjekkVeiledersTilgangTilPersonViaAzure(
+            tilgangsmaskinClient
+                .sjekkVeiledersTilgangTilPerson(
                     accessToken = accessToken,
                     personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
                 )

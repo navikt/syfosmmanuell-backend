@@ -1,14 +1,14 @@
 package no.nav.syfo.authorization.service
 
 import no.nav.syfo.authorization.db.getFnr
-import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.logger
 import no.nav.syfo.sikkerlogg
 
 class AuthorizationService(
-    val istilgangskontrollClient: IstilgangskontrollClient,
+    val tilgangsmaskinClient: TilgangsmaskinClient,
     val msGraphClient: MSGraphClient,
     val databaseInterface: DatabaseInterface,
 ) {
@@ -18,8 +18,8 @@ class AuthorizationService(
             logger.info("did not find oppgave with id: $oppgaveId")
             return false
         }
-        return istilgangskontrollClient
-            .sjekkVeiledersTilgangTilPersonViaAzure(accessToken, pasientFnr)
+        return tilgangsmaskinClient
+            .sjekkVeiledersTilgangTilPerson(accessToken, pasientFnr)
             .erGodkjent
     }
 

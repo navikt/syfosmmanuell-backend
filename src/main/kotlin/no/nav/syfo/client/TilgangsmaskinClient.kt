@@ -1,52 +1,83 @@
 package no.nav.syfo.client
 
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.request.accept
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.http.headers
+import java.util.concurrent.TimeUnit
+import no.nav.syfo.Environment
+import no.nav.syfo.logger
 
 class TilgangsmaskinClient(
-    private val azureAdClient: AzureAdClient,
-    private val baseUrl: String,
-    private val clientId: String,
-    private val httpClient: HttpClient = httpClientProxy(),
+    private val environment: Environment,
+    private val texasClient: TexasClient,
+    private val httpClient: HttpClient,
+    private val scope: String = environment.tilgangsmaskinScope,
+    tilgangsmaskinClientUrl: String = environment.tilgangsmaskinUrl
 ) {
+    private val tilgangsmaskinUrl: String = "$tilgangsmaskinClientUrl/api/v1/komplett"
+    val tilgangsmaskinCache: Cache<Map<String, String>, Tilgang> =
+        Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .maximumSize(100)
+            .build<Map<String, String>, Tilgang>()
 
-
-    private val tilgangsmaskinUrl: String = "$baseUrl/api/v1/komplett"
-    private val tilgangsmaskinBulkUrl: String = "$baseUrl/api/v1/bulk/obo"
-
-    suspend fun hasTilgang(
-        token: Token,
-        personident: Personident,
-        callId: String,
-    ): TilgangsmaskinTilgang {
-        val oboToken = azureAdClient.getOnBehalfOfToken(
-            scopeClientId = clientId,
-            token = token,
-            callId = callId
-        ) ?: throw RuntimeException("Could not get oboToken from AzureAd")
-
-        val response = try {
-            httpClient.post(tilgangsmaskinUrl) {
-                header(HttpHeaders.Authorization, bearerHeader(oboToken.accessToken))
-                header(NAV_CALL_ID_HEADER, callId)
-                setBody(personident.value)
-                accept(ContentType.Application.Json)
-            }
-        } catch (exc: ClientRequestException) {
-            exc.response
+    suspend fun sjekkVeiledersTilgangTilPerson(
+        accessToken: String,
+        personFnr: String,
+    ): Tilgang {
+        tilgangsmaskinCache.getIfPresent(mapOf(Pair(accessToken, personFnr)))?.let {
+            logger.debug("Traff cache for tilgangsmaskin")
+            return it
         }
-        val hasAccess = response.status == HttpStatusCode.NoContent
-        return TilgangsmaskinTilgang(
-            hasAccess = hasAccess,
-            problemDetailResponse = if (hasAccess) null else response.body() as ProblemDetailResponse?,
-        )
+
+        val (oboToken) = exchange(accessToken)
+
+        val httpResponse =
+            httpClient.post(tilgangsmaskinUrl) {
+                headers {
+                    append("Authorization", "Bearer $oboToken")
+                    append("Nav-Call-Id", personFnr)
+                }
+                contentType(ContentType.Application.Json)
+                setBody(personFnr)
+            }
+
+        return when (httpResponse.status) {
+            HttpStatusCode.NoContent -> {
+                logger.info(
+                    "tilgangsmaskin svarer med httpResponse status kode: {}",
+                    httpResponse.status.value
+                )
+                val tilgang = Tilgang(erGodkjent = true)
+                tilgangsmaskinCache.put(mapOf(Pair(accessToken, personFnr)), tilgang)
+                tilgang
+            }
+            HttpStatusCode.Forbidden -> {
+                logger.warn("tilgangsmaskin svarte med ${httpResponse.status.value}")
+                Tilgang(
+                    erGodkjent = false,
+                )
+            }
+            HttpStatusCode.NotFound -> {
+                logger.warn("tilgangsmaskin svarte med ${httpResponse.status.value}")
+                Tilgang(
+                    erGodkjent = false,
+                )
+            }
+            else -> {
+                logger.error("tilgangsmaskin svarte med ${httpResponse.status.value}")
+                Tilgang(
+                    erGodkjent = false,
+                )
+            }
+        }
     }
+
+    private suspend fun exchange(userToken: String) = texasClient.exchangeToken(scope, userToken)
 }

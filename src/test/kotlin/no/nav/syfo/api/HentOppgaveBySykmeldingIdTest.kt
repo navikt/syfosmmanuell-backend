@@ -21,8 +21,8 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
@@ -43,16 +43,16 @@ import org.junit.jupiter.api.Assertions.assertEquals
 class HentOppgaveBySykmeldingIdTest :
     FunSpec({
         val database = TestDB.database
-        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
+        val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val authorizationService =
-            AuthorizationService(istilgangskontrollClient, msGraphClient, database)
+            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
-                istilgangskontrollClient,
+                tilgangsmaskinClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",
@@ -80,7 +80,7 @@ class HentOppgaveBySykmeldingIdTest :
             )
 
         beforeTest {
-            clearMocks(istilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(tilgangsmaskinClient, msGraphClient, kafkaProducers, oppgaveService)
         }
 
         afterTest { database.connection.dropData() }

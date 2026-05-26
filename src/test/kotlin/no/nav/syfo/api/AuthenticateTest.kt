@@ -30,9 +30,9 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.logger
 import no.nav.syfo.model.Apprec
@@ -57,17 +57,17 @@ class AuthenticateTest :
         val path = "src/test/resources/jwkset.json"
         val uri = Paths.get(path).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
-        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
+        val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val database = TestDB.database
         val authorizationService =
-            AuthorizationService(istilgangskontrollClient, msGraphClient, database)
+            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
-                istilgangskontrollClient,
+                tilgangsmaskinClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",
@@ -94,7 +94,7 @@ class AuthenticateTest :
 
         beforeTest {
             database.connection.dropData()
-            clearMocks(istilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(tilgangsmaskinClient, msGraphClient, kafkaProducers, oppgaveService)
             database.opprettManuellOppgave(
                 manuellOppgave,
                 manuellOppgave.apprec,
@@ -102,9 +102,8 @@ class AuthenticateTest :
                 ManuellOppgaveStatus.APEN,
                 LocalDateTime.now()
             )
-            coEvery {
-                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
-            } returns Tilgang(true)
+            coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
+                Tilgang(true)
         }
 
         context("Autentiseringstest for api") {
