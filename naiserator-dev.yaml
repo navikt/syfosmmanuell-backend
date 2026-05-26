@@ -3,6 +3,8 @@ kind: "Application"
 metadata:
   name: syfosmmanuell-backend
   namespace: teamsykmelding
+  annotations:
+    texas.nais.io/enabled: "true"
   labels:
     team: teamsykmelding
 spec:

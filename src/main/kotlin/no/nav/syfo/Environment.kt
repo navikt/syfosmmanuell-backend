@@ -28,6 +28,7 @@ data class Environment(
     val oppgaveHendelseTopic: String = getEnvVar("OPPGAVE_HENDELSE_TOPIC"),
     val sourceApp: String = getEnvVar("NAIS_APP_NAME"),
     val sourceNamespace: String = getEnvVar("NAIS_NAMESPACE"),
+    val texasTokenEndpoint: String = getEnvVar("NAIS_TOKEN_ENDPOINT")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
