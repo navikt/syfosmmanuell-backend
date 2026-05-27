@@ -45,7 +45,7 @@ class TilgangsmaskinClient(
             httpClient.post(tilgangsmaskinUrl) {
                 headers {
                     append("Authorization", "Bearer $oboToken")
-                    append("callId",  UUID.randomUUID().toString())
+                    append("Nav-Call-Id",  UUID.randomUUID().toString())
                 }
                 contentType(ContentType.Application.Json)
                 setBody(pasientFnr)

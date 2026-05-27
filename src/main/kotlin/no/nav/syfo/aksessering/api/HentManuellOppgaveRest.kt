@@ -21,7 +21,6 @@ fun Route.hentManuellOppgaver(
     route("/api/v1") {
         get("/manuellOppgave/{oppgaveid}") {
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
-            sikkerlogg.info("hva får vi i headeren? ${call.request.headers.entries()}")
             logger.info("Mottok kall til /api/v1/manuellOppgave/$oppgaveId")
             val accessToken = getAccessTokenFromAuthHeader(call.request)
 
