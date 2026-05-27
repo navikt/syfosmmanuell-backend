@@ -14,6 +14,7 @@ import io.ktor.http.isTextType
 import io.ktor.serialization.jackson.jackson
 import no.nav.syfo.Environment
 import no.nav.syfo.logger
+import no.nav.syfo.sikkerlogg
 
 data class TexasToken(val token: String)
 
@@ -48,12 +49,12 @@ class TexasClient(httpClient: HttpClient, private val environment: Environment) 
 
     private suspend fun HttpResponse.logNonSuccess(target: String) {
         if (this.contentType()?.isTextType() == true) {
-            logger.error(
-                "Unable to request m2m token for: ${target}, texas says: ${this.body<String>()}"
+            sikkerlogg.error(
+                "Unable to request obo token for: ${target}, texas says: ${this.body<String>()}"
             )
         } else {
-            logger.error(
-                "Unable to request m2m token for: ${target}, texas responded with status ${this.status} and no content type"
+            sikkerlogg.error(
+                "Unable to request obo token for: ${target}, texas responded with status ${this.status} and no content type"
             )
         }
     }
