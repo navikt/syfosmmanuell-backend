@@ -1,17 +1,16 @@
 package no.nav.syfo.client
 
-import com.auth0.jwt.JWT
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.headers
 import java.util.concurrent.TimeUnit
+import io.ktor.client.statement.bodyAsText
 import no.nav.syfo.Environment
 import no.nav.syfo.logger
 import no.nav.syfo.sikkerlogg
@@ -40,14 +39,6 @@ class TilgangsmaskinClient(
         }
 
         val (oboToken) = exchange(accessToken)
-
-        val decodedOboToken = JWT.decode(oboToken)
-        sikkerlogg.info(
-            "OBO-token for tilgangsmaskin: iss={}, aud={}, sub={}",
-            decodedOboToken.issuer,
-            decodedOboToken.audience,
-            decodedOboToken.subject,
-        )
 
         val httpResponse =
             httpClient.post(tilgangsmaskinUrl) {
