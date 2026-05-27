@@ -26,7 +26,7 @@ class TexasClient(httpClient: HttpClient, private val environment: Environment) 
     ): TexasToken {
         val requestBody =
             TexasExchangeRequest(
-                identityProvider = "entra_id",
+                identity_provider = "entra_id",
                 target = scope,
                 user_token = userToken
             )
@@ -59,7 +59,7 @@ class TexasClient(httpClient: HttpClient, private val environment: Environment) 
     }
 
     internal data class TexasExchangeRequest(
-        @param:JsonProperty("identity_provider") val identityProvider: String,
+        @param:JsonProperty("identity_provider") val identity_provider: String,
         val target: String,
         @get:JsonProperty("user_token") val user_token: String
     )
