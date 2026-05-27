@@ -39,16 +39,15 @@ class TilgangsmaskinClient(
             return it
         }
 
-        val (oboToken) = exchange(accessToken)
+        val oboToken = exchange(accessToken)
 
         val httpResponse =
             httpClient.post(tilgangsmaskinUrl) {
                 headers {
-                    append("Authorization", "Bearer $oboToken")
-                    append("Nav-Call-Id",  UUID.randomUUID().toString())
+                    append("Authorization", "Bearer ${oboToken.token}")
                 }
                 contentType(ContentType.Application.Json)
-                setBody("$pasientFnr")
+                setBody(pasientFnr)
             }
 
         val responseBody = httpResponse.bodyAsText()

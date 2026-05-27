@@ -40,7 +40,7 @@ class TexasClient(httpClient: HttpClient, private val environment: Environment) 
 
         if (!response.status.isSuccess()) {
             response.logNonSuccess(scope)
-            throw IllegalStateException("Unable to request m2m token for: $scope")
+            throw IllegalStateException("Unable to request obo token for: $scope")
         }
 
         val body = response.body<TokenResponse>()
