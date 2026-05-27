@@ -3,6 +3,7 @@ package no.nav.syfo.client
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -43,9 +44,7 @@ class TilgangsmaskinClient(
 
         val httpResponse =
             httpClient.post(tilgangsmaskinUrl) {
-                headers {
-                    append("Authorization", "Bearer ${oboToken.token}")
-                }
+                bearerAuth(oboToken.token)
                 contentType(ContentType.Application.Json)
                 setBody(pasientFnr)
             }
