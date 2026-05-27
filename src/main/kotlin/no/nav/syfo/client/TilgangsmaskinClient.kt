@@ -29,9 +29,9 @@ class TilgangsmaskinClient(
 
     suspend fun sjekkVeiledersTilgangTilPerson(
         accessToken: String,
-        personFnr: String,
+        pasientFnr: String,
     ): Tilgang {
-        tilgangsmaskinCache.getIfPresent(mapOf(Pair(accessToken, personFnr)))?.let {
+        tilgangsmaskinCache.getIfPresent(mapOf(Pair(accessToken, pasientFnr)))?.let {
             logger.debug("Traff cache for tilgangsmaskin")
             return it
         }
@@ -42,10 +42,10 @@ class TilgangsmaskinClient(
             httpClient.post(tilgangsmaskinUrl) {
                 headers {
                     append("Authorization", "Bearer $oboToken")
-                    append("Nav-Call-Id", personFnr)
+                    append("Nav-Call-Id", pasientFnr)
                 }
                 contentType(ContentType.Application.Json)
-                setBody(personFnr)
+                setBody(pasientFnr)
             }
 
         return when (httpResponse.status) {
@@ -55,7 +55,7 @@ class TilgangsmaskinClient(
                     httpResponse.status.value
                 )
                 val tilgang = Tilgang(erGodkjent = true)
-                tilgangsmaskinCache.put(mapOf(Pair(accessToken, personFnr)), tilgang)
+                tilgangsmaskinCache.put(mapOf(Pair(accessToken, pasientFnr)), tilgang)
                 tilgang
             }
             HttpStatusCode.Forbidden -> {

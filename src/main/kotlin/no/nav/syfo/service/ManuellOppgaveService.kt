@@ -178,7 +178,7 @@ class ManuellOppgaveService(
             tilgangsmaskinClient
                 .sjekkVeiledersTilgangTilPerson(
                     accessToken = accessToken,
-                    personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
+                    pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient,
                 )
                 .erGodkjent
         if (!harTilgangTilOppgave) {
