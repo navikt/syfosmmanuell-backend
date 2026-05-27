@@ -130,6 +130,9 @@ class AuthenticateTest :
                     oppgaveHendelseTopic = "oppgavehendlese",
                     sourceApp = "app",
                     sourceNamespace = "namespace",
+                    tilgangsmaskinUrl = "http://populasjonskontroll",
+                    tilgangsmaskinScope = "scope",
+                    texasTokenExchangeEndpoint = "http://texas"
                 )
 
             test("Aksepterer gyldig JWT med riktig audience") {

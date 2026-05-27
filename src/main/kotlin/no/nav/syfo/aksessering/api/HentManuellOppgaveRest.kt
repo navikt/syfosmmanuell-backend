@@ -28,11 +28,12 @@ fun Route.hentManuellOppgaver(
                 call.respond(HttpStatusCode.NotFound)
                 return@get
             }
-            if (navEnhet.isNullOrEmpty()) {
-                logger.error("Mangler X-Nav-Enhet i http header")
-                call.respond(HttpStatusCode.BadRequest, "Mangler X-Nav-Enhet i http header")
-                return@get
-            }
+            /**
+             * if (navEnhet.isNullOrEmpty()) { logger.error("Mangler X-Nav-Enhet i http header")
+             * call.respond(HttpStatusCode.BadRequest, "Mangler X-Nav-Enhet i http header")
+             * return@get }
+             */
+
             // TODO: legg inn sjekk på navenhet i hasAcess
             val hasAccess = authorizationService.hasAccess(oppgaveId, accessToken)
 
