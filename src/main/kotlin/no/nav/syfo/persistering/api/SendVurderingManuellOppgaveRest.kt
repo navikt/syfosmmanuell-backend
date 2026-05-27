@@ -32,7 +32,6 @@ fun Route.sendVurderingManuellOppgave(
                 return@post
             }
 
-            // TODO: SJekk på navenhet
             val hasAccess = authorizationService.hasAccess(oppgaveId, accessToken)
 
             if (navEnhet.isNullOrEmpty()) {
