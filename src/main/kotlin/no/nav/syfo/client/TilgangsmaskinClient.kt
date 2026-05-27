@@ -10,8 +10,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.headers
 import java.util.concurrent.TimeUnit
+import io.ktor.client.statement.bodyAsText
 import no.nav.syfo.Environment
 import no.nav.syfo.logger
+import no.nav.syfo.sikkerlogg
 
 class TilgangsmaskinClient(
     private val environment: Environment,
@@ -47,6 +49,14 @@ class TilgangsmaskinClient(
                 contentType(ContentType.Application.Json)
                 setBody(pasientFnr)
             }
+
+        val responseBody = httpResponse.bodyAsText()
+        sikkerlogg.info(
+            "svar fra tilgangsmaskin {} for fnr {}: {}",
+            httpResponse.status.value,
+            pasientFnr,
+            responseBody,
+        )
 
         return when (httpResponse.status) {
             HttpStatusCode.NoContent -> {
