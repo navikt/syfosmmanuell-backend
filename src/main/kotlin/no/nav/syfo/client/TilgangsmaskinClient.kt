@@ -48,7 +48,7 @@ class TilgangsmaskinClient(
                     append("Nav-Call-Id",  UUID.randomUUID().toString())
                 }
                 contentType(ContentType.Application.Json)
-                setBody(pasientFnr)
+                setBody("$pasientFnr")
             }
 
         val responseBody = httpResponse.bodyAsText()

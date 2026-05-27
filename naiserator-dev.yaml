@@ -92,6 +92,9 @@ spec:
         - application: tsm-manuell-api
           namespace: tsm
           cluster: dev-gcp
+        - application: ida
+          namespace: traktor
+          cluster: prod-fss
     outbound:
       rules:
         - application: logging
