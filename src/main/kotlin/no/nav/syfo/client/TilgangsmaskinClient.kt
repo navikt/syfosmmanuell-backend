@@ -14,6 +14,7 @@ import io.ktor.client.statement.bodyAsText
 import no.nav.syfo.Environment
 import no.nav.syfo.logger
 import no.nav.syfo.sikkerlogg
+import java.util.UUID
 
 class TilgangsmaskinClient(
     private val environment: Environment,
@@ -44,7 +45,7 @@ class TilgangsmaskinClient(
             httpClient.post(tilgangsmaskinUrl) {
                 headers {
                     append("Authorization", "Bearer $oboToken")
-                    append("Nav-Call-Id", pasientFnr)
+                    append("callId",  UUID.randomUUID().toString())
                 }
                 contentType(ContentType.Application.Json)
                 setBody(pasientFnr)

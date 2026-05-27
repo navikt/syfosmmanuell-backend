@@ -10,6 +10,7 @@ import no.nav.syfo.auditlogg
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.logger
 import no.nav.syfo.service.ManuellOppgaveService
+import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
 import no.nav.syfo.util.logNAVEpostFromTokenWhenNoAccessToSecureLogs
 
@@ -20,6 +21,7 @@ fun Route.hentManuellOppgaver(
     route("/api/v1") {
         get("/manuellOppgave/{oppgaveid}") {
             val oppgaveId = call.parameters["oppgaveid"]!!.toInt()
+            sikkerlogg.info("hva får vi i headeren? ${call.request.headers.entries()}")
             logger.info("Mottok kall til /api/v1/manuellOppgave/$oppgaveId")
             val accessToken = getAccessTokenFromAuthHeader(call.request)
 
