@@ -1,5 +1,9 @@
 package no.nav.syfo.service
 
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
@@ -160,6 +164,7 @@ class ManuellOppgaveService(
         RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private suspend fun hentManuellOppgave(
         oppgaveId: Int,
         accessToken: String
@@ -177,14 +182,6 @@ class ManuellOppgaveService(
             throw OppgaveNotFoundException("Fant ikke uløst oppgave med id $oppgaveId")
         }
 
-        val harTilgangTilgangsmaskin =
-            tilgangsmaskinClient
-                .sjekkVeiledersTilgangTilPerson(
-                    accessToken = accessToken,
-                    pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient,
-                )
-                .erGodkjent
-
         val harTilgangTilOppgave =
             istilgangskontrollClient
                 .sjekkVeiledersTilgangTilPersonViaAzure(
@@ -193,13 +190,26 @@ class ManuellOppgaveService(
                 )
                 .erGodkjent
 
-        sikkerlogg.info(
-            "Tilgangssjekk oppgaveId=$oppgaveId: " +
-                "fødselsnummer=${manuellOppgave.receivedSykmelding.personNrPasient}, : " +
-                "tilgangsmaskin=$harTilgangTilgangsmaskin, " +
-                "istilgangskontroll=$harTilgangTilOppgave, " +
-                "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
-        )
+        GlobalScope.launch(Dispatchers.IO) {
+            val harTilgangTilgangsmaskin =
+                tilgangsmaskinClient
+                    .sjekkVeiledersTilgangTilPerson(
+                        accessToken = accessToken,
+                        pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient,
+                    )
+                    .erGodkjent
+
+            sikkerlogg.info(
+                "Tilgangssjekk oppgaveId=$oppgaveId: " +
+                        "fødselsnummer=${manuellOppgave.receivedSykmelding.personNrPasient}, : " +
+                        "tilgangsmaskin=$harTilgangTilgangsmaskin, " +
+                        "istilgangskontroll=$harTilgangTilOppgave, " +
+                        "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
+            )
+
+        }
+
+
 
         if (!harTilgangTilOppgave) {
             throw IkkeTilgangException()
