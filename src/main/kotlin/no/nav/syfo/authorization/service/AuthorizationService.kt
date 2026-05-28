@@ -1,5 +1,8 @@
 package no.nav.syfo.authorization.service
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import no.nav.syfo.authorization.db.getFnr
 import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
@@ -21,11 +24,6 @@ class AuthorizationService(
             return false
         }
 
-        val harTilgangTilOppgave =
-            istilgangskontrollClient
-                .sjekkVeiledersTilgangTilPersonViaAzure(accessToken, pasientFnr)
-                .erGodkjent
-
         val harTilgangTilgangsmaskin =
             tilgangsmaskinClient
                 .sjekkVeiledersTilgangTilPerson(
@@ -34,13 +32,23 @@ class AuthorizationService(
                 )
                 .erGodkjent
 
-        sikkerlogg.info(
-            "Tilgangssjekk oppgaveId=$oppgaveId: " +
-                "fødselsnummer=${pasientFnr}, : " +
-                "tilgangsmaskin=$harTilgangTilgangsmaskin, " +
-                "istilgangskontroll=$harTilgangTilOppgave, " +
-                "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
-        )
+        GlobalScope.launch(Dispatchers.IO) {
+            val harTilgangTilOppgave =
+                istilgangskontrollClient
+                    .sjekkVeiledersTilgangTilPersonViaAzure(
+                        accessToken = accessToken,
+                        personFnr = pasientFnr,
+                    )
+                    .erGodkjent
+
+            sikkerlogg.info(
+                "Tilgangssjekk oppgaveId=$oppgaveId: " +
+                    "fødselsnummer=${pasientFnr}, : " +
+                    "tilgangsmaskin=$harTilgangTilgangsmaskin, " +
+                    "istilgangskontroll=$harTilgangTilOppgave, " +
+                    "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
+            )
+        }
 
         return harTilgangTilgangsmaskin
     }

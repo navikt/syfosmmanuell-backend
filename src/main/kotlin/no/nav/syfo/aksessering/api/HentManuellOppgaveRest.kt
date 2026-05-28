@@ -32,16 +32,6 @@ fun Route.hentManuellOppgaver(
 
             when (hasAccess) {
                 false -> {
-                    auditlogg.info(
-                        AuditLogger()
-                            .createcCefMessage(
-                                fnr = null,
-                                accessToken = accessToken,
-                                operation = AuditLogger.Operation.READ,
-                                requestPath = "/api/v1/manuellOppgave/$oppgaveId",
-                                permit = AuditLogger.Permit.DENY,
-                            ),
-                    )
                     logNAVEpostFromTokenWhenNoAccessToSecureLogs(
                         accessToken,
                         "/api/v1/manuellOppgave/$oppgaveId"
