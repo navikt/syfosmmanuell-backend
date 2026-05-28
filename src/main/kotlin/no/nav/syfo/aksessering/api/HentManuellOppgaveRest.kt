@@ -10,7 +10,6 @@ import no.nav.syfo.auditlogg
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.logger
 import no.nav.syfo.service.ManuellOppgaveService
-import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
 import no.nav.syfo.util.logNAVEpostFromTokenWhenNoAccessToSecureLogs
 

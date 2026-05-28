@@ -14,6 +14,7 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
@@ -38,6 +39,7 @@ class ManuellOppgaveServiceTest :
     FunSpec({
         val database = TestDB.database
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
+        val isTilgagskontrollClient = mockk<IstilgangskontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val sykmeldingsId = UUID.randomUUID().toString()
@@ -67,6 +69,7 @@ class ManuellOppgaveServiceTest :
             ManuellOppgaveService(
                 database,
                 tilgangsmaskinClient,
+                isTilgagskontrollClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",
@@ -82,8 +85,10 @@ class ManuellOppgaveServiceTest :
                 ManuellOppgaveStatus.APEN,
                 LocalDateTime.now(),
             )
-            clearMocks(kafkaProducers, oppgaveService, tilgangsmaskinClient)
+            clearMocks(kafkaProducers, oppgaveService, tilgangsmaskinClient, isTilgagskontrollClient)
             coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
+                Tilgang(true)
+            coEvery { isTilgagskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns
                 Tilgang(true)
         }
         context("test get uloste oppgaver") {
@@ -142,7 +147,7 @@ class ManuellOppgaveServiceTest :
             }
             test("Feiler hvis veileder ikke har tilgang til oppgave") {
                 coEvery {
-                    tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any())
+                    isTilgagskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
                 } returns Tilgang(false)
 
                 assertFailsWith<IkkeTilgangException> {

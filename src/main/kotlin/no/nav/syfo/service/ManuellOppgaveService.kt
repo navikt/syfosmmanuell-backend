@@ -11,6 +11,7 @@ import no.nav.syfo.aksessering.db.getUlosteOppgaver
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
@@ -34,12 +35,14 @@ import no.nav.syfo.persistering.db.oppdaterManuellOppgave
 import no.nav.syfo.persistering.db.oppdaterManuellOppgaveUtenOpprinneligValidationResult
 import no.nav.syfo.persistering.db.slettOppgave
 import no.nav.syfo.persistering.error.OppgaveNotFoundException
+import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.ProducerRecord
 
 class ManuellOppgaveService(
     private val database: DatabaseInterface,
     private val tilgangsmaskinClient: TilgangsmaskinClient,
+    private val istilgangskontrollClient: IstilgangskontrollClient,
     private val kafkaProducers: KafkaProducers,
     private val oppgaveService: OppgaveService,
     private val sourceApp: String,
@@ -174,13 +177,30 @@ class ManuellOppgaveService(
             throw OppgaveNotFoundException("Fant ikke uløst oppgave med id $oppgaveId")
         }
 
-        val harTilgangTilOppgave =
+        val harTilgangTilgangsmaskin =
             tilgangsmaskinClient
                 .sjekkVeiledersTilgangTilPerson(
                     accessToken = accessToken,
                     pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient,
                 )
                 .erGodkjent
+
+        val harTilgangTilOppgave =
+            istilgangskontrollClient
+                .sjekkVeiledersTilgangTilPersonViaAzure(
+                    accessToken = accessToken,
+                    personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
+                )
+                .erGodkjent
+
+        sikkerlogg.info(
+            "Tilgangssjekk oppgaveId=$oppgaveId: " +
+                "fødselsnummer=${manuellOppgave.receivedSykmelding.personNrPasient}, : " +
+                "tilgangsmaskin=$harTilgangTilgangsmaskin, " +
+                "istilgangskontroll=$harTilgangTilOppgave, " +
+                "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
+        )
+
         if (!harTilgangTilOppgave) {
             throw IkkeTilgangException()
         }

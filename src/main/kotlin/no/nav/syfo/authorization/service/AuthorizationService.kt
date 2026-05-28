@@ -1,6 +1,7 @@
 package no.nav.syfo.authorization.service
 
 import no.nav.syfo.authorization.db.getFnr
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.db.DatabaseInterface
@@ -9,6 +10,7 @@ import no.nav.syfo.sikkerlogg
 
 class AuthorizationService(
     val tilgangsmaskinClient: TilgangsmaskinClient,
+    val istilgangskontrollClient: IstilgangskontrollClient,
     val msGraphClient: MSGraphClient,
     val databaseInterface: DatabaseInterface,
 ) {
@@ -18,9 +20,29 @@ class AuthorizationService(
             logger.info("did not find oppgave with id: $oppgaveId")
             return false
         }
-        return tilgangsmaskinClient
-            .sjekkVeiledersTilgangTilPerson(accessToken, pasientFnr)
-            .erGodkjent
+
+        val harTilgangTilOppgave =
+            istilgangskontrollClient
+                .sjekkVeiledersTilgangTilPersonViaAzure(accessToken, pasientFnr)
+                .erGodkjent
+
+        val harTilgangTilgangsmaskin =
+            tilgangsmaskinClient
+                .sjekkVeiledersTilgangTilPerson(
+                    accessToken = accessToken,
+                    pasientFnr = pasientFnr,
+                )
+                .erGodkjent
+
+        sikkerlogg.info(
+            "Tilgangssjekk oppgaveId=$oppgaveId: " +
+                "fødselsnummer=${pasientFnr}, : " +
+                "tilgangsmaskin=$harTilgangTilgangsmaskin, " +
+                "istilgangskontroll=$harTilgangTilOppgave, " +
+                "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
+        )
+
+        return harTilgangTilOppgave
     }
 
     suspend fun getVeileder(oppgaveId: Int, accessToken: String): String {

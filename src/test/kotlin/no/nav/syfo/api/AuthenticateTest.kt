@@ -30,6 +30,7 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.authorization.service.AuthorizationService
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.client.TilgangsmaskinClient
@@ -58,16 +59,23 @@ class AuthenticateTest :
         val uri = Paths.get(path).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
+        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val database = TestDB.database
         val authorizationService =
-            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
+            AuthorizationService(
+                tilgangsmaskinClient,
+                istilgangskontrollClient,
+                msGraphClient,
+                database
+            )
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
                 tilgangsmaskinClient,
+                istilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",
@@ -94,7 +102,7 @@ class AuthenticateTest :
 
         beforeTest {
             database.connection.dropData()
-            clearMocks(tilgangsmaskinClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(tilgangsmaskinClient, istilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
             database.opprettManuellOppgave(
                 manuellOppgave,
                 manuellOppgave.apprec,
@@ -103,6 +111,8 @@ class AuthenticateTest :
                 LocalDateTime.now()
             )
             coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
+                Tilgang(true)
+            coEvery { istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns
                 Tilgang(true)
         }
 

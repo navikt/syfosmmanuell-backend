@@ -25,6 +25,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.CompletableFuture
 import no.nav.syfo.authorization.service.AuthorizationService
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.client.TilgangsmaskinClient
@@ -77,9 +78,15 @@ class SendVurderingManuellOppgaveTest :
     FunSpec({
         val database = TestDB.database
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
+        val isTilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val authorizationService =
-            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
+            AuthorizationService(
+                tilgangsmaskinClient,
+                isTilgangskontrollClient,
+                msGraphClient,
+                database
+            )
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
 
@@ -87,6 +94,7 @@ class SendVurderingManuellOppgaveTest :
             ManuellOppgaveService(
                 database,
                 tilgangsmaskinClient,
+                isTilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",
@@ -170,6 +178,7 @@ class SendVurderingManuellOppgaveTest :
                             this,
                             kafkaProducers,
                             tilgangsmaskinClient,
+                            isTilgangskontrollClient,
                             msGraphClient,
                             authorizationService,
                             oppgaveService,
@@ -189,6 +198,7 @@ class SendVurderingManuellOppgaveTest :
                             this,
                             kafkaProducers,
                             tilgangsmaskinClient,
+                            isTilgangskontrollClient,
                             msGraphClient,
                             authorizationService,
                             oppgaveService,
@@ -305,6 +315,7 @@ fun setUpTest(
     application: Application,
     kafkaProducers: KafkaProducers,
     tilgangsmaskinClient: TilgangsmaskinClient,
+    isTilgangskontrollClient: IstilgangskontrollClient,
     msGraphClient: MSGraphClient,
     authorizationService: AuthorizationService,
     oppgaveService: OppgaveService,
@@ -321,6 +332,8 @@ fun setUpTest(
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.okSykmeldingTopic } returns
         sm2013AutomaticHandlingTopic
     coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
+        Tilgang(true)
+    coEvery { isTilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns
         Tilgang(true)
     coEvery { msGraphClient.getSubjectFromMsGraph(any()) } returns "4321"
 

@@ -14,6 +14,7 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
@@ -38,11 +39,13 @@ class MottattSykmeldingServiceTest :
         val database = TestDB.database
         val oppgaveService = mockk<OppgaveService>()
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
+        val isTilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
                 tilgangsmaskinClient,
+                isTilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",

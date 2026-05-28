@@ -13,7 +13,6 @@ import io.ktor.http.isSuccess
 import io.ktor.http.isTextType
 import io.ktor.serialization.jackson.jackson
 import no.nav.syfo.Environment
-import no.nav.syfo.logger
 import no.nav.syfo.sikkerlogg
 
 data class TexasToken(val token: String)

@@ -20,6 +20,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.aksessering.api.sykmeldingsApi
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
@@ -42,12 +43,14 @@ class SykmeldingsApiTest :
     FunSpec({
         val database = TestDB.database
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
+        val isTilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
                 tilgangsmaskinClient,
+                isTilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",

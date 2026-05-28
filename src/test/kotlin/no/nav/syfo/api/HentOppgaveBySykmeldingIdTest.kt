@@ -21,6 +21,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.authorization.service.AuthorizationService
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
@@ -44,15 +45,22 @@ class HentOppgaveBySykmeldingIdTest :
     FunSpec({
         val database = TestDB.database
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
+        val isTilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val authorizationService =
-            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
+            AuthorizationService(
+                tilgangsmaskinClient,
+                isTilgangskontrollClient,
+                msGraphClient,
+                database
+            )
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
                 tilgangsmaskinClient,
+                isTilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",

@@ -28,6 +28,7 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.authorization.service.AuthorizationService
+import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.client.TilgangsmaskinClient
@@ -56,15 +57,22 @@ class HenteManuellOppgaverTest :
         val applicationState = ApplicationState(alive = true, ready = true)
         val database = TestDB.database
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
+        val isTilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val authorizationService =
-            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
+            AuthorizationService(
+                tilgangsmaskinClient,
+                isTilgangskontrollClient,
+                msGraphClient,
+                database
+            )
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
                 tilgangsmaskinClient,
+                isTilgangskontrollClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",
@@ -91,13 +99,15 @@ class HenteManuellOppgaverTest :
         val oppgaveid = 308076319
 
         beforeTest {
-            clearMocks(tilgangsmaskinClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(tilgangsmaskinClient, isTilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
             coEvery {
                 tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(
                     any(),
                     any(),
                 )
             } returns Tilgang(true)
+            coEvery { isTilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns
+                Tilgang(true)
         }
 
         afterTest { database.connection.dropData() }
