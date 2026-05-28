@@ -109,9 +109,9 @@ spec:
     - secret: syfosmmottak-unleash-api-token
   env:
     - name: TILGANGSMASKIN_SCOPE
-    - value: api://prod-gcp.tilgangsmaskin.populasjonstilgangskontroll.default
+      value: api://prod-gcp.tilgangsmaskin.populasjonstilgangskontroll.default
     - name: TILGANGSMASKIN_URL
-    - value: http://populasjonstilgangskontroll.tilgangsmaskin
+      value: http://populasjonstilgangskontroll.tilgangsmaskin
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.intern.nav.no
     - name: ISTILGANGSKONTROLL_SCOPE
