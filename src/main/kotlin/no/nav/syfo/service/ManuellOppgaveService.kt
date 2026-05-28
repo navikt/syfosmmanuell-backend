@@ -2,16 +2,10 @@ package no.nav.syfo.service
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.UlosteOppgave
-import no.nav.syfo.aksessering.db.erApprecSendt
-import no.nav.syfo.aksessering.db.finnesOppgave
-import no.nav.syfo.aksessering.db.finnesSykmelding
-import no.nav.syfo.aksessering.db.getUlosteOppgaver
-import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
-import no.nav.syfo.aksessering.db.hentManuellOppgave
-import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
-import no.nav.syfo.client.IstilgangskontrollClient
+import no.nav.syfo.aksessering.db.*
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.logger
@@ -19,15 +13,7 @@ import no.nav.syfo.metrics.FERDIGSTILT_OPPGAVE_COUNTER
 import no.nav.syfo.metrics.MERKNAD_COUNTER
 import no.nav.syfo.metrics.RULE_HIT_COUNTER
 import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
-import no.nav.syfo.model.Apprec
-import no.nav.syfo.model.ApprecStatus
-import no.nav.syfo.model.ManuellOppgaveKomplett
-import no.nav.syfo.model.ManuellOppgaveMedId
-import no.nav.syfo.model.Merknad
-import no.nav.syfo.model.ReceivedSykmeldingWithValidation
-import no.nav.syfo.model.Status
-import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.model.toReceivedSykmeldingWithValidation
+import no.nav.syfo.model.*
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.oppdaterApprecStatus
 import no.nav.syfo.persistering.db.oppdaterManuellOppgave
@@ -39,7 +25,6 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 class ManuellOppgaveService(
     private val database: DatabaseInterface,
-    private val istilgangskontrollClient: IstilgangskontrollClient,
     private val kafkaProducers: KafkaProducers,
     private val oppgaveService: OppgaveService,
     private val sourceApp: String,
@@ -66,12 +51,11 @@ class ManuellOppgaveService(
         oppgaveId: Int,
         enhet: String,
         veileder: String,
-        accessToken: String,
         merknader: List<Merknad>?
     ) {
         val validationResult =
             ValidationResult(Status.OK, emptyList(), timestamp = OffsetDateTime.now(ZoneOffset.UTC))
-        val manuellOppgave = hentManuellOppgave(oppgaveId, accessToken).updateMerknader(merknader)
+        val manuellOppgave = hentManuellOppgave(oppgaveId).updateMerknader(merknader)
         val loggingMeta =
             LoggingMeta(
                 mottakId = manuellOppgave.receivedSykmelding.navLogId,
@@ -157,9 +141,9 @@ class ManuellOppgaveService(
         RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private suspend fun hentManuellOppgave(
         oppgaveId: Int,
-        accessToken: String
     ): ManuellOppgaveKomplett {
         val manuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
         if (manuellOppgave == null) {
@@ -174,16 +158,6 @@ class ManuellOppgaveService(
             throw OppgaveNotFoundException("Fant ikke uløst oppgave med id $oppgaveId")
         }
 
-        val harTilgangTilOppgave =
-            istilgangskontrollClient
-                .sjekkVeiledersTilgangTilPersonViaAzure(
-                    accessToken = accessToken,
-                    personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
-                )
-                .erGodkjent
-        if (!harTilgangTilOppgave) {
-            throw IkkeTilgangException()
-        }
         return manuellOppgave
     }
 

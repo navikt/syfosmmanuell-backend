@@ -33,6 +33,7 @@ import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.logger
 import no.nav.syfo.model.Apprec
@@ -57,22 +58,21 @@ class AuthenticateTest :
         val path = "src/test/resources/jwkset.json"
         val uri = Paths.get(path).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
+        val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
         val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val database = TestDB.database
         val authorizationService =
-            AuthorizationService(istilgangskontrollClient, msGraphClient, database)
-        val manuellOppgaveService =
-            ManuellOppgaveService(
-                database,
+            AuthorizationService(
+                tilgangsmaskinClient,
                 istilgangskontrollClient,
-                kafkaProducers,
-                oppgaveService,
-                "app",
-                "namespace"
+                msGraphClient,
+                database
             )
+        val manuellOppgaveService =
+            ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
         val manuelloppgaveId = "1314"
         val manuellOppgave =
             ManuellOppgave(
@@ -94,7 +94,13 @@ class AuthenticateTest :
 
         beforeTest {
             database.connection.dropData()
-            clearMocks(istilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(
+                tilgangsmaskinClient,
+                istilgangskontrollClient,
+                msGraphClient,
+                kafkaProducers,
+                oppgaveService
+            )
             database.opprettManuellOppgave(
                 manuellOppgave,
                 manuellOppgave.apprec,
@@ -102,6 +108,8 @@ class AuthenticateTest :
                 ManuellOppgaveStatus.APEN,
                 LocalDateTime.now()
             )
+            coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
+                Tilgang(true)
             coEvery {
                 istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
             } returns Tilgang(true)
@@ -131,6 +139,9 @@ class AuthenticateTest :
                     oppgaveHendelseTopic = "oppgavehendlese",
                     sourceApp = "app",
                     sourceNamespace = "namespace",
+                    tilgangsmaskinUrl = "http://populasjonskontroll",
+                    tilgangsmaskinScope = "scope",
+                    texasTokenExchangeEndpoint = "http://texas"
                 )
 
             test("Aksepterer gyldig JWT med riktig audience") {

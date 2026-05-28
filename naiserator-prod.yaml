@@ -3,6 +3,8 @@ kind: "Application"
 metadata:
   name: syfosmmanuell-backend
   namespace: teamsykmelding
+  annotations:
+    texas.nais.io/enabled: "true"
   labels:
     team: teamsykmelding
 spec:
@@ -71,9 +73,12 @@ spec:
     pool: nav-prod
   azure:
     application:
-      allowAllUsers: true
       enabled: true
       tenant: nav.no
+      claims:
+        groups:
+          # 0000-GA-SYFO-SENSITIV geografisk tilgang til sykmeldinger
+          - id: "100e88eb-79af-4136-8bfe-f79b32021f43"
   accessPolicy:
     inbound:
       rules:
@@ -93,6 +98,9 @@ spec:
         - application: istilgangskontroll
           namespace: teamsykefravr
           cluster: prod-gcp
+        - application: populasjonstilgangskontroll
+          namespace: tilgangsmaskin
+          cluster: prod-gcp
       external:
         - host: graph.microsoft.com
         - host: oppgave.prod-fss-pub.nais.io
@@ -100,6 +108,10 @@ spec:
   envFrom:
     - secret: syfosmmottak-unleash-api-token
   env:
+    - name: TILGANGSMASKIN_SCOPE
+    - value: api://prod-gcp.tilgangsmaskin.populasjonstilgangskontroll.default
+    - name: TILGANGSMASKIN_URL
+    - value: http://populasjonstilgangskontroll.tilgangsmaskin
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.intern.nav.no
     - name: ISTILGANGSKONTROLL_SCOPE

@@ -42,16 +42,6 @@ fun Route.sendVurderingManuellOppgave(
 
             when (hasAccess) {
                 false -> {
-                    auditlogg.info(
-                        AuditLogger()
-                            .createcCefMessage(
-                                fnr = null,
-                                accessToken = accessToken,
-                                operation = AuditLogger.Operation.WRITE,
-                                requestPath = "/api/v1/vurderingmanuelloppgave/$oppgaveId",
-                                permit = AuditLogger.Permit.DENY,
-                            ),
-                    )
                     logNAVEpostFromTokenWhenNoAccessToSecureLogs(
                         accessToken,
                         "/vurderingmanuelloppgave/$oppgaveId"
@@ -73,7 +63,6 @@ fun Route.sendVurderingManuellOppgave(
                         oppgaveId = oppgaveId,
                         enhet = navEnhet,
                         veileder = veileder,
-                        accessToken = accessToken,
                         merknader = if (merknad != null) listOf(merknad) else null,
                     )
 

@@ -31,6 +31,7 @@ import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.logger
 import no.nav.syfo.model.Apprec
@@ -55,21 +56,20 @@ class HenteManuellOppgaverTest :
     FunSpec({
         val applicationState = ApplicationState(alive = true, ready = true)
         val database = TestDB.database
-        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
+        val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
+        val isTilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val authorizationService =
-            AuthorizationService(istilgangskontrollClient, msGraphClient, database)
+            AuthorizationService(
+                tilgangsmaskinClient,
+                isTilgangskontrollClient,
+                msGraphClient,
+                database
+            )
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val manuellOppgaveService =
-            ManuellOppgaveService(
-                database,
-                istilgangskontrollClient,
-                kafkaProducers,
-                oppgaveService,
-                "app",
-                "namespace"
-            )
+            ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
 
         val manuelloppgaveId = "1314"
         val manuellOppgave =
@@ -91,12 +91,21 @@ class HenteManuellOppgaverTest :
         val oppgaveid = 308076319
 
         beforeTest {
-            clearMocks(istilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(
+                tilgangsmaskinClient,
+                isTilgangskontrollClient,
+                msGraphClient,
+                kafkaProducers,
+                oppgaveService
+            )
             coEvery {
-                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(
+                tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(
                     any(),
                     any(),
                 )
+            } returns Tilgang(true)
+            coEvery {
+                isTilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
             } returns Tilgang(true)
         }
 

@@ -18,6 +18,8 @@ import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
+import no.nav.syfo.client.TexasClient
+import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.exception.ServiceUnavailableException
 import no.nav.syfo.logger
 import no.nav.syfo.oppgave.client.OppgaveClient
@@ -98,6 +100,19 @@ class HttpClients(env: Environment) {
         MSGraphClient(
             environment = env,
             azureAdV2Client = azureAdV2Client,
+            httpClient = httpClient,
+        )
+
+    val texasClient =
+        TexasClient(
+            httpClient = httpClient,
+            environment = env,
+        )
+
+    val tilgangsmaskinClient =
+        TilgangsmaskinClient(
+            environment = env,
+            texasClient = texasClient,
             httpClient = httpClient,
         )
 }
