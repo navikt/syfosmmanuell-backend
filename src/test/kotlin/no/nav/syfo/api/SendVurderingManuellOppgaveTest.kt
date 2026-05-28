@@ -333,8 +333,9 @@ fun setUpTest(
         sm2013AutomaticHandlingTopic
     coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
         Tilgang(true)
-    coEvery { isTilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns
-        Tilgang(true)
+    coEvery {
+        isTilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+    } returns Tilgang(true)
     coEvery { msGraphClient.getSubjectFromMsGraph(any()) } returns "4321"
 
     coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns

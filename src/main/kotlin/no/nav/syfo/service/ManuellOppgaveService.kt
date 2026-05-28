@@ -211,7 +211,7 @@ class ManuellOppgaveService(
 
 
 
-        if (!harTilgangTilOppgave) {
+        if (!harTilgangTilgangsmaskin) {
             throw IkkeTilgangException()
         }
         return manuellOppgave

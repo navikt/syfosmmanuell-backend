@@ -42,7 +42,7 @@ class AuthorizationService(
                 "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
         )
 
-        return harTilgangTilOppgave
+        return harTilgangTilgangsmaskin
     }
 
     suspend fun getVeileder(oppgaveId: Int, accessToken: String): String {

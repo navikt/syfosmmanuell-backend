@@ -85,11 +85,17 @@ class ManuellOppgaveServiceTest :
                 ManuellOppgaveStatus.APEN,
                 LocalDateTime.now(),
             )
-            clearMocks(kafkaProducers, oppgaveService, tilgangsmaskinClient, isTilgagskontrollClient)
+            clearMocks(
+                kafkaProducers,
+                oppgaveService,
+                tilgangsmaskinClient,
+                isTilgagskontrollClient
+            )
             coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
                 Tilgang(true)
-            coEvery { isTilgagskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns
-                Tilgang(true)
+            coEvery {
+                isTilgagskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+            } returns Tilgang(true)
         }
         context("test get uloste oppgaver") {
             test("ok") {
@@ -147,7 +153,7 @@ class ManuellOppgaveServiceTest :
             }
             test("Feiler hvis veileder ikke har tilgang til oppgave") {
                 coEvery {
-                    isTilgagskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+                    tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any())
                 } returns Tilgang(false)
 
                 assertFailsWith<IkkeTilgangException> {

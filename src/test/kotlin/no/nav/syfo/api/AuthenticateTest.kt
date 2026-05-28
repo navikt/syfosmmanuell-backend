@@ -102,7 +102,13 @@ class AuthenticateTest :
 
         beforeTest {
             database.connection.dropData()
-            clearMocks(tilgangsmaskinClient, istilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(
+                tilgangsmaskinClient,
+                istilgangskontrollClient,
+                msGraphClient,
+                kafkaProducers,
+                oppgaveService
+            )
             database.opprettManuellOppgave(
                 manuellOppgave,
                 manuellOppgave.apprec,
@@ -112,8 +118,9 @@ class AuthenticateTest :
             )
             coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
                 Tilgang(true)
-            coEvery { istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns
-                Tilgang(true)
+            coEvery {
+                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+            } returns Tilgang(true)
         }
 
         context("Autentiseringstest for api") {

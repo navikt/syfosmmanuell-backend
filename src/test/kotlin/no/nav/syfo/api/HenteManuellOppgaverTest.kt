@@ -99,15 +99,22 @@ class HenteManuellOppgaverTest :
         val oppgaveid = 308076319
 
         beforeTest {
-            clearMocks(tilgangsmaskinClient, isTilgangskontrollClient, msGraphClient, kafkaProducers, oppgaveService)
+            clearMocks(
+                tilgangsmaskinClient,
+                isTilgangskontrollClient,
+                msGraphClient,
+                kafkaProducers,
+                oppgaveService
+            )
             coEvery {
                 tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(
                     any(),
                     any(),
                 )
             } returns Tilgang(true)
-            coEvery { isTilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any()) } returns
-                Tilgang(true)
+            coEvery {
+                isTilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
+            } returns Tilgang(true)
         }
 
         afterTest { database.connection.dropData() }
