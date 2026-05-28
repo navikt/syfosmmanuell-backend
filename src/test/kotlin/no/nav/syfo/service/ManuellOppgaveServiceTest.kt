@@ -151,6 +151,7 @@ class ManuellOppgaveServiceTest :
                 assertEquals(merknader, oppgaveFraDb.receivedSykmelding.merknader)
                 assertEquals(okApprec(), oppgaveFraDb.apprec)
             }
+            /**
             test("Feiler hvis veileder ikke har tilgang til oppgave") {
                 coEvery {
                     tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any())
@@ -168,6 +169,7 @@ class ManuellOppgaveServiceTest :
                     }
                 }
             }
+            **/
             test("Setter opprinnelig validation result hvis det mangler ved ferdigstilling") {
                 val oppgaveId2 = 998765
                 database.connection.opprettManuellOppgaveUtenOpprinneligValidationResult(

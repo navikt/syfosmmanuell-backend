@@ -1,11 +1,11 @@
 package no.nav.syfo.service
 
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.UlosteOppgave
 import no.nav.syfo.aksessering.db.erApprecSendt
@@ -201,19 +201,17 @@ class ManuellOppgaveService(
 
             sikkerlogg.info(
                 "Tilgangssjekk oppgaveId=$oppgaveId: " +
-                        "fødselsnummer=${manuellOppgave.receivedSykmelding.personNrPasient}, : " +
-                        "tilgangsmaskin=$harTilgangTilgangsmaskin, " +
-                        "istilgangskontroll=$harTilgangTilOppgave, " +
-                        "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
+                    "fødselsnummer=${manuellOppgave.receivedSykmelding.personNrPasient}, : " +
+                    "tilgangsmaskin=$harTilgangTilgangsmaskin, " +
+                    "istilgangskontroll=$harTilgangTilOppgave, " +
+                    "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
             )
 
+            if (!harTilgangTilgangsmaskin) {
+                throw IkkeTilgangException()
+            }
         }
 
-
-
-        if (!harTilgangTilgangsmaskin) {
-            throw IkkeTilgangException()
-        }
         return manuellOppgave
     }
 
