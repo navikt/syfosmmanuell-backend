@@ -69,8 +69,6 @@ fun main() {
     val manuellOppgaveService =
         ManuellOppgaveService(
             database,
-            httpClients.tilgangsmaskinClient,
-            httpClients.istilgangskontrollClient,
             kafkaProducers,
             oppgaveService,
             env.sourceApp,

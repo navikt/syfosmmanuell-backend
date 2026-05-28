@@ -57,15 +57,7 @@ class HentOppgaveBySykmeldingIdTest :
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val manuellOppgaveService =
-            ManuellOppgaveService(
-                database,
-                tilgangsmaskinClient,
-                isTilgangskontrollClient,
-                kafkaProducers,
-                oppgaveService,
-                "app",
-                "namespace"
-            )
+            ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
 
         val sykmeldingId = "test-sykmelding-123"
         val oppgaveid = 308076319

@@ -3,20 +3,14 @@ package no.nav.syfo.service
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
 import io.mockk.clearMocks
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import kotlin.test.assertFailsWith
-import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
-import no.nav.syfo.client.IstilgangskontrollClient
-import no.nav.syfo.client.Tilgang
-import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveKomplett
@@ -38,8 +32,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 class ManuellOppgaveServiceTest :
     FunSpec({
         val database = TestDB.database
-        val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
-        val isTilgagskontrollClient = mockk<IstilgangskontrollClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val sykmeldingsId = UUID.randomUUID().toString()
@@ -68,8 +60,6 @@ class ManuellOppgaveServiceTest :
         val manuellOppgaveService =
             ManuellOppgaveService(
                 database,
-                tilgangsmaskinClient,
-                isTilgagskontrollClient,
                 kafkaProducers,
                 oppgaveService,
                 "app",
@@ -88,14 +78,7 @@ class ManuellOppgaveServiceTest :
             clearMocks(
                 kafkaProducers,
                 oppgaveService,
-                tilgangsmaskinClient,
-                isTilgagskontrollClient
             )
-            coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
-                Tilgang(true)
-            coEvery {
-                isTilgagskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
-            } returns Tilgang(true)
         }
         context("test get uloste oppgaver") {
             test("ok") {
@@ -110,7 +93,6 @@ class ManuellOppgaveServiceTest :
                     oppgaveid,
                     "1234",
                     "4321",
-                    "token",
                     merknader = null,
                 )
 
@@ -133,7 +115,6 @@ class ManuellOppgaveServiceTest :
                     oppgaveid,
                     "1234",
                     "4321",
-                    "token",
                     merknader = merknader,
                 )
 
@@ -151,23 +132,7 @@ class ManuellOppgaveServiceTest :
                 assertEquals(merknader, oppgaveFraDb.receivedSykmelding.merknader)
                 assertEquals(okApprec(), oppgaveFraDb.apprec)
             }
-            test("Feiler hvis veileder ikke har tilgang til oppgave") {
-                coEvery {
-                    tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any())
-                } returns Tilgang(false)
 
-                assertFailsWith<IkkeTilgangException> {
-                    runBlocking {
-                        manuellOppgaveService.ferdigstillManuellBehandling(
-                            oppgaveid,
-                            "1234",
-                            "4321",
-                            "token",
-                            merknader = null
-                        )
-                    }
-                }
-            }
             test("Setter opprinnelig validation result hvis det mangler ved ferdigstilling") {
                 val oppgaveId2 = 998765
                 database.connection.opprettManuellOppgaveUtenOpprinneligValidationResult(
@@ -202,7 +167,6 @@ class ManuellOppgaveServiceTest :
                     oppgaveId2,
                     "1234",
                     "4321",
-                    "token",
                     merknader = null,
                 )
 
@@ -238,7 +202,6 @@ class ManuellOppgaveServiceTest :
                     oppgaveid,
                     "1234",
                     "4321",
-                    "token",
                     merknader = emptyList(),
                 )
 

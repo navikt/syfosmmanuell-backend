@@ -72,15 +72,7 @@ class AuthenticateTest :
                 database
             )
         val manuellOppgaveService =
-            ManuellOppgaveService(
-                database,
-                tilgangsmaskinClient,
-                istilgangskontrollClient,
-                kafkaProducers,
-                oppgaveService,
-                "app",
-                "namespace"
-            )
+            ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
         val manuelloppgaveId = "1314"
         val manuellOppgave =
             ManuellOppgave(

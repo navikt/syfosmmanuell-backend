@@ -91,15 +91,7 @@ class SendVurderingManuellOppgaveTest :
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
 
         val manuellOppgaveService =
-            ManuellOppgaveService(
-                database,
-                tilgangsmaskinClient,
-                isTilgangskontrollClient,
-                kafkaProducers,
-                oppgaveService,
-                "app",
-                "namespace"
-            )
+            ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
 
         beforeTest {
             clearMocks(tilgangsmaskinClient, msGraphClient, kafkaProducers, oppgaveService)

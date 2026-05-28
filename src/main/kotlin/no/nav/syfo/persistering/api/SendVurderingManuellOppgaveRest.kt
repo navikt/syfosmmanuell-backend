@@ -73,7 +73,6 @@ fun Route.sendVurderingManuellOppgave(
                         oppgaveId = oppgaveId,
                         enhet = navEnhet,
                         veileder = veileder,
-                        accessToken = accessToken,
                         merknader = if (merknad != null) listOf(merknad) else null,
                     )
 
