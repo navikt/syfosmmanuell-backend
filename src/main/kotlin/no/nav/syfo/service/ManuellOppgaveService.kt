@@ -182,20 +182,20 @@ class ManuellOppgaveService(
             throw OppgaveNotFoundException("Fant ikke uløst oppgave med id $oppgaveId")
         }
 
-        val harTilgangTilOppgave =
-            istilgangskontrollClient
-                .sjekkVeiledersTilgangTilPersonViaAzure(
+        val harTilgangTilgangsmaskin =
+            tilgangsmaskinClient
+                .sjekkVeiledersTilgangTilPerson(
                     accessToken = accessToken,
-                    personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
+                    pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient,
                 )
                 .erGodkjent
 
         GlobalScope.launch(Dispatchers.IO) {
-            val harTilgangTilgangsmaskin =
-                tilgangsmaskinClient
-                    .sjekkVeiledersTilgangTilPerson(
+            val harTilgangTilOppgave =
+                istilgangskontrollClient
+                    .sjekkVeiledersTilgangTilPersonViaAzure(
                         accessToken = accessToken,
-                        pasientFnr = manuellOppgave.receivedSykmelding.personNrPasient,
+                        personFnr = manuellOppgave.receivedSykmelding.personNrPasient,
                     )
                     .erGodkjent
 
@@ -206,12 +206,11 @@ class ManuellOppgaveService(
                     "istilgangskontroll=$harTilgangTilOppgave, " +
                     "forskjell=${harTilgangTilgangsmaskin != harTilgangTilOppgave}"
             )
-
-            if (!harTilgangTilgangsmaskin) {
-                throw IkkeTilgangException()
-            }
         }
 
+        if (!harTilgangTilgangsmaskin) {
+            throw IkkeTilgangException()
+        }
         return manuellOppgave
     }
 
