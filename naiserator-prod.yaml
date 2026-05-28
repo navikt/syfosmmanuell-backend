@@ -73,12 +73,9 @@ spec:
     pool: nav-prod
   azure:
     application:
-      allowAllUsers: true
       enabled: true
       tenant: nav.no
       claims:
-        extra:
-          - "NAVident"
         groups:
           # 0000-GA-SYFO-SENSITIV geografisk tilgang til sykmeldinger
           - id: "100e88eb-79af-4136-8bfe-f79b32021f43"
