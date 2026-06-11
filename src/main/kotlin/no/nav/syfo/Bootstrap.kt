@@ -88,6 +88,7 @@ fun main() {
             env,
             applicationState,
             manuellOppgaveService,
+            oppgaveClient = httpClients.oppgaveClient,
             jwkProvider,
             env.jwtIssuer,
             authorizationService,

@@ -40,6 +40,7 @@ import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
+import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.IkkeTilgangException
@@ -68,6 +69,7 @@ class HenteManuellOppgaverTest :
             )
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
+        val oppgaveClient = mockk<OppgaveClient>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
 
@@ -115,7 +117,7 @@ class HenteManuellOppgaverTest :
             test("Skal hente ut manuell oppgave basert på oppgaveid") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -184,7 +186,7 @@ class HenteManuellOppgaverTest :
         test("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
             testApplication {
                 application {
-                    routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                    routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
                     install(ContentNegotiation) {
                         jackson {
                             registerKotlinModule()
@@ -237,7 +239,7 @@ class HenteManuellOppgaverTest :
         test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
             testApplication {
                 application {
-                    routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                    routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
                     install(ContentNegotiation) {
                         jackson {
                             registerKotlinModule()

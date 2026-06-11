@@ -5,7 +5,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
-import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -28,7 +27,7 @@ import no.nav.syfo.clients.HttpClients.Companion.config
 import no.nav.syfo.oppgave.FerdigstillOppgave
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
-import no.nav.syfo.oppgave.OpprettOppgaveResponse
+import no.nav.syfo.oppgave.OppgaveResponse
 import org.junit.jupiter.api.Assertions.assertEquals
 
 class OppgaveClientTest :
@@ -62,7 +61,7 @@ class OppgaveClientTest :
                                 call.request.headers["X-Correlation-ID"] == "123" ->
                                     call.respond(
                                         HttpStatusCode.Created,
-                                        OpprettOppgaveResponse(1, 1)
+                                        OppgaveResponse(1, 1, "1234")
                                     )
                                 else ->
                                     call.respond(
@@ -71,11 +70,11 @@ class OppgaveClientTest :
                                     )
                             }
                         }
-                        patch("/oppgave/2") { call.respond(OpprettOppgaveResponse(2, 2)) }
+                        patch("/oppgave/2") { call.respond(OppgaveResponse(2, 2, "1234")) }
                         patch("/oppgave/3") {
                             call.respond(HttpStatusCode.InternalServerError, "Noe gikk galt")
                         }
-                        get("/oppgave/4") { call.respond(OpprettOppgaveResponse(4, 1)) }
+                        get("/oppgave/4") { call.respond(OppgaveResponse(4, 1, "1234")) }
                         get("/oppgave/5") {
                             call.respond(HttpStatusCode.InternalServerError, "Noe gikk galt")
                         }

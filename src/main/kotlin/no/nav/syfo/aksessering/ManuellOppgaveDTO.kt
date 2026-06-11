@@ -10,4 +10,5 @@ data class ManuellOppgaveDTO(
     val personNrPasient: String,
     val mottattDato: LocalDateTime,
     val validationResult: ValidationResult,
+    val tildeltEnhetsnr: String?,
 )

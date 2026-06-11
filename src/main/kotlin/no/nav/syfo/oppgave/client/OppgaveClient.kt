@@ -25,7 +25,7 @@ class OppgaveClient(
     suspend fun opprettOppgave(
         opprettOppgave: OpprettOppgave,
         msgId: String
-    ): OpprettOppgaveResponse =
+    ): OppgaveResponse =
         retry("create_oppgave") {
             val response =
                 httpClient.post(url) {
@@ -37,7 +37,7 @@ class OppgaveClient(
                 }
             if (response.status == HttpStatusCode.Created) {
                 logger.info("Opprettet oppgave for msgId $msgId")
-                return@retry response.body<OpprettOppgaveResponse>()
+                return@retry response.body<OppgaveResponse>()
             } else {
                 logger.error(
                     "Noe gikk galt ved oppretting av oppgave for msgId $msgId: ${response.status}"
@@ -51,7 +51,7 @@ class OppgaveClient(
     suspend fun ferdigstillOppgave(
         ferdigstilloppgave: FerdigstillOppgave,
         msgId: String
-    ): OpprettOppgaveResponse {
+    ): OppgaveResponse {
         val response =
             httpClient.patch(url + "/" + ferdigstilloppgave.id) {
                 contentType(ContentType.Application.Json)
@@ -62,15 +62,15 @@ class OppgaveClient(
             }
 
         if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
-            return response.body<OpprettOppgaveResponse>()
+            return response.body<OppgaveResponse>()
         } else if (cluster == "dev-gcp" && ferdigstilloppgave.mappeId == null) {
             logger.info(
                 "Skipping ferdigstilt oppgave med in dev due to mappeId is null id ${ferdigstilloppgave.id}: ${response.status}"
             )
-            return OpprettOppgaveResponse(ferdigstilloppgave.id, ferdigstilloppgave.versjon)
+            return OppgaveResponse(id = ferdigstilloppgave.id, versjon =ferdigstilloppgave.versjon, tildeltEnhetsnr = "")
         } else {
             logger.error(
-                "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}: ${response.body<String>()}"
+                "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}"
             )
             throw RuntimeException(
                 "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}"
@@ -78,7 +78,7 @@ class OppgaveClient(
         }
     }
 
-    suspend fun endreOppgave(endreOppgave: EndreOppgave, msgId: String): OpprettOppgaveResponse {
+    suspend fun endreOppgave(endreOppgave: EndreOppgave, msgId: String): OppgaveResponse {
         val response =
             httpClient.patch(url + "/" + endreOppgave.id) {
                 contentType(ContentType.Application.Json)
@@ -89,12 +89,12 @@ class OppgaveClient(
             }
 
         if (response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Conflict) {
-            return response.body<OpprettOppgaveResponse>()
+            return response.body<OppgaveResponse>()
         } else if (cluster == "dev-gcp" && endreOppgave.mappeId == null) {
             logger.info(
                 "Skipping endring av oppgave med in dev due to mappeId is null id ${endreOppgave.id}: ${response.status}"
             )
-            return OpprettOppgaveResponse(endreOppgave.id, endreOppgave.versjon)
+            return OppgaveResponse(id = endreOppgave.id, versjon = endreOppgave.versjon, tildeltEnhetsnr = "")
         } else {
             logger.error(
                 "Noe gikk galt ved endring av oppgave med id ${endreOppgave.id}: ${response.status}"
@@ -105,7 +105,7 @@ class OppgaveClient(
         }
     }
 
-    suspend fun hentOppgave(oppgaveId: Int, msgId: String): OpprettOppgaveResponse? {
+    suspend fun hentOppgave(oppgaveId: Int, msgId: String): OppgaveResponse? {
         val response =
             httpClient.get("$url/$oppgaveId") {
                 contentType(ContentType.Application.Json)
@@ -114,7 +114,7 @@ class OppgaveClient(
                 header("X-Correlation-ID", msgId)
             }
         if (response.status == HttpStatusCode.OK) {
-            return response.body<OpprettOppgaveResponse>()
+            return response.body<OppgaveResponse>()
         } else if (response.status == HttpStatusCode.NotFound) {
             return null
         } else {

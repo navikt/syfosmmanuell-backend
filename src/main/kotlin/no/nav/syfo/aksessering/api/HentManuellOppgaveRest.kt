@@ -9,11 +9,13 @@ import no.nav.syfo.auditLogger.AuditLogger
 import no.nav.syfo.auditlogg
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.logger
+import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.getAccessTokenFromAuthHeader
 import no.nav.syfo.util.logNAVEpostFromTokenWhenNoAccessToSecureLogs
 
 fun Route.hentManuellOppgaver(
+    oppgaveClient: OppgaveClient,
     manuellOppgaveService: ManuellOppgaveService,
     authorizationService: AuthorizationService,
 ) {
@@ -41,6 +43,7 @@ fun Route.hentManuellOppgaver(
                         "Du har ikke tilgang til denne oppgaven."
                     )
                 }
+
                 true -> {
                     logger.info("Henter ut oppgave med $oppgaveId")
                     val manuellOppgave = manuellOppgaveService.hentManuellOppgaver(oppgaveId)
@@ -55,7 +58,16 @@ fun Route.hentManuellOppgaver(
                                     permit = AuditLogger.Permit.PERMIT,
                                 ),
                         )
-                        call.respond(manuellOppgave)
+                        val oppgaveOppgave = oppgaveClient.hentOppgave(oppgaveId, manuellOppgave.sykmelding.msgId)
+                        if (oppgaveOppgave == null) {
+                            logger.error("Oppgaven var i databasen, men fantes ikke i oppgave-api. Det er mega-sus!")
+                        }
+
+                        call.respond(
+                            manuellOppgave.copy(
+                                tildeltEnhetsnr = oppgaveOppgave?.tildeltEnhetsnr
+                            )
+                        )
                     } else {
                         call.respond(HttpStatusCode.NotFound)
                     }
@@ -63,6 +75,7 @@ fun Route.hentManuellOppgaver(
             }
         }
         get("/oppgaver") { call.respond(manuellOppgaveService.getOppgaver()) }
+
         get("/oppgave/sykmelding/{sykmeldingId}") {
             logger.info("Mottok kall til /api/v1/oppgave/sykmelding/{sykmeldingId}")
             val sykmeldingId = call.parameters["sykmeldingId"]

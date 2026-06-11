@@ -101,6 +101,7 @@ fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO {
         personNrPasient = receivedSykmelding.personNrPasient,
         mottattDato = receivedSykmelding.mottattDato,
         validationResult = objectMapper.readValue(getString("validationresult")),
+        tildeltEnhetsnr = null,
     )
 }
 

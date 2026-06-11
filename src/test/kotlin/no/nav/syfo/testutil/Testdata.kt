@@ -35,7 +35,7 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.SporsmalSvar
 import no.nav.syfo.model.Sykmelding
 import no.nav.syfo.objectMapper
-import no.nav.syfo.oppgave.OpprettOppgaveResponse
+import no.nav.syfo.oppgave.OppgaveResponse
 
 fun receivedSykmelding(
     id: String,
@@ -322,12 +322,12 @@ fun avvistApprec(): Apprec {
     )
 }
 
-fun oppgave(id: Int): OpprettOppgaveResponse =
-    OpprettOppgaveResponse(
+fun oppgave(id: Int): OppgaveResponse =
+    OppgaveResponse(
         id = id,
         versjon = 1,
         status = "APEN",
-        tildeltEnhetsnr = null,
+        tildeltEnhetsnr = "1234",
         mappeId = null,
         endretTidspunkt = ZonedDateTime.now(ZoneOffset.UTC),
     )
