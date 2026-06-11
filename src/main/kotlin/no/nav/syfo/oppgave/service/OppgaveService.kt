@@ -28,7 +28,7 @@ class OppgaveService(
     suspend fun opprettOppgave(
         manuellOppgave: ManuellOppgave,
         loggingMeta: LoggingMeta
-    ): OpprettOppgaveResponse {
+    ): OppgaveResponse {
         val opprettOppgave = tilOpprettOppgave(manuellOppgave)
         val oppgaveResponse =
             oppgaveClient.opprettOppgave(opprettOppgave, manuellOppgave.receivedSykmelding.msgId)
@@ -44,7 +44,7 @@ class OppgaveService(
     suspend fun gjenopprettOppgave(
         manuellOppgave: ManuellOppgaveKomplett,
         loggingMeta: LoggingMeta
-    ): OpprettOppgaveResponse {
+    ): OppgaveResponse {
         val oppgave =
             oppgaveClient.hentOppgave(
                 manuellOppgave.oppgaveid,
@@ -72,7 +72,7 @@ class OppgaveService(
     }
 
     fun tilGjenopprettOppgave(
-        oppgave: OpprettOppgaveResponse,
+        oppgave: OppgaveResponse,
         manuellOppgave: ManuellOppgaveKomplett
     ): OpprettOppgave =
         OpprettOppgave(

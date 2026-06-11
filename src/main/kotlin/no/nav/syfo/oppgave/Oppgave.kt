@@ -50,11 +50,11 @@ data class GjenopprettOppgave(
     val status: OppgaveStatus
 )
 
-data class OpprettOppgaveResponse(
+data class OppgaveResponse(
     val id: Int,
     val versjon: Int,
+    val tildeltEnhetsnr: String,
     val status: String? = null,
-    val tildeltEnhetsnr: String? = null,
     val mappeId: Int? = null,
     val endretTidspunkt: ZonedDateTime? = null,
     val beskrivelse: String? = null,

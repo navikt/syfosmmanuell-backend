@@ -26,6 +26,7 @@ import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.logger
 import no.nav.syfo.metrics.monitorHttpRequests
+import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.persistering.api.sendVurderingManuellOppgave
 import no.nav.syfo.service.IkkeTilgangException
 import no.nav.syfo.service.ManuellOppgaveService
@@ -34,6 +35,7 @@ fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
     manuellOppgaveService: ManuellOppgaveService,
+    oppgaveClient: OppgaveClient,
     jwkProvider: JwkProvider,
     issuer: String,
     authorizationService: AuthorizationService,
@@ -89,6 +91,7 @@ fun createApplicationEngine(
             registerNaisApi(applicationState)
             authenticate("jwt") {
                 hentManuellOppgaver(
+                    oppgaveClient,
                     manuellOppgaveService,
                     authorizationService,
                 )

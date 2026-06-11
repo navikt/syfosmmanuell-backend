@@ -32,6 +32,7 @@ import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
+import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
@@ -56,6 +57,7 @@ class HentOppgaveBySykmeldingIdTest :
             )
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
+        val oppgaveClient = mockk<OppgaveClient>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
 
@@ -89,7 +91,7 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal hente oppgaveId basert på sykmeldingId") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -119,7 +121,7 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal returnere 404 når sykmeldingId ikke finnes") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -139,7 +141,7 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal returnere 404 når path ikke matcher (manglende sykmeldingId)") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -160,7 +162,7 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal kunne hente oppgave for ferdigstilt oppgave") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -189,7 +191,7 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal returnere BadRequest for tom sykmeldingId") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -212,7 +214,7 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal returnere riktig oppgave når det finnes flere oppgaver i databasen") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(manuellOppgaveService, authorizationService) }
+                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()

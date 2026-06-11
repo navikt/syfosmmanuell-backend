@@ -42,6 +42,7 @@ import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
+import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
@@ -71,6 +72,7 @@ class AuthenticateTest :
                 msGraphClient,
                 database
             )
+        val oppgaveClient = mockk<OppgaveClient>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
         val manuelloppgaveId = "1314"
@@ -150,7 +152,7 @@ class AuthenticateTest :
                         setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
                         routing {
                             authenticate("jwt") {
-                                hentManuellOppgaver(manuellOppgaveService, authorizationService)
+                                hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService)
                             }
                         }
                         install(ContentNegotiation) {
@@ -200,7 +202,7 @@ class AuthenticateTest :
                         setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
                         routing {
                             authenticate("jwt") {
-                                hentManuellOppgaver(manuellOppgaveService, authorizationService)
+                                hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService)
                             }
                         }
                         install(ContentNegotiation) {
