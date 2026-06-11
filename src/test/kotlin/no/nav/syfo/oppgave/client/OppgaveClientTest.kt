@@ -1,19 +1,16 @@
 package no.nav.syfo.oppgave.client
 
 import io.kotest.core.spec.style.FunSpec
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
-import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.jackson
-import io.ktor.server.application.install
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.response.respond
-import io.ktor.server.routing.get
-import io.ktor.server.routing.patch
-import io.ktor.server.routing.post
-import io.ktor.server.routing.routing
+import io.ktor.client.*
+import io.ktor.client.engine.apache5.*
+import io.ktor.http.*
+import io.ktor.serialization.jackson.*
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -25,14 +22,14 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.clients.HttpClients.Companion.config
 import no.nav.syfo.oppgave.FerdigstillOppgave
+import no.nav.syfo.oppgave.OppgaveResponse
 import no.nav.syfo.oppgave.OppgaveStatus
 import no.nav.syfo.oppgave.OpprettOppgave
-import no.nav.syfo.oppgave.OppgaveResponse
 import org.junit.jupiter.api.Assertions.assertEquals
 
 class OppgaveClientTest :
     FunSpec({
-        val httpClient = HttpClient(Apache) { config() }
+        val httpClient = HttpClient(Apache5) { config() }
         val azureAdV2Client = mockk<AzureAdV2Client>()
 
         val opprettOppgave =

@@ -15,6 +15,10 @@ import no.nav.syfo.Environment
 import no.nav.syfo.logger
 import no.nav.syfo.sikkerlogg
 
+data class Tilgang(
+    val erGodkjent: Boolean,
+)
+
 class TilgangsmaskinClient(
     private val environment: Environment,
     private val texasClient: TexasClient,

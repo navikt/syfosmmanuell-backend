@@ -95,9 +95,6 @@ spec:
       rules:
         - application: logging
           namespace: nais-system
-        - application: istilgangskontroll
-          namespace: teamsykefravr
-          cluster: prod-gcp
         - application: populasjonstilgangskontroll
           namespace: tilgangsmaskin
           cluster: prod-gcp
@@ -114,8 +111,6 @@ spec:
       value: http://populasjonstilgangskontroll.tilgangsmaskin
     - name: SYFOSMMANUELL_URL
       value: syfosmmanuell.intern.nav.no
-    - name: ISTILGANGSKONTROLL_SCOPE
-      value: api://prod-gcp.teamsykefravr.istilgangskontroll/.default
     - name: MS_GRAPH_API_URL
       value: https://graph.microsoft.com/v1.0
     - name: MS_GRAPH_API_SCOPE

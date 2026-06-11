@@ -43,7 +43,6 @@ fun Route.hentManuellOppgaver(
                         "Du har ikke tilgang til denne oppgaven."
                     )
                 }
-
                 true -> {
                     logger.info("Henter ut oppgave med $oppgaveId")
                     val manuellOppgave = manuellOppgaveService.hentManuellOppgaver(oppgaveId)
@@ -58,15 +57,16 @@ fun Route.hentManuellOppgaver(
                                     permit = AuditLogger.Permit.PERMIT,
                                 ),
                         )
-                        val oppgaveOppgave = oppgaveClient.hentOppgave(oppgaveId, manuellOppgave.sykmelding.msgId)
+                        val oppgaveOppgave =
+                            oppgaveClient.hentOppgave(oppgaveId, manuellOppgave.sykmelding.msgId)
                         if (oppgaveOppgave == null) {
-                            logger.error("Oppgaven var i databasen, men fantes ikke i oppgave-api. Det er mega-sus!")
+                            logger.error(
+                                "Oppgaven var i databasen, men fantes ikke i oppgave-api. Det er mega-sus!"
+                            )
                         }
 
                         call.respond(
-                            manuellOppgave.copy(
-                                tildeltEnhetsnr = oppgaveOppgave?.tildeltEnhetsnr
-                            )
+                            manuellOppgave.copy(tildeltEnhetsnr = oppgaveOppgave?.tildeltEnhetsnr)
                         )
                     } else {
                         call.respond(HttpStatusCode.NotFound)

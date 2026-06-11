@@ -21,7 +21,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
@@ -46,15 +45,9 @@ class HentOppgaveBySykmeldingIdTest :
     FunSpec({
         val database = TestDB.database
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
-        val isTilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val authorizationService =
-            AuthorizationService(
-                tilgangsmaskinClient,
-                isTilgangskontrollClient,
-                msGraphClient,
-                database
-            )
+            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val oppgaveClient = mockk<OppgaveClient>(relaxed = true)
@@ -91,7 +84,13 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal hente oppgaveId basert på sykmeldingId") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
+                        routing {
+                            hentManuellOppgaver(
+                                oppgaveClient,
+                                manuellOppgaveService,
+                                authorizationService
+                            )
+                        }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -121,7 +120,13 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal returnere 404 når sykmeldingId ikke finnes") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
+                        routing {
+                            hentManuellOppgaver(
+                                oppgaveClient,
+                                manuellOppgaveService,
+                                authorizationService
+                            )
+                        }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -141,7 +146,13 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal returnere 404 når path ikke matcher (manglende sykmeldingId)") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
+                        routing {
+                            hentManuellOppgaver(
+                                oppgaveClient,
+                                manuellOppgaveService,
+                                authorizationService
+                            )
+                        }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -162,7 +173,13 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal kunne hente oppgave for ferdigstilt oppgave") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
+                        routing {
+                            hentManuellOppgaver(
+                                oppgaveClient,
+                                manuellOppgaveService,
+                                authorizationService
+                            )
+                        }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -191,7 +208,13 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal returnere BadRequest for tom sykmeldingId") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
+                        routing {
+                            hentManuellOppgaver(
+                                oppgaveClient,
+                                manuellOppgaveService,
+                                authorizationService
+                            )
+                        }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -214,7 +237,13 @@ class HentOppgaveBySykmeldingIdTest :
             test("Skal returnere riktig oppgave når det finnes flere oppgaver i databasen") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
+                        routing {
+                            hentManuellOppgaver(
+                                oppgaveClient,
+                                manuellOppgaveService,
+                                authorizationService
+                            )
+                        }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()

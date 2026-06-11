@@ -22,10 +22,7 @@ class OppgaveClient(
     private val scope: String,
     private val cluster: String,
 ) {
-    suspend fun opprettOppgave(
-        opprettOppgave: OpprettOppgave,
-        msgId: String
-    ): OppgaveResponse =
+    suspend fun opprettOppgave(opprettOppgave: OpprettOppgave, msgId: String): OppgaveResponse =
         retry("create_oppgave") {
             val response =
                 httpClient.post(url) {
@@ -67,7 +64,11 @@ class OppgaveClient(
             logger.info(
                 "Skipping ferdigstilt oppgave med in dev due to mappeId is null id ${ferdigstilloppgave.id}: ${response.status}"
             )
-            return OppgaveResponse(id = ferdigstilloppgave.id, versjon =ferdigstilloppgave.versjon, tildeltEnhetsnr = "")
+            return OppgaveResponse(
+                id = ferdigstilloppgave.id,
+                versjon = ferdigstilloppgave.versjon,
+                tildeltEnhetsnr = ""
+            )
         } else {
             logger.error(
                 "Noe gikk galt ved ferdigstilling av oppgave med id ${ferdigstilloppgave.id}: ${response.status}"
@@ -94,7 +95,11 @@ class OppgaveClient(
             logger.info(
                 "Skipping endring av oppgave med in dev due to mappeId is null id ${endreOppgave.id}: ${response.status}"
             )
-            return OppgaveResponse(id = endreOppgave.id, versjon = endreOppgave.versjon, tildeltEnhetsnr = "")
+            return OppgaveResponse(
+                id = endreOppgave.id,
+                versjon = endreOppgave.versjon,
+                tildeltEnhetsnr = ""
+            )
         } else {
             logger.error(
                 "Noe gikk galt ved endring av oppgave med id ${endreOppgave.id}: ${response.status}"

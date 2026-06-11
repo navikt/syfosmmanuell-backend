@@ -78,7 +78,6 @@ fun main() {
     val authorizationService =
         AuthorizationService(
             httpClients.tilgangsmaskinClient,
-            httpClients.istilgangskontrollClient,
             httpClients.msGraphClient,
             database,
         )

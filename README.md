@@ -27,7 +27,7 @@ This the high level flow for the application
   
       A[\teamsykmelding.sykmelding-manuell/] --- syfosmmanuell-bakcend
       syfosmmanuell-bakcend --- syfosmmanuell
-      syfosmmanuell-bakcend -- check caseworker access --- istilgangskontroll
+      syfosmmanuell-bakcend -- check caseworker access --- populasjonstilgangskontroll
       syfosmmanuell-bakcend -- create,get,complete oppgave --- oppgave
       syfosmmanuell-bakcend -- verify token --- azure-AD
       syfosmmanuell-bakcend --- id1[(Database)]

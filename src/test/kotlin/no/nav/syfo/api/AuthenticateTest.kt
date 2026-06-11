@@ -30,7 +30,6 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.client.TilgangsmaskinClient
@@ -60,18 +59,12 @@ class AuthenticateTest :
         val uri = Paths.get(path).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
-        val istilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val database = TestDB.database
         val authorizationService =
-            AuthorizationService(
-                tilgangsmaskinClient,
-                istilgangskontrollClient,
-                msGraphClient,
-                database
-            )
+            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
         val oppgaveClient = mockk<OppgaveClient>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
@@ -96,13 +89,7 @@ class AuthenticateTest :
 
         beforeTest {
             database.connection.dropData()
-            clearMocks(
-                tilgangsmaskinClient,
-                istilgangskontrollClient,
-                msGraphClient,
-                kafkaProducers,
-                oppgaveService
-            )
+            clearMocks(tilgangsmaskinClient, msGraphClient, kafkaProducers, oppgaveService)
             database.opprettManuellOppgave(
                 manuellOppgave,
                 manuellOppgave.apprec,
@@ -112,18 +99,13 @@ class AuthenticateTest :
             )
             coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
                 Tilgang(true)
-            coEvery {
-                istilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
-            } returns Tilgang(true)
         }
 
         context("Autentiseringstest for api") {
             val config =
                 Environment(
                     syfosmmanuellUrl = "https://syfosmmanuell",
-                    istilgangskontrollScope = "scope",
                     oppgavebehandlingUrl = "oppgave",
-                    istilgangskontrollClientUrl = "http://istilgangskontroll",
                     msGraphApiScope = "http://ms.graph.fo/",
                     msGraphApiUrl = "http://ms.graph.fo.ton/",
                     azureTokenEndpoint = "http://ms.token/",
@@ -152,7 +134,11 @@ class AuthenticateTest :
                         setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
                         routing {
                             authenticate("jwt") {
-                                hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService)
+                                hentManuellOppgaver(
+                                    oppgaveClient,
+                                    manuellOppgaveService,
+                                    authorizationService
+                                )
                             }
                         }
                         install(ContentNegotiation) {
@@ -202,7 +188,11 @@ class AuthenticateTest :
                         setupAuth(config, jwkProvider, "https://sts.issuer.net/myid")
                         routing {
                             authenticate("jwt") {
-                                hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService)
+                                hentManuellOppgaver(
+                                    oppgaveClient,
+                                    manuellOppgaveService,
+                                    authorizationService
+                                )
                             }
                         }
                         install(ContentNegotiation) {

@@ -9,8 +9,6 @@ data class Environment(
     val produserOppgaveTopic: String = "teamsykmelding.oppgave-produser-oppgave",
     val syfosmmanuellUrl: String = getEnvVar("SYFOSMMANUELL_URL"),
     val oppgavebehandlingUrl: String = getEnvVar("OPPGAVEBEHANDLING_URL"),
-    val istilgangskontrollClientUrl: String = "http://istilgangskontroll.teamsykefravr",
-    val istilgangskontrollScope: String = getEnvVar("ISTILGANGSKONTROLL_SCOPE"),
     val msGraphApiScope: String = getEnvVar("MS_GRAPH_API_SCOPE"),
     val msGraphApiUrl: String = getEnvVar("MS_GRAPH_API_URL"),
     val azureTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),

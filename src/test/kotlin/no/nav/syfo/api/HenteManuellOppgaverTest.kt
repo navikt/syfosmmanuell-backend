@@ -28,7 +28,6 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.api.hentManuellOppgaver
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.authorization.service.AuthorizationService
-import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.client.TilgangsmaskinClient
@@ -58,15 +57,9 @@ class HenteManuellOppgaverTest :
         val applicationState = ApplicationState(alive = true, ready = true)
         val database = TestDB.database
         val tilgangsmaskinClient = mockk<TilgangsmaskinClient>()
-        val isTilgangskontrollClient = mockk<IstilgangskontrollClient>()
         val msGraphClient = mockk<MSGraphClient>()
         val authorizationService =
-            AuthorizationService(
-                tilgangsmaskinClient,
-                isTilgangskontrollClient,
-                msGraphClient,
-                database
-            )
+            AuthorizationService(tilgangsmaskinClient, msGraphClient, database)
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val oppgaveService = mockk<OppgaveService>(relaxed = true)
         val oppgaveClient = mockk<OppgaveClient>(relaxed = true)
@@ -93,21 +86,12 @@ class HenteManuellOppgaverTest :
         val oppgaveid = 308076319
 
         beforeTest {
-            clearMocks(
-                tilgangsmaskinClient,
-                isTilgangskontrollClient,
-                msGraphClient,
-                kafkaProducers,
-                oppgaveService
-            )
+            clearMocks(tilgangsmaskinClient, msGraphClient, kafkaProducers, oppgaveService)
             coEvery {
                 tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(
                     any(),
                     any(),
                 )
-            } returns Tilgang(true)
-            coEvery {
-                isTilgangskontrollClient.sjekkVeiledersTilgangTilPersonViaAzure(any(), any())
             } returns Tilgang(true)
         }
 
@@ -117,7 +101,13 @@ class HenteManuellOppgaverTest :
             test("Skal hente ut manuell oppgave basert på oppgaveid") {
                 testApplication {
                     application {
-                        routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
+                        routing {
+                            hentManuellOppgaver(
+                                oppgaveClient,
+                                manuellOppgaveService,
+                                authorizationService
+                            )
+                        }
                         install(ContentNegotiation) {
                             jackson {
                                 registerKotlinModule()
@@ -186,7 +176,13 @@ class HenteManuellOppgaverTest :
         test("Skal kaste NumberFormatException når oppgaveid ikke kan parses til int") {
             testApplication {
                 application {
-                    routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
+                    routing {
+                        hentManuellOppgaver(
+                            oppgaveClient,
+                            manuellOppgaveService,
+                            authorizationService
+                        )
+                    }
                     install(ContentNegotiation) {
                         jackson {
                             registerKotlinModule()
@@ -239,7 +235,13 @@ class HenteManuellOppgaverTest :
         test("Skal returnere notFound når det ikkje finnes noen oppgaver med oppgitt id") {
             testApplication {
                 application {
-                    routing { hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService) }
+                    routing {
+                        hentManuellOppgaver(
+                            oppgaveClient,
+                            manuellOppgaveService,
+                            authorizationService
+                        )
+                    }
                     install(ContentNegotiation) {
                         jackson {
                             registerKotlinModule()

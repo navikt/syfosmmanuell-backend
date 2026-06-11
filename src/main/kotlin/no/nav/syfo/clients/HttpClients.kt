@@ -4,19 +4,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpResponseValidator
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.network.sockets.SocketTimeoutException
-import io.ktor.serialization.jackson.jackson
+import io.ktor.client.*
+import io.ktor.client.engine.apache5.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.network.sockets.*
+import io.ktor.serialization.jackson.*
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
-import no.nav.syfo.client.IstilgangskontrollClient
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.TexasClient
 import no.nav.syfo.client.TilgangsmaskinClient
@@ -27,7 +22,7 @@ import no.nav.syfo.oppgave.client.OppgaveClient
 class HttpClients(env: Environment) {
 
     companion object {
-        val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+        val config: HttpClientConfig<Apache5EngineConfig>.() -> Unit = {
             install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -70,7 +65,7 @@ class HttpClients(env: Environment) {
         }
     }
 
-    val httpClient = HttpClient(Apache, config)
+    val httpClient = HttpClient(Apache5, config)
 
     private val azureAdV2Client =
         AzureAdV2Client(
@@ -87,13 +82,6 @@ class HttpClients(env: Environment) {
             httpClient,
             env.oppgaveScope,
             env.cluster
-        )
-
-    val istilgangskontrollClient =
-        IstilgangskontrollClient(
-            environment = env,
-            azureAdV2Client = azureAdV2Client,
-            httpClient = httpClient,
         )
 
     val msGraphClient =
