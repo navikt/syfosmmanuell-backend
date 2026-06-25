@@ -260,4 +260,38 @@ class ManuellOppgaveService(
             ManuellOppgaveMedId(oppgaveId = it.oppgaveid, sykmeldingId = sykmeldingId)
         }
     }
+
+    suspend fun cleanupForBehandlingsdag(sykmeldingId: String) {
+        val oppgave =
+            database.hentManuellOppgaveForSykmeldingId(sykmeldingId)?.updateMerknader(null)
+        if (oppgave == null) {
+            logger.warn("Fant ikke oppgave med sykmeldingid: $sykmeldingId")
+            return
+        }
+        val loggingMeta =
+            LoggingMeta(
+                mottakId = oppgave.receivedSykmelding.navLogId,
+                orgNr = oppgave.receivedSykmelding.legekontorOrgNr,
+                msgId = oppgave.receivedSykmelding.msgId,
+                sykmeldingId = oppgave.receivedSykmelding.sykmelding.id,
+            )
+
+        oppgaveService.feilregistrerOppgave(oppgave.oppgaveid, sykmeldingId)
+        val receivedSykmelding = oppgave.receivedSykmelding
+        sendReceivedSykmelding(
+            receivedSykmelding.toReceivedSykmeldingWithValidation(
+                validationResult =
+                    ValidationResult(
+                        Status.OK,
+                        emptyList(),
+                        timestamp = oppgave.opprinneligValidationResult?.timestamp
+                                ?: OffsetDateTime.now(),
+                    )
+            ),
+            metadata = emptyMap(),
+            loggingMeta = loggingMeta
+        )
+
+        database.slettOppgave(oppgave.oppgaveid)
+    }
 }

@@ -5,18 +5,24 @@ import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.mockk
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
+import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
 import no.nav.syfo.clients.KafkaProducers
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.Merknad
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -29,6 +35,7 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.oppgave
 import no.nav.syfo.testutil.receivedSykmelding
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Assertions.assertEquals
 
@@ -39,52 +46,31 @@ class MottattSykmeldingServiceTest :
         val kafkaProducers = mockk<KafkaProducers>(relaxed = true)
         val manuellOppgaveService =
             ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
+        val behandlingsdagId = UUID.randomUUID().toString()
         val mottattSykmeldingService =
             MottattSykmeldingService(
                 database = database,
                 oppgaveService = oppgaveService,
                 manuellOppgaveService = manuellOppgaveService,
+                behandlingsdagerIds = listOf(behandlingsdagId),
             )
 
+        val receivedSykmeldingProducer =
+            mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>()
         val sykmeldingsId = UUID.randomUUID().toString()
         val msgId = "1314"
-        val manuellOppgave =
-            ManuellOppgave(
-                receivedSykmelding =
-                    receivedSykmelding(msgId, generateSykmelding(id = sykmeldingsId)),
-                validationResult =
-                    ValidationResult(
-                        Status.MANUAL_PROCESSING,
-                        listOf(
-                            RuleInfo(
-                                "regelnavn",
-                                "melding til legen",
-                                "melding til bruker",
-                                Status.MANUAL_PROCESSING
-                            )
-                        ),
-                        OffsetDateTime.now(ZoneOffset.UTC),
-                    ),
-                apprec =
-                    objectMapper.readValue(
-                        Apprec::class
-                            .java
-                            .getResourceAsStream("/apprecOK.json")!!
-                            .readBytes()
-                            .toString(
-                                Charsets.UTF_8,
-                            ),
-                    ),
-            )
+        val manuellOppgave = oppgave(msgId, sykmeldingsId)
         val manuellOppgaveString = objectMapper.writeValueAsString(manuellOppgave)
         val oppgaveid = 308076319
 
         beforeTest {
-            clearMocks(kafkaProducers, oppgaveService)
+            clearMocks(kafkaProducers, oppgaveService, receivedSykmeldingProducer)
             coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgave(oppgaveid)
-            coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
             coEvery { kafkaProducers.kafkaApprecProducer.apprecTopic } returns "apprectopic"
-            coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) } returns
+            coEvery { kafkaProducers.kafkaApprecProducer.producer } returns mockk()
+            coEvery { kafkaProducers.kafkaRecievedSykmeldingProducer.producer } returns
+                receivedSykmeldingProducer
+            coEvery { receivedSykmeldingProducer.send(any()) } returns
                 CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
             coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns
                 CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
@@ -93,6 +79,49 @@ class MottattSykmeldingServiceTest :
         afterTest { database.connection.dropData() }
 
         context("Test av mottak av ny melding") {
+            test("tombstone behandlingsdag should cleanup") {
+                val oppgaveid = 123
+                coEvery { oppgaveService.feilregistrerOppgave(any(), any()) } returns Unit
+                coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgave(oppgaveid)
+                mottattSykmeldingService.handleMottattSykmelding(
+                    behandlingsdagId,
+                    objectMapper.writeValueAsString(
+                        oppgave(msgId = behandlingsdagId, sykmeldingsId = behandlingsdagId)
+                    ),
+                    emptyMap()
+                )
+
+                assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
+                assertNotNull(database.hentManuellOppgaveForSykmeldingId(behandlingsdagId))
+
+                mottattSykmeldingService.handleMottattSykmelding(behandlingsdagId, null, emptyMap())
+
+                assertEquals(0, database.hentKomplettManuellOppgave(oppgaveid).size)
+                assertNull(database.hentManuellOppgaveForSykmeldingId(behandlingsdagId))
+
+                coVerifyOrder {
+                    oppgaveService.opprettOppgave(any(), any())
+                    receivedSykmeldingProducer.send(
+                        match {
+                            it.value().merknader ==
+                                listOf(
+                                    Merknad(
+                                        "UNDER_BEHANDLING",
+                                        "Sykmeldingen er til manuell behandling"
+                                    )
+                                ) && it.value().validationResult.status == Status.OK
+                        }
+                    )
+                    oppgaveService.feilregistrerOppgave(any(), any())
+                    receivedSykmeldingProducer.send(
+                        match {
+                            it.value().merknader == null &&
+                                it.value().validationResult.status == Status.OK
+                        }
+                    )
+                }
+            }
+
             test("Happy-case") {
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
@@ -103,7 +132,7 @@ class MottattSykmeldingServiceTest :
                 assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
                 coVerify { oppgaveService.opprettOppgave(any(), any()) }
                 coVerify { kafkaProducers.kafkaApprecProducer.producer.send(any()) }
-                coVerify { kafkaProducers.kafkaRecievedSykmeldingProducer.producer.send(any()) }
+                coVerify { receivedSykmeldingProducer.send(any()) }
             }
             test("Save manuellOppgave from syk-inn (apprec is null)") {
                 val manuellOppgave = manuellOppgave.copy(apprec = null)
@@ -180,3 +209,31 @@ class MottattSykmeldingServiceTest :
             }
         }
     })
+
+private fun oppgave(msgId: String, sykmeldingsId: String): ManuellOppgave =
+    ManuellOppgave(
+        receivedSykmelding = receivedSykmelding(msgId, generateSykmelding(id = sykmeldingsId)),
+        validationResult =
+            ValidationResult(
+                Status.MANUAL_PROCESSING,
+                listOf(
+                    RuleInfo(
+                        "regelnavn",
+                        "melding til legen",
+                        "melding til bruker",
+                        Status.MANUAL_PROCESSING
+                    )
+                ),
+                OffsetDateTime.now(ZoneOffset.UTC),
+            ),
+        apprec =
+            objectMapper.readValue(
+                Apprec::class
+                    .java
+                    .getResourceAsStream("/apprecOK.json")!!
+                    .readBytes()
+                    .toString(
+                        Charsets.UTF_8,
+                    ),
+            ),
+    )
