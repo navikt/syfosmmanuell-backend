@@ -98,6 +98,7 @@ fun main() {
             database = database,
             oppgaveService = oppgaveService,
             manuellOppgaveService = manuellOppgaveService,
+            behandlingsdagerIds = env.behandlingsdagerIds
         )
 
     val oppgaveHendelseService = OppgaveHendelseService(database, oppgaveService)

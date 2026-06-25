@@ -28,6 +28,7 @@ class MottattSykmeldingService(
     private val database: DatabaseInterface,
     private val oppgaveService: OppgaveService,
     private val manuellOppgaveService: ManuellOppgaveService,
+    private val behandlingsdagerIds: List<String>
 ) {
 
     companion object {
@@ -39,6 +40,10 @@ class MottattSykmeldingService(
             )
     }
 
+    init {
+        logger.info("Behandlingsdager size is ${behandlingsdagerIds.size}")
+    }
+
     suspend fun handleMottattSykmelding(
         sykmeldingId: String,
         manuellOppgaveInput: String?,
@@ -46,7 +51,11 @@ class MottattSykmeldingService(
     ) {
         if (manuellOppgaveInput == null) {
             logger.info("Mottatt tombstone for sykmelding med id $sykmeldingId")
-            manuellOppgaveService.slettOppgave(sykmeldingId)
+            if (behandlingsdagerIds.contains(sykmeldingId)) {
+                manuellOppgaveService.cleanupForBehandlingsdag(sykmeldingId)
+            } else {
+                manuellOppgaveService.slettOppgave(sykmeldingId)
+            }
         } else {
             val receivedManuellOppgave: ManuellOppgave = objectMapper.readValue(manuellOppgaveInput)
             val loggingMeta =

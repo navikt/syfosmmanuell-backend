@@ -41,6 +41,41 @@ class OppgaveService(
         return oppgaveResponse
     }
 
+    suspend fun feilregistrerOppgave(oppgaveid: Int, sykmeldingId: String) {
+        val existingOppgave = oppgaveClient.hentOppgave(oppgaveid, sykmeldingId)
+        if (existingOppgave != null) {
+            val status = OppgaveStatus.valueOf(existingOppgave.status!!)
+            val shouldFeilregistrer =
+                when (status) {
+                    OppgaveStatus.OPPRETTET -> true
+                    OppgaveStatus.AAPNET -> true
+                    OppgaveStatus.UNDER_BEHANDLING -> true
+                    OppgaveStatus.FERDIGSTILT -> false
+                    OppgaveStatus.FEILREGISTRERT -> false
+                }
+
+            if (shouldFeilregistrer) {
+                logger.info("Feilregistrerer oppgave ${oppgaveid} for ${sykmeldingId}")
+                val response =
+                    oppgaveClient.ferdigstillOppgave(
+                        FerdigstillOppgave(
+                            existingOppgave.versjon,
+                            oppgaveid,
+                            OppgaveStatus.FEILREGISTRERT,
+                            existingOppgave.tildeltEnhetsnr,
+                            null,
+                            null
+                        ),
+                        sykmeldingId
+                    )
+
+                logger.info(
+                    "Feilregistrerte oppgave ${response.id} med status ${response.status} for $sykmeldingId"
+                )
+            }
+        }
+    }
+
     suspend fun gjenopprettOppgave(
         manuellOppgave: ManuellOppgaveKomplett,
         loggingMeta: LoggingMeta

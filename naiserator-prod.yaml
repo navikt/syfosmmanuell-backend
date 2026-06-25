@@ -103,6 +103,7 @@ spec:
         - host: oppgave.prod-fss-pub.nais.io
         - host: teamsykmelding-unleash-api.nav.cloud.nais.io
   envFrom:
+    - configmap: behandlingsdager-ids
     - secret: syfosmmottak-unleash-api-token
   env:
     - name: TILGANGSMASKIN_SCOPE

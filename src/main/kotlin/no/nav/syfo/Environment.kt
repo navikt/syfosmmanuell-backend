@@ -28,7 +28,9 @@ data class Environment(
     val sourceNamespace: String = getEnvVar("NAIS_NAMESPACE"),
     val tilgangsmaskinScope: String = getEnvVar("TILGANGSMASKIN_SCOPE"),
     val tilgangsmaskinUrl: String = getEnvVar("TILGANGSMASKIN_URL"),
-    val texasTokenExchangeEndpoint: String = getEnvVar("NAIS_TOKEN_EXCHANGE_ENDPOINT")
+    val texasTokenExchangeEndpoint: String = getEnvVar("NAIS_TOKEN_EXCHANGE_ENDPOINT"),
+    val behandlingsdagerIds: List<String> =
+        getEnvVar("BEHANDLINGSDAGER_IDS", "").split(",").filter { it.isNotEmpty() }
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
