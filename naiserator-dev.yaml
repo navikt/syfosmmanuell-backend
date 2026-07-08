@@ -86,6 +86,9 @@ spec:
         - application: syfosmmanuell
           namespace: teamsykmelding
           cluster: dev-gcp
+        - application: tsm-manuell
+          namespace: tsm
+          cluster: dev-gcp
         - application: tsm-manuell-api
           namespace: tsm
           cluster: dev-gcp
