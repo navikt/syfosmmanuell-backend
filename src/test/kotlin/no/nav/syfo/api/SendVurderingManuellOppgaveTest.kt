@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.request.*
 import io.ktor.http.HttpHeaders
@@ -98,15 +97,13 @@ class SendVurderingManuellOppgaveTest :
             ) {
                 testApplication {
                     application {
-                        runBlocking {
-                            database.opprettManuellOppgave(
-                                manuellOppgave,
-                                manuellOppgave.apprec,
-                                oppgaveid,
-                                ManuellOppgaveStatus.APEN,
-                                LocalDateTime.now(),
-                            )
-                        }
+                        database.opprettManuellOppgave(
+                            manuellOppgave,
+                            manuellOppgave.apprec,
+                            oppgaveid,
+                            ManuellOppgaveStatus.APEN,
+                            LocalDateTime.now(),
+                        )
 
                         routing {
                             sendVurderingManuellOppgave(
@@ -142,11 +139,13 @@ class SendVurderingManuellOppgaveTest :
                                 append("X-Nav-Enhet", "1234")
                                 append(
                                     HttpHeaders.Authorization,
-                                    "Bearer ${generateJWT(
-                                        "2",
-                                        "clientId",
-                                        Claim("preferred_username", "firstname.lastname@nav.no"),
-                                    )}",
+                                    "Bearer ${
+                                        generateJWT(
+                                            "2",
+                                            "clientId",
+                                            Claim("preferred_username", "firstname.lastname@nav.no"),
+                                        )
+                                    }",
                                 )
                             }
                             setBody(objectMapper.writeValueAsString(result))
@@ -264,37 +263,35 @@ class SendVurderingManuellOppgaveTest :
         }
     })
 
-fun ApplicationTestBuilder.sendRequest(
+suspend fun ApplicationTestBuilder.sendRequest(
     result: Result,
     statusCode: HttpStatusCode,
     oppgaveId: Int,
     navEnhet: String = "1234"
 ) {
-    runBlocking {
-        val response =
-            client.post("/api/v1/vurderingmanuelloppgave/$oppgaveId") {
-                headers {
-                    append("Accept", "application/json")
-                    append("Content-Type", "application/json")
-                    append("X-Nav-Enhet", navEnhet)
-                    append(
-                        HttpHeaders.Authorization,
-                        "Bearer ${
+    val response =
+        client.post("/api/v1/vurderingmanuelloppgave/$oppgaveId") {
+            headers {
+                append("Accept", "application/json")
+                append("Content-Type", "application/json")
+                append("X-Nav-Enhet", navEnhet)
+                append(
+                    HttpHeaders.Authorization,
+                    "Bearer ${
                         generateJWT(
                             "2",
                             "clientId",
                             Claim("preferred_username", "firstname.lastname@nav.no"),
                         )
                     }",
-                    )
-                }
-                setBody(objectMapper.writeValueAsString(result))
+                )
             }
-        assertEquals(statusCode, response.status)
-    }
+            setBody(objectMapper.writeValueAsString(result))
+        }
+    assertEquals(statusCode, response.status)
 }
 
-fun setUpTest(
+suspend fun setUpTest(
     application: Application,
     kafkaProducers: KafkaProducers,
     tilgangsmaskinClient: TilgangsmaskinClient,
@@ -323,15 +320,14 @@ fun setUpTest(
     coEvery { oppgaveService.ferdigstillOppgave(any(), any(), any(), any()) } returns Unit
     coEvery { kafkaProducers.kafkaApprecProducer.producer.send(any()) } returns
         CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-    runBlocking {
-        database.opprettManuellOppgave(
-            manuellOppgave,
-            manuellOppgave.apprec,
-            oppgaveid,
-            ManuellOppgaveStatus.APEN,
-            LocalDateTime.now(),
-        )
-    }
+
+    database.opprettManuellOppgave(
+        manuellOppgave,
+        manuellOppgave.apprec,
+        oppgaveid,
+        ManuellOppgaveStatus.APEN,
+        LocalDateTime.now(),
+    )
 
     application.routing {
         sendVurderingManuellOppgave(
