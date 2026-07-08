@@ -2,7 +2,6 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.11.0"
-val ktorVersion = "3.5.1"
 val logbackVersion = "1.5.37"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
@@ -23,15 +22,17 @@ val kotlinVersion = "2.4.0"
 val kafkaVersion = "4.3.1"
 val ktfmtVersion = "0.44"
 
+val ktorVersion = "3.5.1"
+
 plugins {
-    id("application")
     kotlin("jvm") version "2.4.0"
+    id("io.ktor.plugin") version "3.5.1"
     id("com.diffplug.spotless") version "8.8.0"
     id("org.flywaydb.flyway") version "12.10.0"
 }
 
 application {
-    mainClass.set("no.nav.syfo.BootstrapKt")
+    mainClass = "no.nav.syfo.BootstrapKt"
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -98,6 +99,13 @@ dependencies {
 
 
 tasks {
+    shadowJar {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        mergeServiceFiles {}
+        from("src/main/resources/logback.xml") {
+            into("/")
+        }
+    }
 
     test {
         useJUnitPlatform {}
