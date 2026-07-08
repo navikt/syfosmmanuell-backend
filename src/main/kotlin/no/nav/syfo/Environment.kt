@@ -7,7 +7,6 @@ data class Environment(
     val apprecTopic: String = "teamsykmelding.sykmelding-apprec",
     val okSykmeldingTopic: String = "teamsykmelding.ok-sykmelding",
     val produserOppgaveTopic: String = "teamsykmelding.oppgave-produser-oppgave",
-    val syfosmmanuellUrl: String = getEnvVar("SYFOSMMANUELL_URL"),
     val oppgavebehandlingUrl: String = getEnvVar("OPPGAVEBEHANDLING_URL"),
     val msGraphApiScope: String = getEnvVar("MS_GRAPH_API_SCOPE"),
     val msGraphApiUrl: String = getEnvVar("MS_GRAPH_API_URL"),

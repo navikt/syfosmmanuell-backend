@@ -85,9 +85,6 @@ spec:
         - application: syfosminfotrygd
           namespace: teamsykmelding
           cluster: prod-gcp
-        - application: syfosmmanuell
-          namespace: teamsykmelding
-          cluster: prod-gcp
         - application: tsm-manuell
           namespace: tsm
           cluster: prod-gcp
@@ -113,8 +110,6 @@ spec:
       value: api://prod-gcp.tilgangsmaskin.populasjonstilgangskontroll/.default
     - name: TILGANGSMASKIN_URL
       value: http://populasjonstilgangskontroll.tilgangsmaskin
-    - name: SYFOSMMANUELL_URL
-      value: syfosmmanuell.intern.nav.no
     - name: MS_GRAPH_API_URL
       value: https://graph.microsoft.com/v1.0
     - name: MS_GRAPH_API_SCOPE

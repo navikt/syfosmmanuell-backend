@@ -104,7 +104,6 @@ class AuthenticateTest :
         context("Autentiseringstest for api") {
             val config =
                 Environment(
-                    syfosmmanuellUrl = "https://syfosmmanuell",
                     oppgavebehandlingUrl = "oppgave",
                     msGraphApiScope = "http://ms.graph.fo/",
                     msGraphApiUrl = "http://ms.graph.fo.ton/",
