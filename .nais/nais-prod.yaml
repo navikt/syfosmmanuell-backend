@@ -34,7 +34,6 @@ spec:
             value: "on"
         pointInTimeRecovery: true
         tier: db-custom-1-3840
-  image: {{ image }}
   replicas:
     min: 2
     max: 4
