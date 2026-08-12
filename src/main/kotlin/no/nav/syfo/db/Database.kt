@@ -28,7 +28,7 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
                 tempDatasource =
                     HikariDataSource(
                         HikariConfig().apply {
-                            jdbcUrl = "jdbc:postgresql://${env.dbHost}:${env.dbPort}/${env.dbName}&socketTimeout=30"
+                            jdbcUrl = "jdbc:postgresql://${env.dbHost}:${env.dbPort}/${env.dbName}?socketTimeout=30"
                             username = env.databaseUsername
                             password = env.databasePassword
                             maximumPoolSize = 3
