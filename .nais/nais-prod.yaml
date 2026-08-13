@@ -97,9 +97,11 @@ spec:
         - application: populasjonstilgangskontroll
           namespace: tilgangsmaskin
           cluster: prod-gcp
+        - application: oppgave
+          namespace: oppgavehandtering
+          cluster: prod-gcp
       external:
         - host: graph.microsoft.com
-        - host: oppgave.prod-fss-pub.nais.io
         - host: teamsykmelding-unleash-api.nav.cloud.nais.io
   envFrom:
     - configmap: behandlingsdager-ids
@@ -114,9 +116,9 @@ spec:
     - name: MS_GRAPH_API_SCOPE
       value: https://graph.microsoft.com/.default
     - name: OPPGAVE_SCOPE
-      value: api://prod-fss.oppgavehandtering.oppgave/.default
+      value: api://prod-gcp.oppgavehandtering.oppgave/.default
     - name: OPPGAVEBEHANDLING_URL
-      value: https://oppgave.prod-fss-pub.nais.io/api/v1/oppgaver
+      value: http://oppgave.oppgavehandtering
     - name: OPPGAVE_HENDELSE_TOPIC
       value: oppgavehandtering.oppgavehendelse-v1
     - name: OPPGAVE_MAPPE_ID

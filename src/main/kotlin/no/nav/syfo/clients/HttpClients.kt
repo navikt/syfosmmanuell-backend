@@ -77,7 +77,7 @@ class HttpClients(env: Environment) {
 
     val oppgaveClient =
         OppgaveClient(
-            env.oppgavebehandlingUrl,
+            "${env.oppgavebehandlingUrl} + /api/v1/oppgaver",
             azureAdV2Client,
             httpClient,
             env.oppgaveScope,
