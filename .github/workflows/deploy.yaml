@@ -40,7 +40,7 @@ jobs:
       - uses: navikt/tsm-workflows/actions/attest-sign@main
         with:
           image_ref: ${{ needs.build.outputs.image }}
-          team: tsm
+          team: teamsykmelding
 
   deploy-dev:
     if: github.ref_name == 'main' || startsWith(github.ref_name, 'dev')
