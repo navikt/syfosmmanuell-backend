@@ -25,8 +25,8 @@ jobs:
       - uses: navikt/tsm-workflows/actions/gradle/build@main
         id: build
         with:
-          app: syfosmmanuell-backend
-          team: teamsykmelding
+          app: "syfosmmanuell-backend"
+          team: "teamsykmelding"
           salsa: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
@@ -40,7 +40,7 @@ jobs:
       - uses: navikt/tsm-workflows/actions/attest-sign@main
         with:
           image_ref: ${{ needs.build.outputs.image }}
-          team: teamsykmelding
+          team: tsm
 
   deploy-dev:
     if: github.ref_name == 'main' || startsWith(github.ref_name, 'dev')
@@ -53,6 +53,7 @@ jobs:
           CLUSTER: "dev-gcp"
           RESOURCE: ".nais/nais-dev.yaml"
           WORKLOAD_IMAGE: ${{ needs.build.outputs.image }}
+          VAR: sourceVersionURL=https://github.com/${{ github.repository }}/tree/${{ github.sha }}
 
   deploy-prod:
     if: github.ref_name == 'main'
@@ -65,6 +66,7 @@ jobs:
           CLUSTER: "prod-gcp"
           RESOURCE: ".nais/nais-prod.yaml"
           WORKLOAD_IMAGE: ${{ needs.build.outputs.image }}
+          VAR: sourceVersionURL=https://github.com/${{ github.repository }}/tree/${{ github.sha }}
 
   security:
     name: Security
@@ -77,4 +79,3 @@ jobs:
     uses: navikt/tsm-workflows/.github/workflows/security.yaml@main
     with:
       image: ${{ needs.build.outputs.image }}
-      team: 'teamsykmelding'
