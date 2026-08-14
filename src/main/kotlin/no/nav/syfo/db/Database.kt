@@ -35,6 +35,7 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
                             minimumIdle = 1
                             isAutoCommit = false
                             keepaliveTime = 30000
+                            idleTimeout = 30000
                             maxLifetime = 600000
                             connectionTimeout = 30000
                             validationTimeout = 5000
