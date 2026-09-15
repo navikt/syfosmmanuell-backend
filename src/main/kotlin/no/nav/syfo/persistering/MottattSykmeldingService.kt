@@ -28,7 +28,7 @@ class MottattSykmeldingService(
     private val database: DatabaseInterface,
     private val oppgaveService: OppgaveService,
     private val manuellOppgaveService: ManuellOppgaveService,
-    private val behandlingsdagerIds: List<String>
+    private val behandlingsdagerIds: List<String>,
 ) {
 
     companion object {
@@ -47,7 +47,7 @@ class MottattSykmeldingService(
     suspend fun handleMottattSykmelding(
         sykmeldingId: String,
         manuellOppgaveInput: String?,
-        metadata: Map<String, ByteArray>
+        metadata: Map<String, ByteArray>,
     ) {
         if (manuellOppgaveInput == null) {
             logger.info("Mottatt tombstone for sykmelding med id $sykmeldingId")
@@ -74,9 +74,9 @@ class MottattSykmeldingService(
                                     Merknad(
                                         type = "UNDER_BEHANDLING",
                                         beskrivelse = "Sykmeldingen er til manuell behandling",
-                                    ),
-                                ),
-                        ),
+                                    )
+                                )
+                        )
                 )
 
             handleReceivedMessage(receivedManuellOppgaveMedMerknad, loggingMeta, metadata)
@@ -104,7 +104,7 @@ class MottattSykmeldingService(
                     manuellOppgave.apprec?.let {
                         manuellOppgaveService.lagOppdatertApprec(
                             it,
-                            manuellOppgave.validationResult
+                            manuellOppgave.validationResult,
                         )
                     }
                 val status = statusMap[oppgave.status] ?: ManuellOppgaveStatus.APEN
@@ -115,7 +115,7 @@ class MottattSykmeldingService(
                     oppdatertApprec,
                     oppgave.id,
                     status,
-                    statusTimestamp
+                    statusTimestamp,
                 )
                 logger.info(
                     "Manuell oppgave lagret i databasen, for {}, {}",
@@ -130,11 +130,11 @@ class MottattSykmeldingService(
                         ValidationResult(
                             status = Status.OK,
                             ruleHits = emptyList(),
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                         )
                     ),
                     loggingMeta,
-                    metadata
+                    metadata,
                 )
                 MESSAGE_STORED_IN_DB_COUNTER.inc()
             }

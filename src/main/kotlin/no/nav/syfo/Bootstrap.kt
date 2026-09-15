@@ -72,15 +72,11 @@ fun main() {
             kafkaProducers,
             oppgaveService,
             env.sourceApp,
-            env.sourceNamespace
+            env.sourceNamespace,
         )
 
     val authorizationService =
-        AuthorizationService(
-            httpClients.tilgangsmaskinClient,
-            httpClients.msGraphClient,
-            database,
-        )
+        AuthorizationService(httpClients.tilgangsmaskinClient, httpClients.msGraphClient, database)
 
     val applicationEngine =
         createApplicationEngine(
@@ -98,7 +94,7 @@ fun main() {
             database = database,
             oppgaveService = oppgaveService,
             manuellOppgaveService = manuellOppgaveService,
-            behandlingsdagerIds = env.behandlingsdagerIds
+            behandlingsdagerIds = env.behandlingsdagerIds,
         )
 
     val oppgaveHendelseService = OppgaveHendelseService(database, oppgaveService)
@@ -111,7 +107,7 @@ fun main() {
             oppgaveHendelseService = oppgaveHendelseService,
             oppgaveTopic = env.oppgaveHendelseTopic,
             manuellOppgaveTopic = env.manuellTopic,
-            cluster = env.cluster
+            cluster = env.cluster,
         )
     applicationState.ready = true
 
@@ -123,7 +119,7 @@ fun main() {
 @DelicateCoroutinesApi
 fun createListener(
     applicationState: ApplicationState,
-    action: suspend CoroutineScope.() -> Unit
+    action: suspend CoroutineScope.() -> Unit,
 ): Job =
     GlobalScope.launch(Dispatchers.IO) {
         try {

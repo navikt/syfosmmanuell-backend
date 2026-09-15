@@ -61,10 +61,7 @@ private fun getJWKSet(): JWKSet {
     }
 }
 
-data class Claim(
-    val name: String,
-    val value: String,
-)
+data class Claim(val name: String, val value: String)
 
 fun getFileAsString(filePath: String) =
     String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8)

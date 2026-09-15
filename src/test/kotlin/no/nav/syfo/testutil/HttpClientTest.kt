@@ -16,7 +16,7 @@ import io.ktor.serialization.jackson.jackson
 data class ResponseData(
     val httpStatusCode: HttpStatusCode,
     val content: String,
-    val headers: Headers = headersOf("Content-Type", listOf("application/json"))
+    val headers: Headers = headersOf("Content-Type", listOf("application/json")),
 )
 
 class HttpClientTest {
@@ -40,13 +40,13 @@ class HttpClientTest {
                         respond(
                             responseDataOboToken!!.content,
                             responseDataOboToken!!.httpStatusCode,
-                            responseDataOboToken!!.headers
+                            responseDataOboToken!!.headers,
                         )
                     } else {
                         respond(
                             responseData!!.content,
                             responseData!!.httpStatusCode,
-                            responseData!!.headers
+                            responseData!!.headers,
                         )
                     }
                 }

@@ -23,5 +23,5 @@ data class OpprettOppgaveKafkaMessage(
 enum class PrioritetType {
     HOY,
     NORM,
-    LAV
+    LAV,
 }

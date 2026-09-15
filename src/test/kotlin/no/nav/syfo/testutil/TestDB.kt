@@ -16,7 +16,7 @@ class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:14")
 class TestDatabase(
     private val connectionName: String,
     private val dbUsername: String,
-    private val dbPassword: String
+    private val dbPassword: String,
 ) : DatabaseInterface {
     private val dataSource: HikariDataSource =
         HikariDataSource(
@@ -30,7 +30,7 @@ class TestDatabase(
                 connectionTimeout = 10_000
                 transactionIsolation = "TRANSACTION_REPEATABLE_READ"
                 validate()
-            },
+            }
         )
     override val connection: Connection
         get() = dataSource.connection
@@ -108,7 +108,7 @@ fun Connection.opprettManuellOppgaveUtenOpprinneligValidationResult(
                 opprinnelig_validationresult
                 )
             VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
+            """
             )
             .use {
                 it.setString(1, manuellOppgaveKomplett.receivedSykmelding.sykmelding.id)

@@ -78,21 +78,15 @@ class HenteManuellOppgaverTest :
                             .java
                             .getResourceAsStream("/apprecOK.json")!!
                             .readBytes()
-                            .toString(
-                                Charsets.UTF_8,
-                            ),
+                            .toString(Charsets.UTF_8)
                     ),
             )
         val oppgaveid = 308076319
 
         beforeTest {
             clearMocks(tilgangsmaskinClient, msGraphClient, kafkaProducers, oppgaveService)
-            coEvery {
-                tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(
-                    any(),
-                    any(),
-                )
-            } returns Tilgang(true)
+            coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
+                Tilgang(true)
         }
 
         afterTest { database.connection.dropData() }
@@ -105,7 +99,7 @@ class HenteManuellOppgaverTest :
                             hentManuellOppgaver(
                                 oppgaveClient,
                                 manuellOppgaveService,
-                                authorizationService
+                                authorizationService,
                             )
                         }
                         install(ContentNegotiation) {
@@ -130,7 +124,7 @@ class HenteManuellOppgaverTest :
                             exception<Throwable> { call, cause ->
                                 call.respond(
                                     HttpStatusCode.InternalServerError,
-                                    cause.message ?: "Unknown error"
+                                    cause.message ?: "Unknown error",
                                 )
                                 logger.error("Caught exception", cause)
                                 if (cause is ExecutionException) {
@@ -168,7 +162,7 @@ class HenteManuellOppgaverTest :
                     assertEquals(HttpStatusCode.OK, response.status)
                     assertEquals(
                         oppgaveid,
-                        objectMapper.readValue<ManuellOppgaveDTO>(response.bodyAsText()).oppgaveid
+                        objectMapper.readValue<ManuellOppgaveDTO>(response.bodyAsText()).oppgaveid,
                     )
                 }
             }
@@ -180,7 +174,7 @@ class HenteManuellOppgaverTest :
                         hentManuellOppgaver(
                             oppgaveClient,
                             manuellOppgaveService,
-                            authorizationService
+                            authorizationService,
                         )
                     }
                     install(ContentNegotiation) {
@@ -205,7 +199,7 @@ class HenteManuellOppgaverTest :
                         exception<Throwable> { call, cause ->
                             call.respond(
                                 HttpStatusCode.InternalServerError,
-                                cause.message ?: "Unknown error"
+                                cause.message ?: "Unknown error",
                             )
                             logger.error("Caught exception", cause)
                             if (cause is ExecutionException) {
@@ -239,7 +233,7 @@ class HenteManuellOppgaverTest :
                         hentManuellOppgaver(
                             oppgaveClient,
                             manuellOppgaveService,
-                            authorizationService
+                            authorizationService,
                         )
                     }
                     install(ContentNegotiation) {
@@ -264,7 +258,7 @@ class HenteManuellOppgaverTest :
                         exception<Throwable> { call, cause ->
                             call.respond(
                                 HttpStatusCode.InternalServerError,
-                                cause.message ?: "Unknown error"
+                                cause.message ?: "Unknown error",
                             )
                             logger.error("Caught exception", cause)
                             if (cause is ExecutionException) {
@@ -282,7 +276,7 @@ class HenteManuellOppgaverTest :
                         headers {
                             append(
                                 HttpHeaders.Authorization,
-                                "Bearer ${generateJWT("2", "clientId")}"
+                                "Bearer ${generateJWT("2", "clientId")}",
                             )
                         }
                     }

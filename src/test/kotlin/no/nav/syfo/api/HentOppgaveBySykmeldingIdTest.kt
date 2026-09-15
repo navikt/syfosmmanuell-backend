@@ -68,9 +68,7 @@ class HentOppgaveBySykmeldingIdTest :
                             .java
                             .getResourceAsStream("/apprecOK.json")!!
                             .readBytes()
-                            .toString(
-                                Charsets.UTF_8,
-                            ),
+                            .toString(Charsets.UTF_8)
                     ),
             )
 
@@ -88,7 +86,7 @@ class HentOppgaveBySykmeldingIdTest :
                             hentManuellOppgaver(
                                 oppgaveClient,
                                 manuellOppgaveService,
-                                authorizationService
+                                authorizationService,
                             )
                         }
                         install(ContentNegotiation) {
@@ -124,7 +122,7 @@ class HentOppgaveBySykmeldingIdTest :
                             hentManuellOppgaver(
                                 oppgaveClient,
                                 manuellOppgaveService,
-                                authorizationService
+                                authorizationService,
                             )
                         }
                         install(ContentNegotiation) {
@@ -150,7 +148,7 @@ class HentOppgaveBySykmeldingIdTest :
                             hentManuellOppgaver(
                                 oppgaveClient,
                                 manuellOppgaveService,
-                                authorizationService
+                                authorizationService,
                             )
                         }
                         install(ContentNegotiation) {
@@ -177,7 +175,7 @@ class HentOppgaveBySykmeldingIdTest :
                             hentManuellOppgaver(
                                 oppgaveClient,
                                 manuellOppgaveService,
-                                authorizationService
+                                authorizationService,
                             )
                         }
                         install(ContentNegotiation) {
@@ -212,7 +210,7 @@ class HentOppgaveBySykmeldingIdTest :
                             hentManuellOppgaver(
                                 oppgaveClient,
                                 manuellOppgaveService,
-                                authorizationService
+                                authorizationService,
                             )
                         }
                         install(ContentNegotiation) {
@@ -241,7 +239,7 @@ class HentOppgaveBySykmeldingIdTest :
                             hentManuellOppgaver(
                                 oppgaveClient,
                                 manuellOppgaveService,
-                                authorizationService
+                                authorizationService,
                             )
                         }
                         install(ContentNegotiation) {
@@ -270,13 +268,13 @@ class HentOppgaveBySykmeldingIdTest :
                             receivedSykmelding =
                                 receivedSykmelding(
                                     "navLogId2",
-                                    generateSykmelding(id = annenSykmeldingId)
+                                    generateSykmelding(id = annenSykmeldingId),
                                 ),
                             validationResult =
                                 ValidationResult(
                                     Status.OK,
                                     emptyList(),
-                                    OffsetDateTime.now(ZoneOffset.UTC)
+                                    OffsetDateTime.now(ZoneOffset.UTC),
                                 ),
                             apprec = manuellOppgave.apprec,
                         )

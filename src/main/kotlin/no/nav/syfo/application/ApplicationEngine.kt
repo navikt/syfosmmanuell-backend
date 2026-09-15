@@ -43,7 +43,7 @@ fun createApplicationEngine(
         configure = {
             responseWriteTimeoutSeconds = 40
             connector { port = env.applicationPort }
-        }
+        },
     ) {
         setupAuth(env, jwkProvider, issuer)
         install(ContentNegotiation) {
@@ -79,15 +79,8 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             authenticate("jwt") {
-                hentManuellOppgaver(
-                    oppgaveClient,
-                    manuellOppgaveService,
-                    authorizationService,
-                )
-                sendVurderingManuellOppgave(
-                    manuellOppgaveService,
-                    authorizationService,
-                )
+                hentManuellOppgaver(oppgaveClient, manuellOppgaveService, authorizationService)
+                sendVurderingManuellOppgave(manuellOppgaveService, authorizationService)
                 sykmeldingsApi(manuellOppgaveService)
             }
         }

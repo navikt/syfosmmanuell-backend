@@ -6,22 +6,22 @@ enum class ICD10(
     override val codeValue: String,
     override val text: String,
     val icpc2: List<ICPC2>,
-    override val oid: String = "2.16.578.1.12.4.1.1.7110"
+    override val oid: String = "2.16.578.1.12.4.1.1.7110",
 ) : Kodeverk {
     Z000(
         "Z000",
         "Kontakt med helsetjenesten for generell helseundersøkelse",
-        listOf(ICPC2.NEGATIVE_30)
+        listOf(ICPC2.NEGATIVE_30),
     ),
     Z019(
         "Z019",
         "Kontakt med helsetjenesten for uspesifisert befolkningsundersøkelse hos person uten symptom eller registrert diagnose",
-        listOf(ICPC2.NEGATIVE_31)
+        listOf(ICPC2.NEGATIVE_31),
     ),
     Z015(
         "Z015",
         "Kontakt med helsetjenesten for diagnostisk hud- eller sensitivitetsprøve hos person uten symptom eller registrert diagnose",
-        listOf(ICPC2.NEGATIVE_32)
+        listOf(ICPC2.NEGATIVE_32),
     ),
     Z017(
         "Z017",
@@ -32,18 +32,18 @@ enum class ICD10(
             ICPC2.NEGATIVE_35,
             ICPC2.NEGATIVE_36,
             ICPC2.NEGATIVE_37,
-            ICPC2.NEGATIVE_38
-        )
+            ICPC2.NEGATIVE_38,
+        ),
     ),
     Z018(
         "Z018",
         "Kontakt med helsetjenesten for annen spesifisert undersøkelse hos person uten symptom eller registrert diagnose",
-        listOf(ICPC2.NEGATIVE_39, ICPC2.NEGATIVE_40, ICPC2.NEGATIVE_42)
+        listOf(ICPC2.NEGATIVE_39, ICPC2.NEGATIVE_40, ICPC2.NEGATIVE_42),
     ),
     Z016(
         "Z016",
         "Kontakt med helsetjenesten for radiologisk undersøkelse ikke klassifisert annet sted hos person uten symptom eller registrert diagnose",
-        listOf(ICPC2.NEGATIVE_41)
+        listOf(ICPC2.NEGATIVE_41),
     ),
     Z048(
         "Z048",
@@ -53,33 +53,33 @@ enum class ICD10(
             ICPC2.NEGATIVE_63,
             ICPC2.NEGATIVE_66,
             ICPC2.NEGATIVE_67,
-            ICPC2.NEGATIVE_68
-        )
+            ICPC2.NEGATIVE_68,
+        ),
     ),
     Z299(
         "Z299",
         "Behov for ikke spesifisert forebyggende tiltak i forbindelse med smittsom sykdom",
-        listOf(ICPC2.NEGATIVE_44)
+        listOf(ICPC2.NEGATIVE_44),
     ),
     Z719(
         "Z719",
         "Kontakt med helsetjenesten for uspesifisert rådgivning eller veiledning",
-        listOf(ICPC2.NEGATIVE_45, ICPC2.NEGATIVE_58)
+        listOf(ICPC2.NEGATIVE_45, ICPC2.NEGATIVE_58),
     ),
     Z769(
         "Z769",
         "Kontakt med helsetjenesten under uspesifisert omstendighet",
-        listOf(ICPC2.NEGATIVE_46, ICPC2.NEGATIVE_47, ICPC2.NEGATIVE_48, ICPC2.NEGATIVE_69)
+        listOf(ICPC2.NEGATIVE_46, ICPC2.NEGATIVE_47, ICPC2.NEGATIVE_48, ICPC2.NEGATIVE_69),
     ),
     Z298(
         "Z298",
         "Behov for annet spesifisert forebyggende tiltak i forbindelse med smittsom sykdom",
-        listOf(ICPC2.NEGATIVE_49)
+        listOf(ICPC2.NEGATIVE_49),
     ),
     Z768(
         "Z768",
         "Kontakt med helsetjenesten under annen spesifisert omstendighet",
-        listOf(ICPC2.NEGATIVE_50, ICPC2.NEGATIVE_59)
+        listOf(ICPC2.NEGATIVE_50, ICPC2.NEGATIVE_59),
     ),
     Z518(
         "Z518",
@@ -90,36 +90,36 @@ enum class ICD10(
             ICPC2.NEGATIVE_53,
             ICPC2.NEGATIVE_54,
             ICPC2.NEGATIVE_56,
-            ICPC2.A98
-        )
+            ICPC2.A98,
+        ),
     ),
     Z512("Z512", "Kontakt med helsetjenesten for annen kjemoterapi", listOf(ICPC2.NEGATIVE_55)),
     Z509(
         "Z509",
         "Kontakt med helsetjenesten for behandling som omfatter bruk av uspesifisert rehabiliteringstiltak",
-        listOf(ICPC2.NEGATIVE_57)
+        listOf(ICPC2.NEGATIVE_57),
     ),
     Z712("Z712", "Kontakt for å få forklaring på undersøkelsesresultat", listOf(ICPC2.NEGATIVE_60)),
     Z929(
         "Z929",
         "Opplysning om uspesifisert tidligere medisinsk behandling",
-        listOf(ICPC2.NEGATIVE_61)
+        listOf(ICPC2.NEGATIVE_61),
     ),
     Z029(
         "Z029",
         "Kontakt med helsetjenesten for uspesifisert undersøkelse for administrative formål",
-        listOf(ICPC2.NEGATIVE_62, ICPC2.A97)
+        listOf(ICPC2.NEGATIVE_62, ICPC2.A97),
     ),
     Z099(
         "Z099",
         "Kontakt med helsetjenesten for etterunderøkelse etter uspesifisert behandling for annen tilstand",
-        listOf(ICPC2.NEGATIVE_64, ICPC2.NEGATIVE_65)
+        listOf(ICPC2.NEGATIVE_64, ICPC2.NEGATIVE_65),
     ),
     R529("R529", "Uspesifisert smerte", listOf(ICPC2.A01)),
     R688(
         "R688",
         "Annet spesifisert generelt symptom eller tegn",
-        listOf(ICPC2.A02, ICPC2.A08, ICPC2.A29, ICPC2.B04, ICPC2.B29, ICPC2.W29)
+        listOf(ICPC2.A02, ICPC2.A08, ICPC2.A29, ICPC2.B04, ICPC2.B29, ICPC2.W29),
     ),
     R509("R509", "Uspesifisert feber", listOf(ICPC2.A03)),
     R53("R53", "Uvelhet eller tretthet", listOf(ICPC2.A04, ICPC2.A05)),
@@ -170,29 +170,29 @@ enum class ICD10(
             ICPC2.Y25,
             ICPC2.Y26,
             ICPC2.Y27,
-            ICPC2.Z27
-        )
+            ICPC2.Z27,
+        ),
     ),
     R681("R681", "Uspesifikt symptom typisk for spedbarn", listOf(ICPC2.A16)),
     R468(
         "R468",
         "Annet spesifisert symptom eller tegn med tilknytning til utseende eller atferd",
-        listOf(ICPC2.A18, ICPC2.H15, ICPC2.W21, ICPC2.X22)
+        listOf(ICPC2.A18, ICPC2.H15, ICPC2.W21, ICPC2.X22),
     ),
     Z718(
         "Z718",
         "Kontakt med helsetjenesten for annen spesifisert rådgivning eller veiledning",
-        listOf(ICPC2.A20)
+        listOf(ICPC2.A20),
     ),
     Z809(
         "Z809",
         "Opplysning om uspesifisert ondartet svulst i familieanamnesen",
-        listOf(ICPC2.A21)
+        listOf(ICPC2.A21),
     ),
     Z918(
         "Z918",
         "Opplysning om annen spesifisert risikofaktor i egen sykehistorie, ikke klassifisert annet sted",
-        listOf(ICPC2.A23)
+        listOf(ICPC2.A23),
     ),
     Z736(
         "Z736",
@@ -213,13 +213,13 @@ enum class ICD10(
             ICPC2.U28,
             ICPC2.W28,
             ICPC2.X28,
-            ICPC2.Y28
-        )
+            ICPC2.Y28,
+        ),
     ),
     A169(
         "A169",
         "Tuberkulose i uspesifisert åndedrettsorgan, uten nevnt bakteriologisk eller histologisk bekreftelse",
-        listOf(ICPC2.A70)
+        listOf(ICPC2.A70),
     ),
     B059("B059", "Meslinger uten komplikasjoner", listOf(ICPC2.A71)),
     B019("B019", "Varicella uten komplikasjoner", listOf(ICPC2.A72)),
@@ -229,7 +229,7 @@ enum class ICD10(
     B09(
         "B09",
         "Uspesifisert virusinfeksjon kjennetegnet ved hud- eller slimhinnelesjon",
-        listOf(ICPC2.A76)
+        listOf(ICPC2.A76),
     ),
     B349("B349", "Uspesifisert virusinfeksjon", listOf(ICPC2.A77)),
     B99("B99", "Annen eller uspesifisert infeksjonssykdom", listOf(ICPC2.A78)),
@@ -237,33 +237,33 @@ enum class ICD10(
     T149(
         "T149",
         "Uspesifisert skade i uspesifisert kroppsregion",
-        listOf(ICPC2.A80, ICPC2.B77, ICPC2.W75)
+        listOf(ICPC2.A80, ICPC2.B77, ICPC2.W75),
     ),
     T07("T07", "Flere uspesifiserte skader", listOf(ICPC2.A81)),
     T941("T941", "Følgetilstand etter skade i uspesifisert kroppsregion", listOf(ICPC2.A82)),
     T4n(
         "T4n",
         "Forgiftning med terapeutisk legemiddel eller biologisk substans",
-        listOf(ICPC2.A84)
+        listOf(ICPC2.A84),
     ),
     T887("T887", "Annen eller ikke spesifisert bivirkning av legemiddel", listOf(ICPC2.A85)),
     T659("T659", "Toksisk virkning av uspesifisert stoff", listOf(ICPC2.A86)),
     T889(
         "T889",
         "Uspesifisert komplikasjon til kirurgisk eller medisinsk behandling",
-        listOf(ICPC2.A87)
+        listOf(ICPC2.A87),
     ),
     T758("T758", "Annen spesifisert skadevirkning av ytre påvirkning", listOf(ICPC2.A88)),
     T859(
         "T859",
         "Uspesifisert komplikasjon ved innvendig protese, implantat eller transplantat",
-        listOf(ICPC2.A89)
+        listOf(ICPC2.A89),
     ),
     Q899("Q899", "Uspesifisert medfødt misdannelse", listOf(ICPC2.A90)),
     R899(
         "R899",
         "Uspesifisert unormalt funn i prøve fra annet organ, system eller vev",
-        listOf(ICPC2.A91)
+        listOf(ICPC2.A91),
     ),
     T784("T784", "Uspesifisert allergi", listOf(ICPC2.A92)),
     P073("P073", "Annet for tidlig født barn", listOf(ICPC2.A93)),
@@ -273,7 +273,7 @@ enum class ICD10(
     Z014(
         "Z014",
         "Kontakt med helsetjenesten for generell eller rutinemessig gynekologisk undersøkelse hos person uten symptom eller registrert diagnose",
-        listOf(ICPC2.A981)
+        listOf(ICPC2.A981),
     ),
     R69("R69", "Ukjent eller uspesifisert sykdomsårsak", listOf(ICPC2.A99)),
     R599("R599", "Uspesifiserte forstørrede lymfeknuter", listOf(ICPC2.B02)),
@@ -284,12 +284,12 @@ enum class ICD10(
     C969(
         "C969",
         "Upesifisert ondartet svulst utgått fra lymfoid, hematopoetisk eller beslektet vev",
-        listOf(ICPC2.B74)
+        listOf(ICPC2.B74),
     ),
     D479(
         "D479",
         "Uspesifisert svulst med usikkert eller ukjent malignitetspotensial i lymfoid, hematopoetisk eller beslektet vev",
-        listOf(ICPC2.B75)
+        listOf(ICPC2.B75),
     ),
     S360("S360", "Skade på milt", listOf(ICPC2.B76)),
     D589("D589", "Uspesifisert arvelig hemolytisk anemi", listOf(ICPC2.B78)),
@@ -301,7 +301,7 @@ enum class ICD10(
     R72(
         "R72",
         "Unormalt forhold ved hvite blodceller, ikke klassifisert annet sted",
-        listOf(ICPC2.B84)
+        listOf(ICPC2.B84),
     ),
     R161("R161", "Splenomegali, ikke klassifisert annet sted", listOf(ICPC2.B87)),
     B24("B24", "Uspesifisert humant immunsviktvirus-sykdom", listOf(ICPC2.B90)),
@@ -312,7 +312,7 @@ enum class ICD10(
     R102(
         "R102",
         "Smerte i bekken eller perineum",
-        listOf(ICPC2.D04, ICPC2.X01, ICPC2.Y01, ICPC2.Y02)
+        listOf(ICPC2.D04, ICPC2.X01, ICPC2.Y01, ICPC2.Y02),
     ),
     L290("L290", "Pruritus ani", listOf(ICPC2.D05)),
     R103("R103", "Smerte lokalisert til annen del av nedre abdomen", listOf(ICPC2.D06)),
@@ -331,7 +331,7 @@ enum class ICD10(
     R198(
         "R198",
         "Annet spesifisert symptom eller tegn med tilknytning til fordøyelsessystemet eller buken",
-        listOf(ICPC2.D20, ICPC2.D29)
+        listOf(ICPC2.D20, ICPC2.D29),
     ),
     R13("R13", "Dysfagi", listOf(ICPC2.D21)),
     R160("R160", "Hepatomegali, ikke klassifisert annet sted", listOf(ICPC2.D23)),
@@ -342,7 +342,7 @@ enum class ICD10(
     A090(
         "A090",
         "Annen eller uspesifisert gastroenteritt eller kolitt av infeksiøs årsak",
-        listOf(ICPC2.D73)
+        listOf(ICPC2.D73),
     ),
     C169("C169", "Ondartet svulst i uspesifisert del av magesekk", listOf(ICPC2.D74)),
     C189("C189", "Ondartet svulst i uspesifisert del av tykktarm", listOf(ICPC2.D75)),
@@ -350,12 +350,12 @@ enum class ICD10(
     C269(
         "C269",
         "Ondartet svulst med ufullstendig angitt lokalisasjon i fordøyelsessystemet",
-        listOf(ICPC2.D77)
+        listOf(ICPC2.D77),
     ),
     D139(
         "D139",
         "Godartet svulst i ufullstendig angitt lokalisasjon innen fordøyelsessystemet",
-        listOf(ICPC2.D78)
+        listOf(ICPC2.D78),
     ),
     T189("T189", "Fremmedlegeme i uspesifisert del av fordøyelseskanal", listOf(ICPC2.D79)),
     S369("S369", "Skade på uspesifisert organ i bukhule", listOf(ICPC2.D80)),
@@ -365,26 +365,26 @@ enum class ICD10(
     K269(
         "K269",
         "Sår som ikke er spesifisert som akutt eller kronisk i tolvfingertarm, uten blødning eller perforasjon",
-        listOf(ICPC2.D85)
+        listOf(ICPC2.D85),
     ),
     K279(
         "K279",
         "Magesår som ikke er spesifisert som akutt eller kronisk i uspesifisert lokalisasjon, uten blødning eller perforasjon",
-        listOf(ICPC2.D86)
+        listOf(ICPC2.D86),
     ),
     K299("K299", "Uspesifisert gastroduodenitt", listOf(ICPC2.D87)),
     K37("K37", "Uspesifisert appendisitt", listOf(ICPC2.D88)),
     K409(
         "K409",
         "Enkeltsidig eller uspesifisert lyskebrokk uten obstruksjon eller gangren",
-        listOf(ICPC2.D89)
+        listOf(ICPC2.D89),
     ),
     K449("K449", "Mellomgulvsbrokk uten obstruksjon eller gangren", listOf(ICPC2.D90)),
     K469("K469", "Uspesifisert abdominalt brokk uten obstruksjon eller gangren", listOf(ICPC2.D91)),
     K579(
         "K579",
         "Divertikkelsykdom i uspesifisert del av tarm uten perforasjon eller abscess",
-        listOf(ICPC2.D92)
+        listOf(ICPC2.D92),
     ),
     K589("K589", "Irritabel tarm-syndrom uten diaré", listOf(ICPC2.D93)),
     K529("K529", "Uspesifisert ikke-infeksiøs gastroenteritt eller kolitt", listOf(ICPC2.D94)),
@@ -397,7 +397,7 @@ enum class ICD10(
     H578(
         "H578",
         "Annen spesifisert sykdom i øyet eller øyets omgivelser",
-        listOf(ICPC2.F02, ICPC2.F13, ICPC2.F15, ICPC2.F99)
+        listOf(ICPC2.F02, ICPC2.F13, ICPC2.F15, ICPC2.F99),
     ),
     H042("H042", "Tåreflod", listOf(ICPC2.F03)),
     H531("H531", "Subjektiv synsforstyrrelse", listOf(ICPC2.F04)),
@@ -407,7 +407,7 @@ enum class ICD10(
     Z460(
         "Z460",
         "Kontakt med helsetjenesten for tilpasning eller justering av briller eller kontaktlinser",
-        listOf(ICPC2.F17, ICPC2.F18)
+        listOf(ICPC2.F17, ICPC2.F18),
     ),
     H579("H579", "Uspesifisert sykdom i øyet eller øyets omgivelser", listOf(ICPC2.F29, ICPC2.F73)),
     H109("H109", "Uspesifisert konjunktivitt", listOf(ICPC2.F70)),
@@ -416,7 +416,7 @@ enum class ICD10(
     D487(
         "D487",
         "Svulst med usikkert eller ukjent malignitetspotensial med annen spesifisert lokalisasjon",
-        listOf(ICPC2.F74, ICPC2.K72)
+        listOf(ICPC2.F74, ICPC2.K72),
     ),
     S001("S001", "Kontusjon av øyelokk og område omkring øye", listOf(ICPC2.F75)),
     T159("T159", "Fremmedlegeme i uspesifisert del av fremre del av øye", listOf(ICPC2.F76)),
@@ -448,7 +448,7 @@ enum class ICD10(
     D385(
         "D385",
         "Svulst med usikkert eller ukjent malignitetspotensial i annet spesifisert åndedrettsorgan",
-        listOf(ICPC2.H75)
+        listOf(ICPC2.H75),
     ),
     T16("T16", "Fremmedlegeme i øre", listOf(ICPC2.H76)),
     H729("H729", "Uspesifisert perforasjon i trommehinne", listOf(ICPC2.H77)),
@@ -465,7 +465,7 @@ enum class ICD10(
     R098(
         "R098",
         "Annet spesifisert symptom eller tegn med tilknytning til sirkulasjons- eller åndedrettssystemet",
-        listOf(ICPC2.K03, ICPC2.K29, ICPC2.R29)
+        listOf(ICPC2.K03, ICPC2.K29, ICPC2.R29),
     ),
     R002("R002", "Palpitasjon", listOf(ICPC2.K04)),
     R008("R008", "Andre eller uspesifiserte unormale hjerteslag", listOf(ICPC2.K05)),
@@ -474,7 +474,7 @@ enum class ICD10(
     Z824(
         "Z824",
         "Opplysning om iskemisk hjertesykdom eller annen sykdom i sirkulasjonssystemet i familieanamnesen",
-        listOf(ICPC2.K22)
+        listOf(ICPC2.K22),
     ),
     I409("I409", "Uspesifisert akutt myokarditt", listOf(ICPC2.K70)),
     I099("I099", "Uspesifisert revmatisk hjertesykdom", listOf(ICPC2.K71)),
@@ -509,12 +509,12 @@ enum class ICD10(
     R298(
         "R298",
         "Annet eller uspesifisert symptom eller tegn med tilknytning til nervesystemet eller muskel-skjelettsystemet",
-        listOf(ICPC2.L04, ICPC2.L05, ICPC2.L29, ICPC2.N29)
+        listOf(ICPC2.L04, ICPC2.L05, ICPC2.L29, ICPC2.N29),
     ),
     M255(
         "M255",
         "Leddsmerte",
-        listOf(ICPC2.L07, ICPC2.L08, ICPC2.L10, ICPC2.L11, ICPC2.L13, ICPC2.L15, ICPC2.L16)
+        listOf(ICPC2.L07, ICPC2.L08, ICPC2.L10, ICPC2.L11, ICPC2.L13, ICPC2.L15, ICPC2.L16),
     ),
     M796("M796", "Smerte i ekstremitet", listOf(ICPC2.L09, ICPC2.L12, ICPC2.L14, ICPC2.L17)),
     M790("M790", "Uspesifisert revmatisme", listOf(ICPC2.L18)),
@@ -524,7 +524,7 @@ enum class ICD10(
     C419(
         "C419",
         "Ondartet svulst i uspesifisert del av knokkel eller leddbrusk",
-        listOf(ICPC2.L71)
+        listOf(ICPC2.L71),
     ),
     S529("S529", "Brudd i uspesifisert del av underarm", listOf(ICPC2.L72)),
     S829("S829", "Brudd i uspesifisert del av legg", listOf(ICPC2.L73)),
@@ -535,12 +535,12 @@ enum class ICD10(
     S836(
         "S836",
         "Forstuving, ruptur eller forstrekking av annen eller uspesifisert del av kne",
-        listOf(ICPC2.L78)
+        listOf(ICPC2.L78),
     ),
     T143(
         "T143",
         "Dislokasjon, forstuving og forstrekking i uspesifisert kroppsregion",
-        listOf(ICPC2.L79, ICPC2.L80)
+        listOf(ICPC2.L79, ICPC2.L80),
     ),
     T146("T146", "Skade på sene eller muskel i uspesifisert kroppsregion", listOf(ICPC2.L81)),
     Q799("Q799", "Uspesifisert medfødt misdannelse i muskel-skjelettsystem", listOf(ICPC2.L82)),
@@ -560,7 +560,7 @@ enum class ICD10(
     D481(
         "D481",
         "Svulst med usikkert eller ukjent malignitetspotensial i bindevev eller annet bløtvev",
-        listOf(ICPC2.L97)
+        listOf(ICPC2.L97),
     ),
     M219("M219", "Uspesifisert ervervet deformitet i ekstremitet", listOf(ICPC2.L98)),
     M999("M999", "Uspesifisert biomekanisk lesjon", listOf(ICPC2.L99)),
@@ -569,13 +569,13 @@ enum class ICD10(
     G258(
         "G258",
         "Annen spesifisert ekstrapyramidal tilstand eller bevegelsesforstyrrelse",
-        listOf(ICPC2.N04)
+        listOf(ICPC2.N04),
     ),
     R202("R202", "Parestesi i hud", listOf(ICPC2.N05)),
     R208(
         "R208",
         "Annen eller uspesifisert forstyrrelse i hudens følsomhet",
-        listOf(ICPC2.N06, ICPC2.S01)
+        listOf(ICPC2.N06, ICPC2.S01),
     ),
     R568("R568", "Annen eller uspesifisert krampe", listOf(ICPC2.N07)),
     R258("R258", "Andre eller uspesifiserte unormale ufrivillige bevegelser", listOf(ICPC2.N08)),
@@ -584,7 +584,7 @@ enum class ICD10(
     G98(
         "G98",
         "Annen lidelse i nervesystemet, ikke klassifisert annet sted",
-        listOf(ICPC2.N18, ICPC2.N99)
+        listOf(ICPC2.N18, ICPC2.N99),
     ),
     R478("R478", "Annen eller uspesifisert taleforstyrrelse", listOf(ICPC2.N19)),
     A809("A809", "Uspesifisert akutt poliomyelitt", listOf(ICPC2.N70)),
@@ -594,13 +594,13 @@ enum class ICD10(
     C729(
         "C729",
         "Ondartet svulst med uspesifisert lokalisasjon i sentralnervesystem",
-        listOf(ICPC2.N74)
+        listOf(ICPC2.N74),
     ),
     D339("D339", "Godartet svulst i uspesifisert del av sentralnervesystemet", listOf(ICPC2.N75)),
     D439(
         "D439",
         "Svulst med usikkert eller ukjent malignitetspotensial i uspesifisert del av sentralnervesystemet",
-        listOf(ICPC2.N76)
+        listOf(ICPC2.N76),
     ),
     S060("S060", "Hjernerystelse", listOf(ICPC2.N79)),
     S069("S069", "Uspesifisert intrakraniell skade", listOf(ICPC2.N80)),
@@ -626,7 +626,7 @@ enum class ICD10(
     F529(
         "F529",
         "Uspesifisert seksuell dysfunksjon som ikke skyldes somatisk lidelse",
-        listOf(ICPC2.P08)
+        listOf(ICPC2.P08),
     ),
     F669("F669", "Uspesifisert psykoseksuell forstyrrelse", listOf(ICPC2.P09)),
     F985("F985", "Stamming", listOf(ICPC2.P10)),
@@ -641,7 +641,7 @@ enum class ICD10(
     R418(
         "R418",
         "Annet eller uspesifisert symptom eller tegn med tilknytning til kognitiv funksjon eller bevissthet",
-        listOf(ICPC2.P20)
+        listOf(ICPC2.P20),
     ),
     F919("F919", "Uspesifisert atferdsforstyrrelse", listOf(ICPC2.P22, ICPC2.P23)),
     F819("F819", "Uspesifisert utviklingsforstyrrelse i skoleferdighet", listOf(ICPC2.P24)),
@@ -649,7 +649,7 @@ enum class ICD10(
     R458(
         "R458",
         "Annet spesifisert symptom eller tegn med tilknytning til emosjonell tilstand",
-        listOf(ICPC2.P29)
+        listOf(ICPC2.P29),
     ),
     F03("F03", "Annen eller uspesifisert demens", listOf(ICPC2.P70)),
     F069("F069", "Uspesifisert organisk psykisk lidelse", listOf(ICPC2.P71)),
@@ -667,7 +667,7 @@ enum class ICD10(
     F799(
         "F799",
         "Uspesifisert psykisk utviklingshemming uten beskrivelse av atferdsproblem",
-        listOf(ICPC2.P85)
+        listOf(ICPC2.P85),
     ),
     F509("F509", "Uspesifisert spiseforstyrrelse", listOf(ICPC2.P86)),
     F29("F29", "Uspesifisert ikke-organisk psykose", listOf(ICPC2.P98)),
@@ -681,7 +681,7 @@ enum class ICD10(
     J348(
         "J348",
         "Annen spesifisert forstyrrelse i nese eller nesebihule",
-        listOf(ICPC2.R08, ICPC2.R09)
+        listOf(ICPC2.R08, ICPC2.R09),
     ),
     R070("R070", "Smerte i svelg", listOf(ICPC2.R21)),
     R498("R498", "Annen eller uspesifisert stemmeforstyrrelse", listOf(ICPC2.R23)),
@@ -699,7 +699,7 @@ enum class ICD10(
     J111(
         "J111",
         "Influensa med annen luftveismanifestasjon, som skyldes uidentifisert virus",
-        listOf(ICPC2.R80)
+        listOf(ICPC2.R80),
     ),
     J189("J189", "Uspesifisert pneumoni", listOf(ICPC2.R81)),
     R091("R091", "Pleuritt", listOf(ICPC2.R82)),
@@ -708,7 +708,7 @@ enum class ICD10(
     C399(
         "C399",
         "Ondartet svulst med ufullstendig angitt lokalisasjon i åndedrettsorgan",
-        listOf(ICPC2.R85)
+        listOf(ICPC2.R85),
     ),
     D144("D144", "Godartet svulst i uspesifisert del av åndedrettsorgan", listOf(ICPC2.R86)),
     T179("T179", "Fremmedlegeme i uspesifisert del av luftveier", listOf(ICPC2.R87)),
@@ -718,7 +718,7 @@ enum class ICD10(
     D386(
         "D386",
         "Svulst med usikkert eller ukjent malignitetspotensial i uspesifisert åndedrettsorgan",
-        listOf(ICPC2.R92)
+        listOf(ICPC2.R92),
     ),
     J449("J449", "Uspesifisert kronisk obstruktiv lungesykdom", listOf(ICPC2.R95)),
     J459("J459", "Uspesifisert astma", listOf(ICPC2.R96)),
@@ -731,7 +731,7 @@ enum class ICD10(
     R227(
         "R227",
         "Lokalisert hevelse, oppfylling eller kul med flere lokalisasjoner",
-        listOf(ICPC2.S05)
+        listOf(ICPC2.S05),
     ),
     R21("R21", "Utslett eller annet uspesifikt hudutbrudd", listOf(ICPC2.S06, ICPC2.S07)),
     R238("R238", "Annen eller uspesifisert hudforandring", listOf(ICPC2.S08, ICPC2.S29)),
@@ -741,7 +741,7 @@ enum class ICD10(
     T140(
         "T140",
         "Overflateskade på uspesifisert kroppsregion",
-        listOf(ICPC2.S12, ICPC2.S16, ICPC2.S17, ICPC2.S19)
+        listOf(ICPC2.S12, ICPC2.S16, ICPC2.S17, ICPC2.S19),
     ),
     T141("T141", "Åpent sår på uspesifisert kroppsregion", listOf(ICPC2.S13, ICPC2.S15, ICPC2.S18)),
     T300("T300", "Brannskade av uspesifiert grad i uspesifisert kroppsregion", listOf(ICPC2.S14)),
@@ -763,7 +763,7 @@ enum class ICD10(
     L569(
         "L569",
         "Uspesifisert akutt hudforandring som skyldes ultrafiolett stråling",
-        listOf(ICPC2.S80)
+        listOf(ICPC2.S80),
     ),
     D180("D180", "Hemangiom med enhver lokalisasjon", listOf(ICPC2.S81)),
     D229("D229", "Melanocyttnevus med uspesifisert lokalisasjon", listOf(ICPC2.S82)),
@@ -793,13 +793,13 @@ enum class ICD10(
     R629(
         "R629",
         "Uspesifisert uteblivelse av forventet normal fysiologisk utvikling",
-        listOf(ICPC2.T10)
+        listOf(ICPC2.T10),
     ),
     E86("E86", "Væsketap", listOf(ICPC2.T11)),
     R638(
         "R638",
         "Annet spesifisert symptom eller tegn med tilknytning til mat- eller væskeinntak",
-        listOf(ICPC2.T29)
+        listOf(ICPC2.T29),
     ),
     E060("E060", "Akutt tyreoiditt	", listOf(ICPC2.T70)),
     C73("C73", "Ondartet svulst i skjoldbruskkjertel", listOf(ICPC2.T71)),
@@ -807,7 +807,7 @@ enum class ICD10(
     D449(
         "D449",
         "Svulst med usikkert eller ukjent malignitetspotensial i uspesifisert endokrin kjertel",
-        listOf(ICPC2.T73)
+        listOf(ICPC2.T73),
     ),
     Q892("Q892", "Medfødt misdannelse i annen endokrin kjertel", listOf(ICPC2.T78, ICPC2.T80)),
     E049("E049", "Uspesifisert ikke-toksisk struma	", listOf(ICPC2.T81)),
@@ -829,14 +829,14 @@ enum class ICD10(
     R398(
         "R398",
         "Annet eller uspesifisert symptom eller tegn med tilknytning til urinveiene",
-        listOf(ICPC2.U07, ICPC2.U13, ICPC2.U29)
+        listOf(ICPC2.U07, ICPC2.U13, ICPC2.U29),
     ),
     R33("R33", "Urinretensjon", listOf(ICPC2.U08)),
     N23("N23", "Uspesifisert nyrekolikk", listOf(ICPC2.U14)),
     N12(
         "N12",
         "Tubulointerstitiell nefritt ikke spesifisert som akutt eller kronisk",
-        listOf(ICPC2.U70)
+        listOf(ICPC2.U70),
     ),
     N309("N309", "Uspesifisert cystitt", listOf(ICPC2.U71)),
     N341("N341", "Uspesifikk uretritt", listOf(ICPC2.U72)),
@@ -845,20 +845,20 @@ enum class ICD10(
     C689(
         "C689",
         "Ondartet svulst med uspesifisert lokalisasjon i urinveisorgan",
-        listOf(ICPC2.U77)
+        listOf(ICPC2.U77),
     ),
     D309("D309", "Godartet svulst i uspesifisert urinveisorgan", listOf(ICPC2.U78)),
     D419(
         "D419",
         "Svulst med usikkert eller ukjent malignitetspotensial i uspesifisert urinveisorgan",
-        listOf(ICPC2.U79)
+        listOf(ICPC2.U79),
     ),
     S370("S370", "Skade på nyre", listOf(ICPC2.U80)),
     Q649("Q649", "Uspesifisert medfødt misdannelse i urinsystemet", listOf(ICPC2.U85)),
     N059(
         "N059",
         "Uspesifisert nefrittisk syndrom med uspesifisert morfologisk lesjon",
-        listOf(ICPC2.U88)
+        listOf(ICPC2.U88),
     ),
     N392("N392", "Uspesifisert ortostatisk proteinuri", listOf(ICPC2.U90)),
     N209("N209", "Sten i uspesifisert lokalisasjon i urinveier", listOf(ICPC2.U95)),
@@ -871,14 +871,14 @@ enum class ICD10(
     Z304(
         "Z304",
         "Kontakt med helsetjenesten for overvåkning av befruktningshindrende legemiddel",
-        listOf(ICPC2.W11)
+        listOf(ICPC2.W11),
     ),
     Z301("Z301", "Kontakt med helsetjenesten for innsetting av spiral", listOf(ICPC2.W12)),
     Z302("Z302", "Kontakt med helsetjenesten for sterilisering", listOf(ICPC2.W13, ICPC2.Y13)),
     Z308(
         "Z308",
         "Kontakt med helsetjenesten for annet spesifisert prevensjonstiltak",
-        listOf(ICPC2.W14, ICPC2.Y14)
+        listOf(ICPC2.W14, ICPC2.Y14),
     ),
     N979("N979", "Uspesifisert kvinnelig infertilitet", listOf(ICPC2.W15)),
     O721("O721", "Annen umiddelbar blødning etter fødsel", listOf(ICPC2.W17)),
@@ -886,30 +886,30 @@ enum class ICD10(
     O927(
         "O927",
         "Annen eller uspesifisert forstyrrelse i melkeproduksjon",
-        listOf(ICPC2.W19, ICPC2.W95)
+        listOf(ICPC2.W19, ICPC2.W95),
     ),
     O85("O85", "Sepsis i barseltid", listOf(ICPC2.W70)),
     O989(
         "O989",
         "Uspesifisert infeksjonssykdom eller parasittsykdom hos mor, som kompliserer svangerskap, fødsel eller barseltid",
-        listOf(ICPC2.W71)
+        listOf(ICPC2.W71),
     ),
     C58("C58", "Ondartet svulst i morkake", listOf(ICPC2.W72)),
     O019("O019", "Uspesifisert blæremola", listOf(ICPC2.W73)),
     O998(
         "O998",
         "Annen spesifisert sykdom eller tilstand som kompliserer svangerskap, fødsel eller barseltid",
-        listOf(ICPC2.W76)
+        listOf(ICPC2.W76),
     ),
     Z321(
         "Z321",
         "Graviditetsundersøkelse eller test med bekreftet graviditet",
-        listOf(ICPC2.W78, ICPC2.W79)
+        listOf(ICPC2.W78, ICPC2.W79),
     ),
     Z349(
         "Z349",
         "Kontroll av normalt svangerskap, uspesifisert om første eller senere svangerskap",
-        listOf(ICPC2.W781)
+        listOf(ICPC2.W781),
     ),
     O009("O009", "Uspesifisert svangerskap utenfor livmoren", listOf(ICPC2.W80)),
     O149("O149", "Uspesifisert preeklampsi", listOf(ICPC2.W81)),
@@ -922,7 +922,7 @@ enum class ICD10(
     O759(
         "O759",
         "Uspesifisert komplikasjon ved fødsel eller forløsning",
-        listOf(ICPC2.W92, ICPC2.W93)
+        listOf(ICPC2.W92, ICPC2.W93),
     ),
     O912("O912", "Ikke-purulent mastitt i forbindelse med fødsel", listOf(ICPC2.W94)),
     O269("O269", "Uspesifisert svangerskapsrelatert tilstand", listOf(ICPC2.W99)),
@@ -936,12 +936,12 @@ enum class ICD10(
     N949(
         "N949",
         "Uspesifisert tilstand med tilknytning til kvinnelige kjønnsorganer eller menstruasjonssyklus",
-        listOf(ICPC2.X09, ICPC2.X17, ICPC2.X29)
+        listOf(ICPC2.X09, ICPC2.X17, ICPC2.X29),
     ),
     Z309(
         "Z309",
         "Kontakt med helsetjenesten for uspesifisert prevensjonstiltak",
-        listOf(ICPC2.X10)
+        listOf(ICPC2.X10),
     ),
     N959("N959", "Uspesifisert forstyrrelse i klimakterium eller senere", listOf(ICPC2.X11)),
     N950("N950", "Postmenopausal blødning", listOf(ICPC2.X12)),
@@ -951,7 +951,7 @@ enum class ICD10(
     N909(
         "N909",
         "Uspesifisert ikke-inflammatorisk lidelse i ytre kvinnelige kjønnsorganer eller perineum",
-        listOf(ICPC2.X16)
+        listOf(ICPC2.X16),
     ),
     N644("N644", "Mastodyni", listOf(ICPC2.X18)),
     N63("N63", "Uspesifisert klump i bryst", listOf(ICPC2.X19)),
@@ -962,7 +962,7 @@ enum class ICD10(
     B373(
         "B373",
         "Candidainfeksjon i ytre kvinnelige kjønnsorganer eller skjede",
-        listOf(ICPC2.X72)
+        listOf(ICPC2.X72),
     ),
     A590("A590", "Urogenital trikomonasinfeksjon", listOf(ICPC2.X73)),
     N739("N739", "Uspesifisert betennelsestilstand i kvinnelig bekkenorgan", listOf(ICPC2.X74)),
@@ -971,7 +971,7 @@ enum class ICD10(
     C577(
         "C577",
         "Ondartet svulst i annen spesifisert del av kvinnelige kjønnsorganer",
-        listOf(ICPC2.X77)
+        listOf(ICPC2.X77),
     ),
     D259("D259", "Leiomyom med uspesifisert lokalisasjon i livmor", listOf(ICPC2.X78)),
     D24("D24", "Godartet svulst i bryst", listOf(ICPC2.X79)),
@@ -979,14 +979,14 @@ enum class ICD10(
     D397(
         "D397",
         "Svulst med usikkert eller ukjent malignitetspotensial i annet spesifisert kvinnelig kjønnsorgan",
-        listOf(ICPC2.X81)
+        listOf(ICPC2.X81),
     ),
     S314("S314", "Åpent sår i skjede eller på ytre kvinnelige kjønnsorganer", listOf(ICPC2.X82)),
     Q529("Q529", "Uspesifisert medfødt misdannelse i kvinnelige kjønnsorganer", listOf(ICPC2.X83)),
     N768(
         "N768",
         "Annen spesifisert betennelse i skjede eller ytre kvinnelige kjønnsorganer",
-        listOf(ICPC2.X84)
+        listOf(ICPC2.X84),
     ),
     N889("N889", "Uspesifisert ikke-inflammatorisk lidelse i livmorhals", listOf(ICPC2.X85)),
     N879("N879", "Uspesifisert dysplasi i livmorhals", listOf(ICPC2.X86)),
@@ -998,19 +998,19 @@ enum class ICD10(
     A562(
         "A562",
         "Uspesifisert klamydiainfeksjon i kjønnsorganer eller urinveier",
-        listOf(ICPC2.X92)
+        listOf(ICPC2.X92),
     ),
     N948(
         "N948",
         "Annen spesifisert tilstand med tilknytning til kvinnelige kjønnsorganer eller menstruasjonssyklus",
-        listOf(ICPC2.X99)
+        listOf(ICPC2.X99),
     ),
     R36("R36", "Utflod fra urinrøret", listOf(ICPC2.Y03)),
     N489("N489", "Uspesifisert penisforstyrrelse", listOf(ICPC2.Y04, ICPC2.Y08)),
     N509(
         "N509",
         "Uspesifisert forstyrrelse i mannlige kjønnsorganer",
-        listOf(ICPC2.Y05, ICPC2.Y29, ICPC2.Y99)
+        listOf(ICPC2.Y05, ICPC2.Y29, ICPC2.Y99),
     ),
     N429("N429", "Uspesifisert forstyrrelse i blærehalskjertel", listOf(ICPC2.Y06)),
     N484("N484", "Impotens med organisk årsak", listOf(ICPC2.Y07)),
@@ -1022,12 +1022,12 @@ enum class ICD10(
     C639(
         "C639",
         "Ondartet svulst med uspesifisert lokalisasjon i mannlige kjønnsorganer",
-        listOf(ICPC2.Y78)
+        listOf(ICPC2.Y78),
     ),
     D409(
         "D409",
         "Svulst med usikkert eller ukjent malignitetspotensial i uspesifisert mannlig kjønnsorgan",
-        listOf(ICPC2.Y79)
+        listOf(ICPC2.Y79),
     ),
     S379("S379", "Skade på uspesifisert bekkenorgan", listOf(ICPC2.Y80)),
     N47("N47", "Overflødig forhud, fimose eller parafimose", listOf(ICPC2.Y81)),
@@ -1041,59 +1041,59 @@ enum class ICD10(
     Z599(
         "Z599",
         "Uspesifisert problem i forbindelse med boforhold eller økonomiske forhold",
-        listOf(ICPC2.Z03)
+        listOf(ICPC2.Z03),
     ),
     Z609("Z609", "Uspesifisert problem i forbindelse med sosialt miljø", listOf(ICPC2.Z04)),
     Z567(
         "Z567",
         "Annet eller uspesifisert problem i forbindelse med arbeidsliv",
-        listOf(ICPC2.Z05)
+        listOf(ICPC2.Z05),
     ),
     Z560("Z560", "Problem i forbindelse med uspesifisert arbeidsledighet", listOf(ICPC2.Z06)),
     Z559(
         "Z559",
         "Uspesifisert problem i forbindelse med utdannelse eller lese- eller skriveferdighet",
-        listOf(ICPC2.Z07)
+        listOf(ICPC2.Z07),
     ),
     Z597("Z597", "Problem med utilstrekkelig trygd eller stønad", listOf(ICPC2.Z08)),
     Z653("Z653", "Problem i forbindelse med annet rettslig forhold", listOf(ICPC2.Z09)),
     Z759(
         "Z759",
         "Uspesifisert problem i forbindelse med behov for helsetjeneste eller omsorgstilbud",
-        listOf(ICPC2.Z10, ICPC2.Z11)
+        listOf(ICPC2.Z10, ICPC2.Z11),
     ),
     Z630("Z630", "Problem i forhold til ektefelle eller partner", listOf(ICPC2.Z12, ICPC2.Z13)),
     Z636(
         "Z636",
         "Problem i forbindelse med hjelpeløs slektning som trenger pleie hjemme",
-        listOf(ICPC2.Z14, ICPC2.Z18)
+        listOf(ICPC2.Z14, ICPC2.Z18),
     ),
     Z634(
         "Z634",
         "Problem i forbindelse med familiemedlem som forsvinner eller dør",
-        listOf(ICPC2.Z15, ICPC2.Z19, ICPC2.Z23)
+        listOf(ICPC2.Z15, ICPC2.Z19, ICPC2.Z23),
     ),
     Z629("Z629", "Uspesifisert problem i forbindelse med oppfostring", listOf(ICPC2.Z16)),
     Z631("Z631", "Problem i forhold til foreldre eller svigerforeldre", listOf(ICPC2.Z20)),
     Z639(
         "Z639",
         "Uspesifisert problem i forbindelse med primærkontakt",
-        listOf(ICPC2.Z21, ICPC2.Z24)
+        listOf(ICPC2.Z21, ICPC2.Z24),
     ),
     Z637(
         "Z637",
         "Problem i forbindelse med annen stressende livsopplevelse som påvirker familie eller husstand",
-        listOf(ICPC2.Z22)
+        listOf(ICPC2.Z22),
     ),
     T749("T749", "Uspesifisert mishandlingssyndrom", listOf(ICPC2.Z25)),
     Z734(
         "Z734",
         "Problem i forbindelse med mangelfulle sosiale ferdigheter, ikke klassifisert annet sted",
-        listOf(ICPC2.Z28)
+        listOf(ICPC2.Z28),
     ),
     Z658(
         "Z658",
         "Annet spesifisert problem i forbindelse med psykososialt forhold",
-        listOf(ICPC2.Z29)
+        listOf(ICPC2.Z29),
     ),
 }

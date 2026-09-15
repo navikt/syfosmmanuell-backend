@@ -34,7 +34,7 @@ class MSGraphClientTest :
                     environment = environment,
                     azureAdV2Client = azureAdV2Client,
                     httpClient = httpClient.httpClient,
-                ),
+                )
             )
 
         beforeTest {
@@ -51,12 +51,12 @@ class MSGraphClientTest :
                         HttpStatusCode.OK,
                         objectMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
-                        )
+                        ),
                     )
                 httpClient.responseData =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(GraphResponse(accountName))
+                        objectMapper.writeValueAsString(GraphResponse(accountName)),
                     )
 
                 val subjectFromMsGraph = msGraphClient.getSubjectFromMsGraph("usertoken")
@@ -71,7 +71,7 @@ class MSGraphClientTest :
                         HttpStatusCode.OK,
                         objectMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
-                        )
+                        ),
                     )
                 httpClient.responseData = ResponseData(HttpStatusCode.OK, "")
 
@@ -85,12 +85,12 @@ class MSGraphClientTest :
                         HttpStatusCode.OK,
                         objectMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
-                        )
+                        ),
                     )
                 httpClient.responseData =
                     ResponseData(
                         HttpStatusCode.Forbidden,
-                        objectMapper.writeValueAsString(GraphOboToken("token"))
+                        objectMapper.writeValueAsString(GraphOboToken("token")),
                     )
 
                 assertFailsWith<RuntimeException> {
@@ -105,12 +105,12 @@ class MSGraphClientTest :
                         HttpStatusCode.OK,
                         objectMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
-                        )
+                        ),
                     )
                 httpClient.responseData =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(GraphResponse(accountName))
+                        objectMapper.writeValueAsString(GraphResponse(accountName)),
                     )
 
                 msGraphClient.getSubjectFromMsGraph("usertoken")
@@ -127,12 +127,12 @@ class MSGraphClientTest :
                         HttpStatusCode.OK,
                         objectMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
-                        )
+                        ),
                     )
                 httpClient.responseData =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(GraphResponse(accountName))
+                        objectMapper.writeValueAsString(GraphResponse(accountName)),
                     )
 
                 msGraphClient.getSubjectFromMsGraph("usertoken")

@@ -31,8 +31,8 @@ class TilgangsmaskinClientTest :
                 TilgangsmaskinClient(
                     environment = environment,
                     httpClient = httpClient.httpClient,
-                    texasClient = texasClient
-                ),
+                    texasClient = texasClient,
+                )
             )
 
         beforeTest {

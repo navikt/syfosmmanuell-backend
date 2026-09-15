@@ -41,7 +41,7 @@ suspend fun DatabaseInterface.opprettManuellOppgave(
                     status_timestamp
                     )
                 VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
+                """
                     )
                     .use {
                         it.setString(1, manuellOppgave.receivedSykmelding.sykmelding.id)
@@ -72,7 +72,7 @@ suspend fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
                 SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE id=?;
-                """,
+                """
                 )
                 .use {
                     it.setString(1, sykmledingsId)
@@ -84,7 +84,7 @@ suspend fun DatabaseInterface.erOpprettManuellOppgave(sykmledingsId: String) =
 suspend fun DatabaseInterface.oppdaterManuellOppgave(
     oppgaveId: Int,
     receivedSykmelding: ReceivedSykmelding,
-    validationResult: ValidationResult
+    validationResult: ValidationResult,
 ): Int =
     withContext(Dispatchers.IO) {
         connection.use { connection ->
@@ -97,7 +97,7 @@ suspend fun DatabaseInterface.oppdaterManuellOppgave(
                 receivedsykmelding = ?,
                 validationresult = ?
             WHERE oppgaveid = ?;
-            """,
+            """
                     )
                     .use {
                         it.setBoolean(1, true)
@@ -129,7 +129,7 @@ suspend fun DatabaseInterface.oppdaterManuellOppgaveUtenOpprinneligValidationRes
                 validationresult = ?,
                 opprinnelig_validationresult = ?
             WHERE oppgaveid = ?;
-            """,
+            """
                     )
                     .use {
                         it.setBoolean(1, true)
@@ -154,7 +154,7 @@ suspend fun DatabaseInterface.oppdaterApprecStatus(oppgaveId: Int, sendtApprec: 
                 UPDATE MANUELLOPPGAVE
                 SET sendt_apprec = ?
                 WHERE oppgaveid = ?;
-                """,
+                """
                     )
                     .use {
                         it.setBoolean(1, sendtApprec)
@@ -175,7 +175,7 @@ suspend fun DatabaseInterface.slettOppgave(oppgaveId: Int): Int =
                         """
             DELETE FROM MANUELLOPPGAVE
             WHERE oppgaveid = ?;
-            """,
+            """
                     )
                     .use {
                         it.setInt(1, oppgaveId)
@@ -189,7 +189,7 @@ suspend fun DatabaseInterface.slettOppgave(oppgaveId: Int): Int =
 suspend fun DatabaseInterface.oppdaterOppgaveHendelse(
     oppgaveId: Int,
     status: ManuellOppgaveStatus,
-    statusTimestamp: LocalDateTime
+    statusTimestamp: LocalDateTime,
 ) {
     withContext(Dispatchers.IO) {
         connection.use { connection ->
@@ -200,7 +200,7 @@ suspend fun DatabaseInterface.oppdaterOppgaveHendelse(
             set status = ?,
             status_timestamp = ?
             WHERE oppgaveid = ?;
-        """,
+        """
                 )
                 .use {
                     it.setString(1, status.name)

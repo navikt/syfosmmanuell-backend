@@ -34,7 +34,7 @@ class OppgaveServiceTest :
                             generatePeriode(
                                 fom = LocalDate.of(2020, 8, 1),
                                 tom = LocalDate.of(2020, 8, 15),
-                            ),
+                            )
                         ),
                 ),
             )
@@ -44,7 +44,7 @@ class OppgaveServiceTest :
                     .java
                     .getResourceAsStream("/apprecOK.json")!!
                     .readBytes()
-                    .toString(Charsets.UTF_8),
+                    .toString(Charsets.UTF_8)
             )
         val validationResult =
             ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC))
@@ -64,7 +64,7 @@ class OppgaveServiceTest :
                 assertEquals("SMM", opprettOppgave.behandlesAvApplikasjon)
                 assertEquals(
                     "Manuell vurdering av sykmelding for periode: 01.08.2020 - 15.08.2020",
-                    opprettOppgave.beskrivelse
+                    opprettOppgave.beskrivelse,
                 )
                 assertEquals("SYM", opprettOppgave.tema)
                 assertEquals("BEH_EL_SYM", opprettOppgave.oppgavetype)
@@ -72,7 +72,7 @@ class OppgaveServiceTest :
                 assertEquals(LocalDate.now(), opprettOppgave.aktivDato)
                 assertEquals(
                     oppgaveService.omTreUkedager(LocalDate.now()),
-                    opprettOppgave.fristFerdigstillelse
+                    opprettOppgave.fristFerdigstillelse,
                 )
                 assertEquals("HOY", opprettOppgave.prioritet)
             }

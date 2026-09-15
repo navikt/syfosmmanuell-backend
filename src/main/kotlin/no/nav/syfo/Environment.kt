@@ -29,9 +29,10 @@ data class Environment(
     val tilgangsmaskinUrl: String = getEnvVar("TILGANGSMASKIN_URL"),
     val texasTokenExchangeEndpoint: String = getEnvVar("NAIS_TOKEN_EXCHANGE_ENDPOINT"),
     val behandlingsdagerIds: List<String> =
-        getEnvVar("BEHANDLINGSDAGER_IDS", "").split(",").filter { it.isNotEmpty() }
+        getEnvVar("BEHANDLINGSDAGER_IDS", "").split(",").filter { it.isNotEmpty() },
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName)
-        ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+        ?: defaultValue
+        ?: throw RuntimeException("Missing required variable \"$varName\"")

@@ -8,9 +8,7 @@ import io.ktor.server.routing.route
 import no.nav.syfo.logger
 import no.nav.syfo.service.ManuellOppgaveService
 
-fun Route.sykmeldingsApi(
-    manuellOppgaveService: ManuellOppgaveService,
-) {
+fun Route.sykmeldingsApi(manuellOppgaveService: ManuellOppgaveService) {
     route("/api/v1") {
         get("/sykmelding/{sykmeldingsId}") {
             val sykmeldingsId = call.parameters["sykmeldingsId"]!!

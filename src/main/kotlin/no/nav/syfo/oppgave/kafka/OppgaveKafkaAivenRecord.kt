@@ -9,18 +9,11 @@ data class OppgaveKafkaAivenRecord(
     val oppgave: Oppgave,
 )
 
-data class Oppgave(
-    val oppgaveId: Long,
-)
+data class Oppgave(val oppgaveId: Long)
 
-data class UtfortAv(
-    val navIdent: String?,
-)
+data class UtfortAv(val navIdent: String?)
 
-data class Hendelse(
-    val hendelsestype: Hendelsestype,
-    val tidspunkt: LocalDateTime?,
-)
+data class Hendelse(val hendelsestype: Hendelsestype, val tidspunkt: LocalDateTime?)
 
 enum class Hendelsestype {
     OPPGAVE_OPPRETTET,

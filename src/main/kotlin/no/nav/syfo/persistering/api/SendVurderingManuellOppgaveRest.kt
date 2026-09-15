@@ -44,11 +44,11 @@ fun Route.sendVurderingManuellOppgave(
                 false -> {
                     logNAVEpostFromTokenWhenNoAccessToSecureLogs(
                         accessToken,
-                        "/vurderingmanuelloppgave/$oppgaveId"
+                        "/vurderingmanuelloppgave/$oppgaveId",
                     )
                     call.respond(
                         HttpStatusCode.Unauthorized,
-                        "Du har ikke tilgang til denne oppgaven."
+                        "Du har ikke tilgang til denne oppgaven.",
                     )
                 }
                 true -> {
@@ -74,7 +74,7 @@ fun Route.sendVurderingManuellOppgave(
                                 operation = AuditLogger.Operation.WRITE,
                                 requestPath = "/api/v1/vurderingmanuelloppgave/$oppgaveId",
                                 permit = AuditLogger.Permit.PERMIT,
-                            ),
+                            )
                     )
 
                     call.respond(HttpStatusCode.NoContent)
@@ -91,17 +91,11 @@ enum class ResultStatus {
     DELVIS_GODKJENT,
 }
 
-data class Result(
-    val status: ResultStatus,
-    val merknad: Merknad? = null,
-) {
+data class Result(val status: ResultStatus, val merknad: Merknad? = null) {
     fun toMerknad(): Merknad? {
         return when (status) {
             ResultStatus.UGYLDIG_TILBAKEDATERING -> {
-                Merknad(
-                    type = ResultStatus.UGYLDIG_TILBAKEDATERING.name,
-                    beskrivelse = null,
-                )
+                Merknad(type = ResultStatus.UGYLDIG_TILBAKEDATERING.name, beskrivelse = null)
             }
             ResultStatus.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER -> {
                 Merknad(
@@ -110,10 +104,7 @@ data class Result(
                 )
             }
             ResultStatus.DELVIS_GODKJENT -> {
-                Merknad(
-                    type = ResultStatus.DELVIS_GODKJENT.name,
-                    beskrivelse = null,
-                )
+                Merknad(type = ResultStatus.DELVIS_GODKJENT.name, beskrivelse = null)
             }
             else -> {
                 null

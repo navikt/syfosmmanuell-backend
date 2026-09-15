@@ -41,7 +41,7 @@ class KafkaConsumer(
                         if (cluster == "dev-gcp") {
                             logger.error(
                                 "Aiven: Caught exception could not process record skipping in dev",
-                                ex
+                                ex,
                             )
                         } else {
                             logger.error("Aiven: Caught exception, unsubscribing and retrying", ex)

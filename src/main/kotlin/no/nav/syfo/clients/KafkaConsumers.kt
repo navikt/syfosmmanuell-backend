@@ -12,7 +12,7 @@ import org.apache.kafka.common.serialization.StringDeserializer
 fun Properties.toConsumerConfig(
     groupId: String,
     valueDeserializer: KClass<out Deserializer<out Any>>,
-    keyDeserializer: KClass<out Deserializer<out Any>> = StringDeserializer::class
+    keyDeserializer: KClass<out Deserializer<out Any>> = StringDeserializer::class,
 ): Properties =
     Properties().also {
         it.putAll(this)
@@ -34,6 +34,6 @@ class KafkaConsumers(env: Environment) {
                 .toConsumerConfig(
                     "${env.applicationName}-consumer",
                     valueDeserializer = StringDeserializer::class,
-                ),
+                )
         )
 }

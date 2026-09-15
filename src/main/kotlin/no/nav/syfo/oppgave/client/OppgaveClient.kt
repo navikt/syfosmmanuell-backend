@@ -47,7 +47,7 @@ class OppgaveClient(
 
     suspend fun ferdigstillOppgave(
         ferdigstilloppgave: FerdigstillOppgave,
-        msgId: String
+        msgId: String,
     ): OppgaveResponse {
         val response =
             httpClient.patch(url + "/" + ferdigstilloppgave.id) {
@@ -67,7 +67,7 @@ class OppgaveClient(
             return OppgaveResponse(
                 id = ferdigstilloppgave.id,
                 versjon = ferdigstilloppgave.versjon,
-                tildeltEnhetsnr = ""
+                tildeltEnhetsnr = "",
             )
         } else {
             logger.error(
@@ -98,7 +98,7 @@ class OppgaveClient(
             return OppgaveResponse(
                 id = endreOppgave.id,
                 versjon = endreOppgave.versjon,
-                tildeltEnhetsnr = ""
+                tildeltEnhetsnr = "",
             )
         } else {
             logger.error(

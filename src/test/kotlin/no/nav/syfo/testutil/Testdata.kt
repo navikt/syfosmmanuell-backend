@@ -44,7 +44,7 @@ fun receivedSykmelding(
         listOf(
             Merknad(
                 type = "UNDER_BEHANDLING",
-                beskrivelse = "Sykmeldingen er til manuell behandling"
+                beskrivelse = "Sykmeldingen er til manuell behandling",
             )
         ),
 ) =
@@ -161,40 +161,22 @@ fun generatePeriode(
 fun generateAktivitetIkkeMulig(
     medisinskArsak: MedisinskArsak? = generateMedisinskArsak(),
     arbeidsrelatertArsak: ArbeidsrelatertArsak? = null,
-) =
-    AktivitetIkkeMulig(
-        medisinskArsak = medisinskArsak,
-        arbeidsrelatertArsak = arbeidsrelatertArsak,
-    )
+) = AktivitetIkkeMulig(medisinskArsak = medisinskArsak, arbeidsrelatertArsak = arbeidsrelatertArsak)
 
 fun generateArbeidsrelatertArsak(
     beskrivelse: String = "test data",
     arsak: List<ArbeidsrelatertArsakType> =
         listOf(ArbeidsrelatertArsakType.values()[Random.nextInt(ICPC2.values().size)]),
-) =
-    ArbeidsrelatertArsak(
-        beskrivelse = beskrivelse,
-        arsak = arsak,
-    )
+) = ArbeidsrelatertArsak(beskrivelse = beskrivelse, arsak = arsak)
 
 fun generateMedisinskArsak(
     beskrivelse: String = "test data",
     arsak: List<MedisinskArsakType> =
         listOf(MedisinskArsakType.values()[Random.nextInt(MedisinskArsakType.values().size)]),
-) =
-    MedisinskArsak(
-        beskrivelse = beskrivelse,
-        arsak = arsak,
-    )
+) = MedisinskArsak(beskrivelse = beskrivelse, arsak = arsak)
 
-fun generateGradert(
-    reisetilskudd: Boolean = false,
-    grad: Int = 50,
-) =
-    Gradert(
-        reisetilskudd = reisetilskudd,
-        grad = grad,
-    )
+fun generateGradert(reisetilskudd: Boolean = false, grad: Int = 50) =
+    Gradert(reisetilskudd = reisetilskudd, grad = grad)
 
 fun generatePrognose(
     arbeidsforEtterPeriode: Boolean = true,
@@ -276,14 +258,8 @@ fun generateAdresse(
         land = land,
     )
 
-fun generateAvsenderSystem(
-    navn: String = "test",
-    versjon: String = "1.2.3",
-) =
-    AvsenderSystem(
-        navn = navn,
-        versjon = versjon,
-    )
+fun generateAvsenderSystem(navn: String = "test", versjon: String = "1.2.3") =
+    AvsenderSystem(navn = navn, versjon = versjon)
 
 fun generateArbeidsgiver(
     harArbeidsgiver: HarArbeidsgiver = HarArbeidsgiver.EN_ARBEIDSGIVER,
@@ -304,9 +280,7 @@ fun okApprec(): Apprec {
             .java
             .getResourceAsStream("/apprecOK.json")
             .readBytes()
-            .toString(
-                Charsets.UTF_8,
-            ),
+            .toString(Charsets.UTF_8)
     )
 }
 
@@ -316,9 +290,7 @@ fun avvistApprec(): Apprec {
             .java
             .getResourceAsStream("/apprecAvvist.json")
             .readBytes()
-            .toString(
-                Charsets.UTF_8,
-            ),
+            .toString(Charsets.UTF_8)
     )
 }
 

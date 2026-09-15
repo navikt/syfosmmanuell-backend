@@ -51,7 +51,7 @@ class ManuellOppgaveService(
         oppgaveId: Int,
         enhet: String,
         veileder: String,
-        merknader: List<Merknad>?
+        merknader: List<Merknad>?,
     ) {
         val validationResult =
             ValidationResult(Status.OK, emptyList(), timestamp = OffsetDateTime.now(ZoneOffset.UTC))
@@ -73,7 +73,7 @@ class ManuellOppgaveService(
         sendReceivedSykmelding(
             manuellOppgave.receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
             loggingMeta,
-            metadata
+            metadata,
         )
 
         if (trengerFlereOpplysninger(manuellOppgave)) {
@@ -110,7 +110,7 @@ class ManuellOppgaveService(
             database.oppdaterManuellOppgave(
                 oppgaveId,
                 manuellOppgave.receivedSykmelding,
-                validationResult
+                validationResult,
             )
         }
         FERDIGSTILT_OPPGAVE_COUNTER.inc()
@@ -119,20 +119,18 @@ class ManuellOppgaveService(
     private fun trengerFlereOpplysninger(manuellOppgave: ManuellOppgaveKomplett): Boolean {
         return manuellOppgave.receivedSykmelding.merknader?.any {
             it.type == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
-        }
-            ?: false
+        } ?: false
     }
 
     private fun skalOppretteOppfolgingsOppgave(manuellOppgave: ManuellOppgaveKomplett): Boolean {
         return manuellOppgave.receivedSykmelding.merknader?.any {
             it.type == "UGYLDIG_TILBAKEDATERING"
-        }
-            ?: false
+        } ?: false
     }
 
     private fun incrementCounters(
         validationResult: ValidationResult,
-        manuellOppgaveWithMerknad: ManuellOppgaveKomplett
+        manuellOppgaveWithMerknad: ManuellOppgaveKomplett,
     ) {
         validationResult.ruleHits.forEach { RULE_HIT_COUNTER.labels(it.ruleName).inc() }
         manuellOppgaveWithMerknad.receivedSykmelding.merknader?.forEach {
@@ -142,9 +140,7 @@ class ManuellOppgaveService(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    private suspend fun hentManuellOppgave(
-        oppgaveId: Int,
-    ): ManuellOppgaveKomplett {
+    private suspend fun hentManuellOppgave(oppgaveId: Int): ManuellOppgaveKomplett {
         val manuellOppgave = database.hentKomplettManuellOppgave(oppgaveId).firstOrNull()
         if (manuellOppgave == null) {
             logger.error("Fant ikke oppgave med id $oppgaveId")
@@ -186,7 +182,7 @@ class ManuellOppgaveService(
             logger.info(
                 "Apprec kvittering sent til kafka topic {} {}",
                 kafkaProducers.kafkaApprecProducer.apprecTopic,
-                loggingMeta
+                loggingMeta,
             )
             toggleApprecSendt(oppgaveId)
         } catch (ex: Exception) {
@@ -225,11 +221,7 @@ class ManuellOppgaveService(
         try {
 
             val producerRecord =
-                ProducerRecord(
-                    topic,
-                    receivedSykmelding.sykmelding.id,
-                    receivedSykmelding,
-                )
+                ProducerRecord(topic, receivedSykmelding.sykmelding.id, receivedSykmelding)
 
             metadata.forEach { producerRecord.headers().add(it.key, it.value) }
 
@@ -238,14 +230,14 @@ class ManuellOppgaveService(
                 "Sendt sykmelding {} to topic {} {}",
                 receivedSykmelding.sykmelding.id,
                 topic,
-                loggingMeta
+                loggingMeta,
             )
         } catch (ex: Exception) {
             logger.error(
                 "Failed to send sykmelding {} to topic {} {}",
                 receivedSykmelding.sykmelding.id,
                 topic,
-                loggingMeta
+                loggingMeta,
             )
             throw ex
         }
@@ -284,12 +276,12 @@ class ManuellOppgaveService(
                     ValidationResult(
                         Status.OK,
                         emptyList(),
-                        timestamp = oppgave.opprinneligValidationResult?.timestamp
-                                ?: OffsetDateTime.now(),
+                        timestamp =
+                            oppgave.opprinneligValidationResult?.timestamp ?: OffsetDateTime.now(),
                     )
             ),
             metadata = emptyMap(),
-            loggingMeta = loggingMeta
+            loggingMeta = loggingMeta,
         )
 
         database.slettOppgave(oppgave.oppgaveid)

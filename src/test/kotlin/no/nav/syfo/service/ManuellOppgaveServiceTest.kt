@@ -48,23 +48,17 @@ class ManuellOppgaveServiceTest :
                                 "regelnavn",
                                 "melding til legen",
                                 "melding til bruker",
-                                Status.MANUAL_PROCESSING
+                                Status.MANUAL_PROCESSING,
                             )
                         ),
-                        OffsetDateTime.now(ZoneOffset.UTC)
+                        OffsetDateTime.now(ZoneOffset.UTC),
                     ),
                 apprec = okApprec(),
             )
         val oppgaveid = 308076319
 
         val manuellOppgaveService =
-            ManuellOppgaveService(
-                database,
-                kafkaProducers,
-                oppgaveService,
-                "app",
-                "namespace",
-            )
+            ManuellOppgaveService(database, kafkaProducers, oppgaveService, "app", "namespace")
 
         beforeTest {
             database.connection.dropData()
@@ -75,10 +69,7 @@ class ManuellOppgaveServiceTest :
                 ManuellOppgaveStatus.APEN,
                 LocalDateTime.now(),
             )
-            clearMocks(
-                kafkaProducers,
-                oppgaveService,
-            )
+            clearMocks(kafkaProducers, oppgaveService)
         }
         context("test get uloste oppgaver") {
             test("ok") {
@@ -104,7 +95,7 @@ class ManuellOppgaveServiceTest :
                 assertEquals(true, oppgaveFraDb.ferdigstilt)
                 assertEquals(
                     manuellOppgave.validationResult,
-                    oppgaveFraDb.opprinneligValidationResult
+                    oppgaveFraDb.opprinneligValidationResult,
                 )
                 assertEquals(okApprec(), oppgaveFraDb.apprec)
             }
@@ -127,7 +118,7 @@ class ManuellOppgaveServiceTest :
                 assertEquals(true, oppgaveFraDb.ferdigstilt)
                 assertEquals(
                     manuellOppgave.validationResult,
-                    oppgaveFraDb.opprinneligValidationResult
+                    oppgaveFraDb.opprinneligValidationResult,
                 )
                 assertEquals(merknader, oppgaveFraDb.receivedSykmelding.merknader)
                 assertEquals(okApprec(), oppgaveFraDb.apprec)
@@ -151,7 +142,7 @@ class ManuellOppgaveServiceTest :
                                         "melding til legen",
                                         "melding til bruker",
                                         Status.MANUAL_PROCESSING,
-                                    ),
+                                    )
                                 ),
                                 manuellOppgave.validationResult.timestamp,
                             ),
@@ -160,7 +151,7 @@ class ManuellOppgaveServiceTest :
                         ferdigstilt = false,
                         sendtApprec = true,
                         opprinneligValidationResult = null,
-                    ),
+                    )
                 )
 
                 manuellOppgaveService.ferdigstillManuellBehandling(
@@ -178,7 +169,7 @@ class ManuellOppgaveServiceTest :
                 assertEquals(true, oppgaveFraDb.ferdigstilt)
                 assertEquals(
                     manuellOppgave.validationResult,
-                    oppgaveFraDb.opprinneligValidationResult
+                    oppgaveFraDb.opprinneligValidationResult,
                 )
                 assertEquals(oppgaveFraDb.apprec, okApprec())
                 assertEquals(true, database.erApprecSendt(oppgaveId2))
@@ -193,7 +184,7 @@ class ManuellOppgaveServiceTest :
                         any(),
                         any(),
                         matchNullable { it == null },
-                        matchNullable { it == null }
+                        matchNullable { it == null },
                     )
                 }
             }
@@ -215,7 +206,7 @@ class ManuellOppgaveServiceTest :
                         any(),
                         any(),
                         matchNullable { it == null },
-                        matchNullable { it == null }
+                        matchNullable { it == null },
                     )
                 }
             }

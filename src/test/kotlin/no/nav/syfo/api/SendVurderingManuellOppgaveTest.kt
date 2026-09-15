@@ -66,9 +66,7 @@ val manuellOppgave =
                     .java
                     .getResourceAsStream("/apprecOK.json")!!
                     .readBytes()
-                    .toString(
-                        Charsets.UTF_8,
-                    ),
+                    .toString(Charsets.UTF_8)
             ),
     )
 
@@ -106,10 +104,7 @@ class SendVurderingManuellOppgaveTest :
                         )
 
                         routing {
-                            sendVurderingManuellOppgave(
-                                manuellOppgaveService,
-                                authorizationService,
-                            )
+                            sendVurderingManuellOppgave(manuellOppgaveService, authorizationService)
                         }
                         install(ContentNegotiation) {
                             jackson {
@@ -123,7 +118,7 @@ class SendVurderingManuellOppgaveTest :
                                 logger.error("Caught exception", cause)
                                 call.respond(
                                     HttpStatusCode.InternalServerError,
-                                    cause.message ?: "Unknown error"
+                                    cause.message ?: "Unknown error",
                                 )
                             }
                         }
@@ -166,7 +161,7 @@ class SendVurderingManuellOppgaveTest :
                             authorizationService,
                             oppgaveService,
                             database,
-                            manuellOppgaveService
+                            manuellOppgaveService,
                         )
                     }
                     val result = Result(status = ResultStatus.GODKJENT, merknad = null)
@@ -185,7 +180,7 @@ class SendVurderingManuellOppgaveTest :
                             authorizationService,
                             oppgaveService,
                             database,
-                            manuellOppgaveService
+                            manuellOppgaveService,
                         )
                     }
 
@@ -204,51 +199,27 @@ class SendVurderingManuellOppgaveTest :
             }
 
             test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad UGYLDIG_TILBAKEDATERING") {
-                val result =
-                    Result(
-                        status = ResultStatus.UGYLDIG_TILBAKEDATERING,
-                    )
+                val result = Result(status = ResultStatus.UGYLDIG_TILBAKEDATERING)
                 val merknad = result.toMerknad()
 
-                assertEquals(
-                    Merknad(
-                        type = "UGYLDIG_TILBAKEDATERING",
-                        beskrivelse = null,
-                    ),
-                    merknad,
-                )
+                assertEquals(Merknad(type = "UGYLDIG_TILBAKEDATERING", beskrivelse = null), merknad)
             }
 
             test("Riktig merknad for status GODKJENT_MED_MERKNAD merknad DELVIS_GODKJENT") {
-                val result =
-                    Result(
-                        status = ResultStatus.DELVIS_GODKJENT,
-                    )
+                val result = Result(status = ResultStatus.DELVIS_GODKJENT)
                 val merknad = result.toMerknad()
 
-                assertEquals(
-                    Merknad(
-                        type = "DELVIS_GODKJENT",
-                        beskrivelse = null,
-                    ),
-                    merknad,
-                )
+                assertEquals(Merknad(type = "DELVIS_GODKJENT", beskrivelse = null), merknad)
             }
 
             test(
                 "Riktig merknad for status GODKJENT_MED_MERKNAD merknad TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
             ) {
-                val result =
-                    Result(
-                        status = ResultStatus.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER,
-                    )
+                val result = Result(status = ResultStatus.TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER)
                 val merknad = result.toMerknad()
 
                 assertEquals(
-                    Merknad(
-                        type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER",
-                        beskrivelse = null,
-                    ),
+                    Merknad(type = "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER", beskrivelse = null),
                     merknad,
                 )
             }
@@ -267,7 +238,7 @@ suspend fun ApplicationTestBuilder.sendRequest(
     result: Result,
     statusCode: HttpStatusCode,
     oppgaveId: Int,
-    navEnhet: String = "1234"
+    navEnhet: String = "1234",
 ) {
     val response =
         client.post("/api/v1/vurderingmanuelloppgave/$oppgaveId") {
@@ -329,12 +300,7 @@ suspend fun setUpTest(
         LocalDateTime.now(),
     )
 
-    application.routing {
-        sendVurderingManuellOppgave(
-            manuellOppgaveService,
-            authorizationService,
-        )
-    }
+    application.routing { sendVurderingManuellOppgave(manuellOppgaveService, authorizationService) }
     application.install(ContentNegotiation) {
         jackson {
             registerKotlinModule()

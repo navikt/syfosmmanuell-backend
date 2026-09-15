@@ -88,7 +88,7 @@ class MottattSykmeldingServiceTest :
                     objectMapper.writeValueAsString(
                         oppgave(msgId = behandlingsdagId, sykmeldingsId = behandlingsdagId)
                     ),
-                    emptyMap()
+                    emptyMap(),
                 )
 
                 assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
@@ -107,7 +107,7 @@ class MottattSykmeldingServiceTest :
                                 listOf(
                                     Merknad(
                                         "UNDER_BEHANDLING",
-                                        "Sykmeldingen er til manuell behandling"
+                                        "Sykmeldingen er til manuell behandling",
                                     )
                                 ) && it.value().validationResult.status == Status.OK
                         }
@@ -126,7 +126,7 @@ class MottattSykmeldingServiceTest :
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
                     manuellOppgaveString,
-                    emptyMap()
+                    emptyMap(),
                 )
 
                 assertEquals(1, database.hentKomplettManuellOppgave(oppgaveid).size)
@@ -140,7 +140,7 @@ class MottattSykmeldingServiceTest :
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
                     manuellOppgaveString,
-                    emptyMap()
+                    emptyMap(),
                 )
                 val oppgave = database.hentKomplettManuellOppgave(oppgaveid)
                 assertEquals(null, oppgave.first().apprec)
@@ -151,7 +151,7 @@ class MottattSykmeldingServiceTest :
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
                     manuellOppgaveString,
-                    emptyMap()
+                    emptyMap(),
                 )
 
                 val hentKomplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid)
@@ -171,7 +171,7 @@ class MottattSykmeldingServiceTest :
                 val komplettManuellOppgave = database.hentKomplettManuellOppgave(oppgaveid).first()
                 assertEquals(
                     komplettManuellOppgave.validationResult,
-                    komplettManuellOppgave.opprinneligValidationResult
+                    komplettManuellOppgave.opprinneligValidationResult,
                 )
             }
 
@@ -198,7 +198,7 @@ class MottattSykmeldingServiceTest :
                         mottattSykmeldingService.handleMottattSykmelding(
                             sykmeldingsId,
                             manuellOppgaveString,
-                            emptyMap()
+                            emptyMap(),
                         )
                     }
                 }
@@ -221,7 +221,7 @@ private fun oppgave(msgId: String, sykmeldingsId: String): ManuellOppgave =
                         "regelnavn",
                         "melding til legen",
                         "melding til bruker",
-                        Status.MANUAL_PROCESSING
+                        Status.MANUAL_PROCESSING,
                     )
                 ),
                 OffsetDateTime.now(ZoneOffset.UTC),
@@ -232,8 +232,6 @@ private fun oppgave(msgId: String, sykmeldingsId: String): ManuellOppgave =
                     .java
                     .getResourceAsStream("/apprecOK.json")!!
                     .readBytes()
-                    .toString(
-                        Charsets.UTF_8,
-                    ),
+                    .toString(Charsets.UTF_8)
             ),
     )

@@ -28,7 +28,8 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
                 tempDatasource =
                     HikariDataSource(
                         HikariConfig().apply {
-                            jdbcUrl = "jdbc:postgresql://${env.dbHost}:${env.dbPort}/${env.dbName}?socketTimeout=30"
+                            jdbcUrl =
+                                "jdbc:postgresql://${env.dbHost}:${env.dbPort}/${env.dbName}?socketTimeout=30"
                             username = env.databaseUsername
                             password = env.databasePassword
                             maximumPoolSize = 3
@@ -41,7 +42,7 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
                             validationTimeout = 5000
                             transactionIsolation = "TRANSACTION_READ_COMMITTED"
                             validate()
-                        },
+                        }
                     )
                 connected = true
             } catch (ex: HikariPool.PoolInitializationException) {
@@ -67,7 +68,7 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
             dataSource(
                 "jdbc:postgresql://${env.dbHost}:${env.dbPort}/${env.dbName}",
                 env.databaseUsername,
-                env.databasePassword
+                env.databasePassword,
             )
             load().migrate()
         }

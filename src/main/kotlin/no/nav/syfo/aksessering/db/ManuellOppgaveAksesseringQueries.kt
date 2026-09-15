@@ -25,7 +25,7 @@ suspend fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
                 SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE oppgaveid=?;
-                """,
+                """
                 )
                 .use {
                     it.setInt(1, oppgaveId)
@@ -43,7 +43,7 @@ suspend fun DatabaseInterface.finnesSykmelding(id: String) =
                 SELECT true
                 FROM MANUELLOPPGAVE
                 WHERE id=?;
-                """,
+                """
                 )
                 .use {
                     it.setString(1, id)
@@ -62,7 +62,7 @@ suspend fun DatabaseInterface.erApprecSendt(oppgaveId: Int) =
                 FROM MANUELLOPPGAVE
                 WHERE oppgaveid=?
                 AND sendt_apprec=?;
-                """,
+                """
                 )
                 .use {
                     it.setInt(1, oppgaveId)
@@ -82,7 +82,7 @@ suspend fun DatabaseInterface.hentManuellOppgave(oppgaveId: Int): ManuellOppgave
                 FROM MANUELLOPPGAVE  
                 WHERE oppgaveid=? 
                 AND ferdigstilt=?;
-                """,
+                """
                 )
                 .use {
                     it.setInt(1, oppgaveId)
@@ -116,7 +116,7 @@ suspend fun DatabaseInterface.hentKomplettManuellOppgave(
                 SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec,opprinnelig_validationresult
                 FROM MANUELLOPPGAVE  
                 WHERE oppgaveid=?;
-                """,
+                """
                 )
                 .use {
                     it.setInt(1, oppgaveId)
@@ -136,7 +136,7 @@ suspend fun DatabaseInterface.hentManuellOppgaveForSykmeldingId(
                 SELECT receivedsykmelding,validationresult,apprec,oppgaveid,ferdigstilt,sendt_apprec,opprinnelig_validationresult
                 FROM MANUELLOPPGAVE  
                 WHERE receivedsykmelding->'sykmelding'->>'id' = ?;
-                """,
+                """
                 )
                 .use {
                     it.setString(1, sykmeldingId)
@@ -152,7 +152,7 @@ suspend fun DatabaseInterface.getUlosteOppgaver(): List<UlosteOppgave> =
                 .prepareStatement(
                     """select receivedsykmelding->>'mottattDato' as dato, oppgaveId, status FROM MANUELLOPPGAVE
                 WHERE ferdigstilt is not true
-            """,
+            """
                 )
                 .use { it.executeQuery().toList { toUlostOppgave() } }
         }

@@ -6,9 +6,7 @@ import no.nav.syfo.db.DatabaseInterface
 fun DatabaseInterface.getFnr(oppgaveId: Int): String? {
     return connection.use { connection ->
         connection
-            .prepareStatement(
-                "SELECT pasientfnr FROM MANUELLOPPGAVE WHERE oppgaveid=?",
-            )
+            .prepareStatement("SELECT pasientfnr FROM MANUELLOPPGAVE WHERE oppgaveid=?")
             .use { preparedStatement ->
                 preparedStatement.setInt(1, oppgaveId)
                 preparedStatement.executeQuery().toFnr()

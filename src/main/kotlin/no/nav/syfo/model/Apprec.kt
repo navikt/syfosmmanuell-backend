@@ -37,12 +37,6 @@ data class Helsepersonell(
     val tilleggsIdenter: List<Ident>?,
 )
 
-data class Ident(
-    val id: String,
-    val typeId: Kodeverdier,
-)
+data class Ident(val id: String, val typeId: Kodeverdier)
 
-data class Kodeverdier(
-    val beskrivelse: String,
-    val verdi: String,
-)
+data class Kodeverdier(val beskrivelse: String, val verdi: String)

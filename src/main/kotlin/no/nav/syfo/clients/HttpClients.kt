@@ -81,26 +81,14 @@ class HttpClients(env: Environment) {
             azureAdV2Client,
             httpClient,
             env.oppgaveScope,
-            env.cluster
+            env.cluster,
         )
 
     val msGraphClient =
-        MSGraphClient(
-            environment = env,
-            azureAdV2Client = azureAdV2Client,
-            httpClient = httpClient,
-        )
+        MSGraphClient(environment = env, azureAdV2Client = azureAdV2Client, httpClient = httpClient)
 
-    val texasClient =
-        TexasClient(
-            httpClient = httpClient,
-            environment = env,
-        )
+    val texasClient = TexasClient(httpClient = httpClient, environment = env)
 
     val tilgangsmaskinClient =
-        TilgangsmaskinClient(
-            environment = env,
-            texasClient = texasClient,
-            httpClient = httpClient,
-        )
+        TilgangsmaskinClient(environment = env, texasClient = texasClient, httpClient = httpClient)
 }

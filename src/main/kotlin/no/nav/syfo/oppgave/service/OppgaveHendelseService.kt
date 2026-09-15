@@ -75,13 +75,13 @@ class OppgaveHendelseService(
                         mottakId = it.navLogId,
                         orgNr = it.legekontorOrgNr,
                         msgId = it.msgId,
-                        sykmeldingId = it.sykmelding.id
+                        sykmeldingId = it.sykmelding.id,
                     )
                 }
             log.info(
                 "Gjenoppretter oppgave for oppgaveId: {} fra {} til APEN",
                 oppgaveId,
-                oppgaveStatus
+                oppgaveStatus,
             )
             database.slettOppgave(oppgaveId)
             val oppgaveResponse =
@@ -94,7 +94,7 @@ class OppgaveHendelseService(
                 gjenopprettetManuellOppgave.apprec,
                 oppgaveResponse.id,
                 ManuellOppgaveStatus.APEN,
-                statusTimestamp
+                statusTimestamp,
             )
         } else {
             log.info("Oppdaterer oppgave for oppgaveId: {} til {}", oppgaveId, oppgaveStatus)
@@ -102,7 +102,7 @@ class OppgaveHendelseService(
                 database.oppdaterOppgaveHendelse(
                     oppgaveId = oppgaveId,
                     status = oppgaveStatus,
-                    statusTimestamp = timestamp
+                    statusTimestamp = timestamp,
                 )
             }
         }

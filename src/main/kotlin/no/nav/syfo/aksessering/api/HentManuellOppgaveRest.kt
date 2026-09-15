@@ -36,11 +36,11 @@ fun Route.hentManuellOppgaver(
                 false -> {
                     logNAVEpostFromTokenWhenNoAccessToSecureLogs(
                         accessToken,
-                        "/api/v1/manuellOppgave/$oppgaveId"
+                        "/api/v1/manuellOppgave/$oppgaveId",
                     )
                     call.respond(
                         HttpStatusCode.Unauthorized,
-                        "Du har ikke tilgang til denne oppgaven."
+                        "Du har ikke tilgang til denne oppgaven.",
                     )
                 }
                 true -> {
@@ -55,7 +55,7 @@ fun Route.hentManuellOppgaver(
                                     operation = AuditLogger.Operation.READ,
                                     requestPath = "/api/v1/manuellOppgave/$oppgaveId",
                                     permit = AuditLogger.Permit.PERMIT,
-                                ),
+                                )
                         )
                         val oppgaveOppgave =
                             oppgaveClient.hentOppgave(oppgaveId, manuellOppgave.sykmelding.msgId)

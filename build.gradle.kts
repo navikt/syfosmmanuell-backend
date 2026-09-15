@@ -20,14 +20,14 @@ val caffeineVersion = "3.2.4"
 val testcontainerVersion = "2.0.5"
 val kotlinVersion = "2.4.10"
 val kafkaVersion = "4.3.1"
-val ktfmtVersion = "0.44"
+val ktfmtVersion = "0.56"
 
 val ktorVersion = "3.5.2"
 
 plugins {
     kotlin("jvm") version "2.4.10"
     id("io.ktor.plugin") version "3.5.2"
-    id("com.diffplug.spotless") version "8.9.0"
+    id("com.diffplug.spotless") version "8.10.2"
     id("org.flywaydb.flyway") version "13.1.0"
 }
 

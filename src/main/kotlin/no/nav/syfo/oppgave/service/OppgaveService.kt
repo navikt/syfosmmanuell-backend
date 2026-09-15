@@ -27,7 +27,7 @@ class OppgaveService(
 
     suspend fun opprettOppgave(
         manuellOppgave: ManuellOppgave,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): OppgaveResponse {
         val opprettOppgave = tilOpprettOppgave(manuellOppgave)
         val oppgaveResponse =
@@ -64,9 +64,9 @@ class OppgaveService(
                             OppgaveStatus.FEILREGISTRERT,
                             existingOppgave.tildeltEnhetsnr,
                             null,
-                            null
+                            null,
                         ),
-                        sykmeldingId
+                        sykmeldingId,
                     )
 
                 logger.info(
@@ -78,12 +78,12 @@ class OppgaveService(
 
     suspend fun gjenopprettOppgave(
         manuellOppgave: ManuellOppgaveKomplett,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): OppgaveResponse {
         val oppgave =
             oppgaveClient.hentOppgave(
                 manuellOppgave.oppgaveid,
-                manuellOppgave.receivedSykmelding.msgId
+                manuellOppgave.receivedSykmelding.msgId,
             )
 
         logger.info("fant oppgave vi skal gjenopprette: $oppgave")
@@ -97,7 +97,7 @@ class OppgaveService(
         val oppgaveResponse =
             oppgaveClient.opprettOppgave(
                 gjenopprettOppgave,
-                manuellOppgave.receivedSykmelding.msgId
+                manuellOppgave.receivedSykmelding.msgId,
             )
         GJENOPPRETT_OPPGAVE_COUNTER.inc()
         logger.info(
@@ -108,7 +108,7 @@ class OppgaveService(
 
     fun tilGjenopprettOppgave(
         oppgave: OppgaveResponse,
-        manuellOppgave: ManuellOppgaveKomplett
+        manuellOppgave: ManuellOppgaveKomplett,
     ): OpprettOppgave =
         OpprettOppgave(
             aktoerId = manuellOppgave.receivedSykmelding.sykmelding.pasientAktoerId,
@@ -128,14 +128,11 @@ class OppgaveService(
             prioritet = "HOY",
         )
 
-    suspend fun endreOppgave(
-        manuellOppgave: ManuellOppgaveKomplett,
-        loggingMeta: LoggingMeta,
-    ) {
+    suspend fun endreOppgave(manuellOppgave: ManuellOppgaveKomplett, loggingMeta: LoggingMeta) {
         val oppgave =
             oppgaveClient.hentOppgave(
                 manuellOppgave.oppgaveid,
-                manuellOppgave.receivedSykmelding.msgId
+                manuellOppgave.receivedSykmelding.msgId,
             )
         requireNotNull(oppgave) {
             throw RuntimeException("Could not find oppgave for ${manuellOppgave.oppgaveid}")
@@ -166,7 +163,7 @@ class OppgaveService(
             StructuredArguments.fields(loggingMeta),
             oppgave.mappeId,
             endreOppgave.mappeId,
-            endreOppgave.mappeNavn
+            endreOppgave.mappeNavn,
         )
         val oppgaveResponse =
             oppgaveClient.endreOppgave(endreOppgave, manuellOppgave.receivedSykmelding.msgId)
@@ -181,7 +178,7 @@ class OppgaveService(
         manuellOppgave: ManuellOppgaveKomplett,
         enhet: String,
         veileder: String,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ) {
         val opprettOppgaveKafkaMessage = tilOppfolgingsoppgave(manuellOppgave, enhet, veileder)
         val producerRecord =
@@ -208,12 +205,12 @@ class OppgaveService(
         manuellOppgave: ManuellOppgaveKomplett,
         loggingMeta: LoggingMeta,
         enhet: String?,
-        veileder: String?
+        veileder: String?,
     ) {
         val oppgave =
             oppgaveClient.hentOppgave(
                 manuellOppgave.oppgaveid,
-                manuellOppgave.receivedSykmelding.msgId
+                manuellOppgave.receivedSykmelding.msgId,
             )
         val tildeltEnhet = enhet ?: oppgave?.tildeltEnhetsnr
         if (enhet == null) {
@@ -247,13 +244,13 @@ class OppgaveService(
             logger.info(
                 "Forsøker å ferdigstille oppgave {}, {}",
                 StructuredArguments.fields(ferdigstillOppgave),
-                StructuredArguments.fields(loggingMeta)
+                StructuredArguments.fields(loggingMeta),
             )
 
             val oppgaveResponse =
                 oppgaveClient.ferdigstillOppgave(
                     ferdigstillOppgave,
-                    manuellOppgave.receivedSykmelding.msgId
+                    manuellOppgave.receivedSykmelding.msgId,
                 )
             logger.info(
                 "Ferdigstilt oppgave med {}, {}",
@@ -263,7 +260,7 @@ class OppgaveService(
         } else {
             logger.info(
                 "Oppgaven er allerede ferdigstillt oppgaveId: ${oppgave.id} {}",
-                StructuredArguments.fields(loggingMeta)
+                StructuredArguments.fields(loggingMeta),
             )
         }
     }
@@ -286,7 +283,7 @@ class OppgaveService(
     fun tilOppfolgingsoppgave(
         manuellOppgave: ManuellOppgaveKomplett,
         enhet: String,
-        veileder: String
+        veileder: String,
     ): OpprettOppgaveKafkaMessage =
         OpprettOppgaveKafkaMessage(
             messageId = manuellOppgave.receivedSykmelding.msgId,

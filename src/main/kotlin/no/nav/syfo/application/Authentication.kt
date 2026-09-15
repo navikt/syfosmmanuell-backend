@@ -11,11 +11,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.Environment
 import no.nav.syfo.logger
 
-fun Application.setupAuth(
-    env: Environment,
-    jwkProvider: JwkProvider,
-    issuer: String,
-) {
+fun Application.setupAuth(env: Environment, jwkProvider: JwkProvider, issuer: String) {
     install(Authentication) {
         jwt(name = "jwt") {
             verifier(jwkProvider, issuer)

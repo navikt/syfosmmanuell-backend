@@ -13,7 +13,7 @@ class UtilsTest :
                     generateJWT(
                         "2",
                         "clientId",
-                        Claim("preferred_username", "firstname.lastname@nav.no")
+                        Claim("preferred_username", "firstname.lastname@nav.no"),
                     )!!
                 shouldNotThrow<Exception> {
                     logNAVEpostFromTokenWhenNoAccessToSecureLogs(token, "/thispath")

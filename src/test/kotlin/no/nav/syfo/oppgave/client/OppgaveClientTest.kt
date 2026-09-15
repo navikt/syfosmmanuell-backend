@@ -58,12 +58,12 @@ class OppgaveClientTest :
                                 call.request.headers["X-Correlation-ID"] == "123" ->
                                     call.respond(
                                         HttpStatusCode.Created,
-                                        OppgaveResponse(1, 1, "1234")
+                                        OppgaveResponse(1, 1, "1234"),
                                     )
                                 else ->
                                     call.respond(
                                         HttpStatusCode.InternalServerError,
-                                        "Noe gikk galt"
+                                        "Noe gikk galt",
                                     )
                             }
                         }
@@ -85,7 +85,7 @@ class OppgaveClientTest :
                 azureAdV2Client,
                 httpClient,
                 "scope",
-                "prod-gcp"
+                "prod-gcp",
             )
 
         beforeTest {
@@ -137,9 +137,9 @@ class OppgaveClientTest :
                                 status = OppgaveStatus.FERDIGSTILT,
                                 tildeltEnhetsnr = "1234",
                                 tilordnetRessurs = "4321",
-                                mappeId = null
+                                mappeId = null,
                             ),
-                            "123"
+                            "123",
                         )
                     }
                 }

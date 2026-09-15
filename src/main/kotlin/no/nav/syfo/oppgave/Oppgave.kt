@@ -47,7 +47,7 @@ data class GjenopprettOppgave(
     val fristFerdigstillelse: LocalDate,
     val mappeId: Int?,
     val tildeltEnhetsnr: String?,
-    val status: OppgaveStatus
+    val status: OppgaveStatus,
 )
 
 data class OppgaveResponse(

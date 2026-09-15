@@ -21,10 +21,7 @@ class AuthorizationService(
 
         val harTilgangTilgangsmaskin =
             tilgangsmaskinClient
-                .sjekkVeiledersTilgangTilPerson(
-                    accessToken = accessToken,
-                    pasientFnr = pasientFnr,
-                )
+                .sjekkVeiledersTilgangTilPerson(accessToken = accessToken, pasientFnr = pasientFnr)
                 .erGodkjent
 
         return harTilgangTilgangsmaskin
@@ -37,14 +34,14 @@ class AuthorizationService(
             sikkerlogg.info(
                 "Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId} " +
                     "med accessToken: $accessToken og Exception er",
-                e
+                e,
             )
             logger.error(
                 "Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId}"
             )
             throw IdentNotFoundException(
                 "Klarte ikke hente ut veilederIdent fra MS Graph API for oppgaveId $oppgaveId",
-                e
+                e,
             )
         }
     }

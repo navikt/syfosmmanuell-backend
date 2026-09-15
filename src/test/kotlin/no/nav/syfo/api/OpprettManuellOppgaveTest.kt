@@ -31,9 +31,7 @@ class OpprettManuellOppgaveTest :
                     .java
                     .getResourceAsStream("/apprecOK.json")!!
                     .readBytes()
-                    .toString(
-                        Charsets.UTF_8,
-                    ),
+                    .toString(Charsets.UTF_8)
             )
         val validationResult =
             ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC))
@@ -79,7 +77,7 @@ class OpprettManuellOppgaveTest :
                     true,
                     database.erOpprettManuellOppgave(
                         manuellOppgave.receivedSykmelding.sykmelding.id
-                    )
+                    ),
                 )
             }
         }

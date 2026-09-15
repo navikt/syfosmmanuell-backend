@@ -80,9 +80,7 @@ class AuthenticateTest :
                             .java
                             .getResourceAsStream("/apprecOK.json")
                             .readBytes()
-                            .toString(
-                                Charsets.UTF_8,
-                            ),
+                            .toString(Charsets.UTF_8)
                     ),
             )
         val oppgaveid = 308076319
@@ -95,7 +93,7 @@ class AuthenticateTest :
                 manuellOppgave.apprec,
                 oppgaveid,
                 ManuellOppgaveStatus.APEN,
-                LocalDateTime.now()
+                LocalDateTime.now(),
             )
             coEvery { tilgangsmaskinClient.sjekkVeiledersTilgangTilPerson(any(), any()) } returns
                 Tilgang(true)
@@ -124,7 +122,7 @@ class AuthenticateTest :
                     sourceNamespace = "namespace",
                     tilgangsmaskinUrl = "http://populasjonskontroll",
                     tilgangsmaskinScope = "scope",
-                    texasTokenExchangeEndpoint = "http://texas"
+                    texasTokenExchangeEndpoint = "http://texas",
                 )
 
             test("Aksepterer gyldig JWT med riktig audience") {
@@ -136,7 +134,7 @@ class AuthenticateTest :
                                 hentManuellOppgaver(
                                     oppgaveClient,
                                     manuellOppgaveService,
-                                    authorizationService
+                                    authorizationService,
                                 )
                             }
                         }
@@ -151,7 +149,7 @@ class AuthenticateTest :
                             exception<Throwable> { call, cause ->
                                 call.respond(
                                     HttpStatusCode.InternalServerError,
-                                    cause.message ?: "Unknown error"
+                                    cause.message ?: "Unknown error",
                                 )
                                 logger.error("Caught exception", cause)
                                 throw cause
@@ -169,7 +167,7 @@ class AuthenticateTest :
                                         "clientId",
                                         Claim("preferred_username", "firstname.lastname@nav.no"),
                                     )
-                                }"
+                                }",
                                 )
                             }
                         }
@@ -177,7 +175,7 @@ class AuthenticateTest :
                     assertEquals(HttpStatusCode.OK, response.status)
                     assertEquals(
                         oppgaveid,
-                        objectMapper.readValue<ManuellOppgaveDTO>(response.bodyAsText()).oppgaveid
+                        objectMapper.readValue<ManuellOppgaveDTO>(response.bodyAsText()).oppgaveid,
                     )
                 }
             }
@@ -190,7 +188,7 @@ class AuthenticateTest :
                                 hentManuellOppgaver(
                                     oppgaveClient,
                                     manuellOppgaveService,
-                                    authorizationService
+                                    authorizationService,
                                 )
                             }
                         }
@@ -205,7 +203,7 @@ class AuthenticateTest :
                             exception<Throwable> { call, cause ->
                                 call.respond(
                                     HttpStatusCode.InternalServerError,
-                                    cause.message ?: "Unknown error"
+                                    cause.message ?: "Unknown error",
                                 )
                                 logger.error("Caught exception", cause)
                                 throw cause
@@ -223,7 +221,7 @@ class AuthenticateTest :
                                         "annenClientId",
                                         Claim("preferred_username", "firstname.lastname@nav.no"),
                                     )
-                                }"
+                                }",
                                 )
                             }
                         }

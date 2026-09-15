@@ -59,9 +59,7 @@ class SykmeldingsApiTest :
                             .java
                             .getResourceAsStream("/apprecOK.json")!!
                             .readBytes()
-                            .toString(
-                                Charsets.UTF_8,
-                            ),
+                            .toString(Charsets.UTF_8)
                     ),
             )
         val oppgaveid = 308076319
@@ -95,7 +93,7 @@ class SykmeldingsApiTest :
                             headers {
                                 append(
                                     HttpHeaders.Authorization,
-                                    "Bearer ${generateJWT("2", "clientId")}"
+                                    "Bearer ${generateJWT("2", "clientId")}",
                                 )
                             }
                         }
@@ -119,7 +117,7 @@ class SykmeldingsApiTest :
                             headers {
                                 append(
                                     HttpHeaders.Authorization,
-                                    "Bearer ${generateJWT("2", "clientId")}"
+                                    "Bearer ${generateJWT("2", "clientId")}",
                                 )
                             }
                         }
