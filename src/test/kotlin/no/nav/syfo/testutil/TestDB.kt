@@ -8,10 +8,10 @@ import no.nav.syfo.logger
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.toPGObject
 import org.flywaydb.core.Flyway
-import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
+import org.testcontainers.postgresql.PostgreSQLContainer
 
-class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:14")
+class PsqlContainer : PostgreSQLContainer("postgres:16")
 
 class TestDatabase(
     private val connectionName: String,
@@ -53,19 +53,17 @@ class TestDB private constructor() {
     companion object {
         val database: DatabaseInterface
 
-        private val psqlContainer: PsqlContainer
+        private val psqlContainer: PostgreSQLContainer =
+            PsqlContainer()
+                .withCommand("postgres", "-c", "wal_level=logical")
+                .withExposedPorts(5432)
+                .withUsername("username")
+                .withPassword("password")
+                .withDatabaseName("syfosmmanuell-backend")
+                .withInitScript("db/db-init.sql")
 
         init {
             try {
-                psqlContainer =
-                    PsqlContainer()
-                        .withCommand("postgres", "-c", "wal_level=logical")
-                        .withExposedPorts(5432)
-                        .withUsername("username")
-                        .withPassword("password")
-                        .withDatabaseName("syfosmmanuell-backend")
-                        .withInitScript("db/db-init.sql")
-
                 psqlContainer.waitingFor(HostPortWaitStrategy())
                 psqlContainer.start()
                 val username = "username"
