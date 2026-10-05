@@ -12,7 +12,7 @@ spec:
     sqlInstances:
       - name: syfosmmanuell-backend-instance
         type: POSTGRES_16
-        diskSize: 100
+        diskSize: 75
         databases:
           - name: syfosmmanuell-backend
             envVarPrefix: DB
