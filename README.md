@@ -64,12 +64,10 @@ docker run --rm -it -p 8080:8080 syfosmmanuell-backend
 
 For information on connecting to dev og prod database see: [Postgres GCP](https://doc.nais.io/cli/commands/postgres/)
 
-### Upgrading the gradle wrapper
-
-Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
+### Upgrading the Gradle wrapper to latests
 
 ``` bash
-./gradlew wrapper --gradle-version $gradleVersjon
+./gradlew wrapper --gradle-version latest
 ```
 
 ### Contact

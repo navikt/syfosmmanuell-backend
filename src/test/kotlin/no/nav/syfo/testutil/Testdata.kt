@@ -1,6 +1,5 @@
 package no.nav.syfo.testutil
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -9,6 +8,7 @@ import java.util.UUID
 import kotlin.random.Random
 import no.nav.syfo.ICPC2
 import no.nav.syfo.diagnose.Kodeverk
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.model.Adresse
 import no.nav.syfo.model.AktivitetIkkeMulig
 import no.nav.syfo.model.AnnenFraversArsak
@@ -34,8 +34,8 @@ import no.nav.syfo.model.Prognose
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.SporsmalSvar
 import no.nav.syfo.model.Sykmelding
-import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.OppgaveResponse
+import tools.jackson.module.kotlin.readValue
 
 fun receivedSykmelding(
     id: String,
@@ -275,7 +275,7 @@ fun generateArbeidsgiver(
     )
 
 fun okApprec(): Apprec {
-    return objectMapper.readValue(
+    return jsonMapper.readValue(
         Apprec::class
             .java
             .getResourceAsStream("/apprecOK.json")
@@ -285,7 +285,7 @@ fun okApprec(): Apprec {
 }
 
 fun avvistApprec(): Apprec {
-    return objectMapper.readValue(
+    return jsonMapper.readValue(
         Apprec::class
             .java
             .getResourceAsStream("/apprecAvvist.json")

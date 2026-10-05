@@ -1,11 +1,6 @@
 package no.nav.syfo
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -33,14 +28,10 @@ import no.nav.syfo.service.ManuellOppgaveService
 import no.nav.syfo.util.TrackableException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
-val objectMapper: ObjectMapper =
-    ObjectMapper()
-        .registerModule(JavaTimeModule())
-        .registerKotlinModule()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-
+val jsonMapper: JsonMapper = jacksonMapperBuilder().build()
 val logger: Logger = LoggerFactory.getLogger("no.nav.syfo.smmanuell-backend")
 val sikkerlogg = LoggerFactory.getLogger("securelog")
 val auditlogg = LoggerFactory.getLogger("auditLogger")

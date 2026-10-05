@@ -1,15 +1,11 @@
 package no.nav.syfo.clients
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.*
 import io.ktor.client.engine.apache5.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.network.sockets.*
-import io.ktor.serialization.jackson.*
+import io.ktor.serialization.jackson3.jackson
 import no.nav.syfo.Environment
 import no.nav.syfo.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.MSGraphClient
@@ -23,14 +19,7 @@ class HttpClients(env: Environment) {
 
     companion object {
         val config: HttpClientConfig<Apache5EngineConfig>.() -> Unit = {
-            install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                }
-            }
+            install(ContentNegotiation) { jackson {} }
             expectSuccess = false
             HttpResponseValidator {
                 handleResponseExceptionWithRequest { exception, _ ->

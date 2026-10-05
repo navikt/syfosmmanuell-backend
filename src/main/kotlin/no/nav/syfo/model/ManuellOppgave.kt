@@ -1,6 +1,6 @@
 package no.nav.syfo.model
 
-import no.nav.syfo.objectMapper
+import no.nav.syfo.jsonMapper
 import org.postgresql.util.PGobject
 
 data class ManuellOppgave(
@@ -12,19 +12,19 @@ data class ManuellOppgave(
 fun ReceivedSykmelding.toPGObject() =
     PGobject().also {
         it.type = "json"
-        it.value = objectMapper.writeValueAsString(this)
+        it.value = jsonMapper.writeValueAsString(this)
     }
 
 fun ValidationResult.toPGObject() =
     PGobject().also {
         it.type = "json"
-        it.value = objectMapper.writeValueAsString(this)
+        it.value = jsonMapper.writeValueAsString(this)
     }
 
 fun Apprec.toPGObject() =
     PGobject().also {
         it.type = "json"
-        it.value = objectMapper.writeValueAsString(this)
+        it.value = jsonMapper.writeValueAsString(this)
     }
 
 enum class ManuellOppgaveStatus {

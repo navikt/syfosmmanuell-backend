@@ -2,13 +2,13 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.11.0"
-val logbackVersion = "1.6.1"
+val logbackVersion = "1.6.5"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
 val sykmeldingVersion = "2.0.1"
 val fellesformatVersion = "2.0.1"
 val kithHodemeldingVersion = "2.0.1"
-val jacksonVersion = "2.22.1"
+val jacksonVersion = "3.2.3"
 val mockkVersion = "1.14.11"
 val postgresVersion = "42.7.13"
 val flywayVersion = "13.1.0"
@@ -18,14 +18,13 @@ val kotestVersion = "6.2.3"
 val nimbusdsVersion = "10.9.1"
 val caffeineVersion = "3.2.4"
 val testcontainerVersion = "2.0.5"
-val kotlinVersion = "2.4.10"
+val kotlinVersion = "2.4.20"
 val kafkaVersion = "4.3.1"
 val ktfmtVersion = "0.56"
-
-val ktorVersion = "3.5.2"
+val ktorVersion = "3.6.0"
 
 plugins {
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
     id("io.ktor.plugin") version "3.6.0"
     id("com.diffplug.spotless") version "8.10.2"
     id("org.flywaydb.flyway") version "13.1.0"
@@ -46,8 +45,6 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
@@ -56,7 +53,7 @@ dependencies {
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache5:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
@@ -71,10 +68,7 @@ dependencies {
 
     implementation("com.migesok:jaxb-java-time-adapters:$javaTimeAdapterVersion")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("tools.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")

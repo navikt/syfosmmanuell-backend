@@ -1,15 +1,10 @@
 package no.nav.syfo.api
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.routing
@@ -24,13 +19,13 @@ import no.nav.syfo.authorization.service.AuthorizationService
 import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveMedId
 import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
@@ -40,6 +35,7 @@ import no.nav.syfo.testutil.dropData
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
+import tools.jackson.module.kotlin.readValue
 
 class HentOppgaveBySykmeldingIdTest :
     FunSpec({
@@ -63,7 +59,7 @@ class HentOppgaveBySykmeldingIdTest :
                 validationResult =
                     ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC)),
                 apprec =
-                    objectMapper.readValue(
+                    jsonMapper.readValue(
                         Apprec::class
                             .java
                             .getResourceAsStream("/apprecOK.json")!!
@@ -89,14 +85,7 @@ class HentOppgaveBySykmeldingIdTest :
                                 authorizationService,
                             )
                         }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
                     }
                     database.opprettManuellOppgave(
                         manuellOppgave,
@@ -109,7 +98,7 @@ class HentOppgaveBySykmeldingIdTest :
                     val response = client.get("/api/v1/oppgave/sykmelding/$sykmeldingId")
 
                     assertEquals(HttpStatusCode.OK, response.status)
-                    val result = objectMapper.readValue<ManuellOppgaveMedId>(response.bodyAsText())
+                    val result = jsonMapper.readValue<ManuellOppgaveMedId>(response.bodyAsText())
                     assertEquals(oppgaveid, result.oppgaveId)
                     assertEquals(sykmeldingId, result.sykmeldingId)
                 }
@@ -125,14 +114,7 @@ class HentOppgaveBySykmeldingIdTest :
                                 authorizationService,
                             )
                         }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
                     }
 
                     val response = client.get("/api/v1/oppgave/sykmelding/ikke-eksisterende-id")
@@ -151,14 +133,7 @@ class HentOppgaveBySykmeldingIdTest :
                                 authorizationService,
                             )
                         }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
                     }
 
                     val response = client.get("/api/v1/oppgave/sykmelding/")
@@ -178,14 +153,7 @@ class HentOppgaveBySykmeldingIdTest :
                                 authorizationService,
                             )
                         }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
                     }
                     database.opprettManuellOppgave(
                         manuellOppgave,
@@ -198,7 +166,7 @@ class HentOppgaveBySykmeldingIdTest :
                     val response = client.get("/api/v1/oppgave/sykmelding/$sykmeldingId")
 
                     assertEquals(HttpStatusCode.OK, response.status)
-                    val result = objectMapper.readValue<ManuellOppgaveMedId>(response.bodyAsText())
+                    val result = jsonMapper.readValue<ManuellOppgaveMedId>(response.bodyAsText())
                     assertEquals(oppgaveid, result.oppgaveId)
                 }
             }
@@ -213,14 +181,7 @@ class HentOppgaveBySykmeldingIdTest :
                                 authorizationService,
                             )
                         }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
                     }
 
                     // Tom string som sykmeldingId matcher route pattern men er ugyldig
@@ -242,14 +203,7 @@ class HentOppgaveBySykmeldingIdTest :
                                 authorizationService,
                             )
                         }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
                     }
                     // Opprett første oppgave
                     database.opprettManuellOppgave(
@@ -289,7 +243,7 @@ class HentOppgaveBySykmeldingIdTest :
                     val response = client.get("/api/v1/oppgave/sykmelding/$sykmeldingId")
 
                     assertEquals(HttpStatusCode.OK, response.status)
-                    val result = objectMapper.readValue<ManuellOppgaveMedId>(response.bodyAsText())
+                    val result = jsonMapper.readValue<ManuellOppgaveMedId>(response.bodyAsText())
                     assertEquals(oppgaveid, result.oppgaveId)
                     assertEquals(sykmeldingId, result.sykmeldingId)
                 }

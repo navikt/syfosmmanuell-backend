@@ -1,14 +1,10 @@
 package no.nav.syfo.api
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.request.*
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.routing
@@ -21,12 +17,12 @@ import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.aksessering.api.sykmeldingsApi
 import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
@@ -36,6 +32,7 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
+import tools.jackson.module.kotlin.readValue
 
 class SykmeldingsApiTest :
     FunSpec({
@@ -54,7 +51,7 @@ class SykmeldingsApiTest :
                 validationResult =
                     ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC)),
                 apprec =
-                    objectMapper.readValue(
+                    jsonMapper.readValue(
                         Apprec::class
                             .java
                             .getResourceAsStream("/apprecOK.json")!!
@@ -73,13 +70,7 @@ class SykmeldingsApiTest :
                 testApplication {
                     application {
                         routing { sykmeldingsApi(manuellOppgaveService) }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
                     }
                     database.opprettManuellOppgave(
                         manuellOppgave,
@@ -104,13 +95,7 @@ class SykmeldingsApiTest :
                 testApplication {
                     application {
                         routing { sykmeldingsApi(manuellOppgaveService) }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
                     }
                     val response =
                         client.get("/api/v1/sykmelding/$sykmeldingsId") {

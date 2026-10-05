@@ -1,6 +1,5 @@
 package no.nav.syfo.aksessering.db
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import java.sql.ResultSet
 import java.time.LocalDateTime
 import kotlinx.coroutines.Dispatchers
@@ -9,12 +8,13 @@ import no.nav.syfo.aksessering.ManuellOppgaveDTO
 import no.nav.syfo.aksessering.UlosteOppgave
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgaveKomplett
 import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.objectMapper
+import tools.jackson.module.kotlin.readValue
 
 suspend fun DatabaseInterface.finnesOppgave(oppgaveId: Int) =
     withContext(Dispatchers.IO) {
@@ -94,13 +94,13 @@ suspend fun DatabaseInterface.hentManuellOppgave(oppgaveId: Int): ManuellOppgave
 
 fun ResultSet.toManuellOppgaveDTO(): ManuellOppgaveDTO {
     val receivedSykmelding: ReceivedSykmelding =
-        objectMapper.readValue(getString("receivedsykmelding"))
+        jsonMapper.readValue(getString("receivedsykmelding"))
     return ManuellOppgaveDTO(
         oppgaveid = getInt("oppgaveid"),
         sykmelding = receivedSykmelding.sykmelding,
         personNrPasient = receivedSykmelding.personNrPasient,
         mottattDato = receivedSykmelding.mottattDato,
-        validationResult = objectMapper.readValue(getString("validationresult")),
+        validationResult = jsonMapper.readValue(getString("validationresult")),
         tildeltEnhetsnr = null,
     )
 }
@@ -167,14 +167,14 @@ fun ResultSet.toUlostOppgave(): UlosteOppgave =
 
 fun ResultSet.toManuellOppgave(): ManuellOppgaveKomplett =
     ManuellOppgaveKomplett(
-        receivedSykmelding = objectMapper.readValue(getString("receivedsykmelding")),
-        validationResult = objectMapper.readValue(getString("validationresult")),
-        apprec = getString("apprec")?.let { objectMapper.readValue<Apprec>(it) },
+        receivedSykmelding = jsonMapper.readValue(getString("receivedsykmelding")),
+        validationResult = jsonMapper.readValue(getString("validationresult")),
+        apprec = getString("apprec")?.let { jsonMapper.readValue<Apprec>(it) },
         oppgaveid = getInt("oppgaveid"),
         ferdigstilt = getBoolean("ferdigstilt"),
         sendtApprec = getBoolean("sendt_apprec"),
         opprinneligValidationResult =
             getString("opprinnelig_validationresult")?.let {
-                objectMapper.readValue<ValidationResult>(it)
+                jsonMapper.readValue<ValidationResult>(it)
             },
     )

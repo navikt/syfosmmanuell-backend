@@ -49,14 +49,14 @@ class MSGraphClientTest :
                 httpClient.responseDataOboToken =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(
+                        jsonMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
                         ),
                     )
                 httpClient.responseData =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(GraphResponse(accountName)),
+                        jsonMapper.writeValueAsString(GraphResponse(accountName)),
                     )
 
                 val subjectFromMsGraph = msGraphClient.getSubjectFromMsGraph("usertoken")
@@ -69,7 +69,7 @@ class MSGraphClientTest :
                 httpClient.responseDataOboToken =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(
+                        jsonMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
                         ),
                     )
@@ -83,14 +83,14 @@ class MSGraphClientTest :
                 httpClient.responseDataOboToken =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(
+                        jsonMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
                         ),
                     )
                 httpClient.responseData =
                     ResponseData(
                         HttpStatusCode.Forbidden,
-                        objectMapper.writeValueAsString(GraphOboToken("token")),
+                        jsonMapper.writeValueAsString(GraphOboToken("token")),
                     )
 
                 assertFailsWith<RuntimeException> {
@@ -103,14 +103,14 @@ class MSGraphClientTest :
                 httpClient.responseDataOboToken =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(
+                        jsonMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
                         ),
                     )
                 httpClient.responseData =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(GraphResponse(accountName)),
+                        jsonMapper.writeValueAsString(GraphResponse(accountName)),
                     )
 
                 msGraphClient.getSubjectFromMsGraph("usertoken")
@@ -125,14 +125,14 @@ class MSGraphClientTest :
                 httpClient.responseDataOboToken =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(
+                        jsonMapper.writeValueAsString(
                             AzureAdV2TokenResponse("token", 1000000, "token_type")
                         ),
                     )
                 httpClient.responseData =
                     ResponseData(
                         HttpStatusCode.OK,
-                        objectMapper.writeValueAsString(GraphResponse(accountName)),
+                        jsonMapper.writeValueAsString(GraphResponse(accountName)),
                     )
 
                 msGraphClient.getSubjectFromMsGraph("usertoken")
