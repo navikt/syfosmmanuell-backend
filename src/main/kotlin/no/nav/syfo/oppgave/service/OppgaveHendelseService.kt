@@ -1,10 +1,5 @@
 package no.nav.syfo.oppgave.service
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -20,24 +15,22 @@ import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.retry
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.module.kotlin.readValue
 
 class OppgaveHendelseService(
     private val database: DatabaseInterface,
     private val oppgaveService: OppgaveService,
 ) {
-    private val objectMapper =
-        ObjectMapper()
-            .registerModule(JavaTimeModule())
-            .registerKotlinModule()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    val jsonMapper: JsonMapper = jacksonMapperBuilder().build()
 
     companion object {
         private val log = LoggerFactory.getLogger(OppgaveHendelseService::class.java)
     }
 
     suspend fun handleOppgaveHendelse(consumerRecord: ConsumerRecord<String, String>) {
-        val oppgaveHendlese: OppgaveKafkaAivenRecord =
-            objectMapper.readValue(consumerRecord.value())
+        val oppgaveHendlese: OppgaveKafkaAivenRecord = jsonMapper.readValue(consumerRecord.value())
         val oppgaveStatus = oppgaveHendlese.hendelse.hendelsestype.manuellOppgaveStatus()
         val oppgaveId = oppgaveHendlese.oppgave.oppgaveId.toInt()
 

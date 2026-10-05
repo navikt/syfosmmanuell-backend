@@ -1,6 +1,5 @@
 package no.nav.syfo.persistering
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -19,6 +18,7 @@ import no.nav.syfo.aksessering.db.erApprecSendt
 import no.nav.syfo.aksessering.db.hentKomplettManuellOppgave
 import no.nav.syfo.aksessering.db.hentManuellOppgaveForSykmeldingId
 import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.Merknad
@@ -26,7 +26,6 @@ import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.erOpprettManuellOppgave
 import no.nav.syfo.service.ManuellOppgaveService
@@ -38,6 +37,7 @@ import no.nav.syfo.testutil.receivedSykmelding
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Assertions.assertEquals
+import tools.jackson.module.kotlin.readValue
 
 class MottattSykmeldingServiceTest :
     FunSpec({
@@ -60,7 +60,7 @@ class MottattSykmeldingServiceTest :
         val sykmeldingsId = UUID.randomUUID().toString()
         val msgId = "1314"
         val manuellOppgave = oppgave(msgId, sykmeldingsId)
-        val manuellOppgaveString = objectMapper.writeValueAsString(manuellOppgave)
+        val manuellOppgaveString = jsonMapper.writeValueAsString(manuellOppgave)
         val oppgaveid = 308076319
 
         beforeTest {
@@ -85,7 +85,7 @@ class MottattSykmeldingServiceTest :
                 coEvery { oppgaveService.opprettOppgave(any(), any()) } returns oppgave(oppgaveid)
                 mottattSykmeldingService.handleMottattSykmelding(
                     behandlingsdagId,
-                    objectMapper.writeValueAsString(
+                    jsonMapper.writeValueAsString(
                         oppgave(msgId = behandlingsdagId, sykmeldingsId = behandlingsdagId)
                     ),
                     emptyMap(),
@@ -136,7 +136,7 @@ class MottattSykmeldingServiceTest :
             }
             test("Save manuellOppgave from syk-inn (apprec is null)") {
                 val manuellOppgave = manuellOppgave.copy(apprec = null)
-                val manuellOppgaveString = objectMapper.writeValueAsString(manuellOppgave)
+                val manuellOppgaveString = jsonMapper.writeValueAsString(manuellOppgave)
                 mottattSykmeldingService.handleMottattSykmelding(
                     sykmeldingsId,
                     manuellOppgaveString,
@@ -227,7 +227,7 @@ private fun oppgave(msgId: String, sykmeldingsId: String): ManuellOppgave =
                 OffsetDateTime.now(ZoneOffset.UTC),
             ),
         apprec =
-            objectMapper.readValue(
+            jsonMapper.readValue(
                 Apprec::class
                     .java
                     .getResourceAsStream("/apprecOK.json")!!

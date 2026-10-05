@@ -1,22 +1,22 @@
 package no.nav.syfo.oppgave.service
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.mockk
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.testutil.generatePeriode
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
+import tools.jackson.module.kotlin.readValue
 
 class OppgaveServiceTest :
     FunSpec({
@@ -39,7 +39,7 @@ class OppgaveServiceTest :
                 ),
             )
         val apprec: Apprec =
-            objectMapper.readValue(
+            jsonMapper.readValue(
                 Apprec::class
                     .java
                     .getResourceAsStream("/apprecOK.json")!!

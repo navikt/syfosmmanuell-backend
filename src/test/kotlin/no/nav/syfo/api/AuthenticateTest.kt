@@ -1,16 +1,12 @@
 package no.nav.syfo.api
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -34,13 +30,13 @@ import no.nav.syfo.client.MSGraphClient
 import no.nav.syfo.client.Tilgang
 import no.nav.syfo.client.TilgangsmaskinClient
 import no.nav.syfo.clients.KafkaProducers
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.logger
 import no.nav.syfo.model.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ManuellOppgaveStatus
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.objectMapper
 import no.nav.syfo.oppgave.client.OppgaveClient
 import no.nav.syfo.oppgave.service.OppgaveService
 import no.nav.syfo.persistering.db.opprettManuellOppgave
@@ -52,6 +48,7 @@ import no.nav.syfo.testutil.generateJWT
 import no.nav.syfo.testutil.generateSykmelding
 import no.nav.syfo.testutil.receivedSykmelding
 import org.junit.jupiter.api.Assertions.assertEquals
+import tools.jackson.module.kotlin.readValue
 
 class AuthenticateTest :
     FunSpec({
@@ -75,7 +72,7 @@ class AuthenticateTest :
                 validationResult =
                     ValidationResult(Status.OK, emptyList(), OffsetDateTime.now(ZoneOffset.UTC)),
                 apprec =
-                    objectMapper.readValue(
+                    jsonMapper.readValue(
                         Apprec::class
                             .java
                             .getResourceAsStream("/apprecOK.json")
@@ -138,13 +135,7 @@ class AuthenticateTest :
                                 )
                             }
                         }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
                         install(StatusPages) {
                             exception<Throwable> { call, cause ->
                                 call.respond(
@@ -175,7 +166,7 @@ class AuthenticateTest :
                     assertEquals(HttpStatusCode.OK, response.status)
                     assertEquals(
                         oppgaveid,
-                        objectMapper.readValue<ManuellOppgaveDTO>(response.bodyAsText()).oppgaveid,
+                        jsonMapper.readValue<ManuellOppgaveDTO>(response.bodyAsText()).oppgaveid,
                     )
                 }
             }
@@ -192,13 +183,8 @@ class AuthenticateTest :
                                 )
                             }
                         }
-                        install(ContentNegotiation) {
-                            jackson {
-                                registerKotlinModule()
-                                registerModule(JavaTimeModule())
-                                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                            }
-                        }
+                        install(ContentNegotiation) { jackson {} }
+
                         install(StatusPages) {
                             exception<Throwable> { call, cause ->
                                 call.respond(

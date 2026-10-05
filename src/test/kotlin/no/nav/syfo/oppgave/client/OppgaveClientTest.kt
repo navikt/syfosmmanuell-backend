@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.*
 import io.ktor.client.engine.apache5.*
 import io.ktor.http.*
-import io.ktor.serialization.jackson.*
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
