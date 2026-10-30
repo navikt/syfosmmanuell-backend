@@ -76,8 +76,8 @@ spec:
       tenant: nav.no
       claims:
         groups:
-          # 0000-GA-SYFO-SENSITIV geografisk tilgang til sykmeldinger
-          - id: "100e88eb-79af-4136-8bfe-f79b32021f43"
+          # 0000-CA-TSM-MANUELL_TILBAKEDATERT_SYKMELDING
+          - id: "169849d4-0811-4c42-8a1e-4d0103dfbc08"
   accessPolicy:
     inbound:
       rules:
